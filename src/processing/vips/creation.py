@@ -41,7 +41,7 @@ def yskysn(captions: typing.Sequence[str]):
             f"<span foreground='white'>"
             f"{captions[0].upper()}\n<span size='150%'>{captions[1].upper()}</span>"
             f"</span>",
-            font=f"Tahoma Bold,Twemoji Color Emoji 56",
+            font=f"Tahoma,Twemoji Color Emoji Bold 56",
             rgba=True,
             fontfile="rendering/fonts/TAHOMABD.TTF",
             align=pyvips.Align.CENTRE,
