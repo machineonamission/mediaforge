@@ -100,7 +100,7 @@ def f1984(captions: typing.Sequence[str]):
         # generate text
         date = pyvips.Image.text(
             captions[1].upper(),
-            font=f"Twemoji Color Emoji,ImpactMix",
+            font=f"ImpactMix,Twemoji Color Emoji",
             rgba=True,
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
@@ -129,7 +129,7 @@ def epicbirthdaytext(caption: str):
     # generate text
     text = pyvips.Image.text(
         f"<span foreground=\"white\">{caption.upper()}</span>",
-        font=f"Twemoji Color Emoji,MarkerFeltWide",
+        font=f"MarkerFeltWide,Twemoji Color Emoji",
         rgba=True,
         fontfile="rendering/fonts/MarkerFeltWide Regular.ttf",
         align=pyvips.Align.CENTRE,
