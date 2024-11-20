@@ -30,6 +30,7 @@ requests = "^2.31.0"
 "discordlists.py" = "^1.1.1"
 pyvips = "^2.2.1"
 tblib = "^3.0.0"
+audioop-lts = {version = "^0.2.1", python = ">=3.13"}
 
 
 [build-system]
