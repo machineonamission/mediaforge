@@ -22,7 +22,7 @@ def yskysn(captions: typing.Sequence[str]):
         f"<span foreground='white'>"
         f"{captions[0]}\n<span size='150%'>{captions[1]}</span>"
         f"</span>",
-        font=f"Tahoma Bold,Twemoji Color Emoji 56",
+        font=f"Tahoma,Twemoji Color Emoji Bold 56",
         rgba=True,
         fontfile="rendering/fonts/TAHOMABD.TTF",
         align=pyvips.Align.CENTRE,
@@ -41,7 +41,7 @@ def yskysn(captions: typing.Sequence[str]):
             f"<span foreground='white'>"
             f"{captions[0].upper()}\n<span size='150%'>{captions[1].upper()}</span>"
             f"</span>",
-            font=f"Tahoma Bold,Twemoji Color Emoji 56",
+            font=f"Tahoma,Twemoji Color Emoji Bold 56",
             rgba=True,
             fontfile="rendering/fonts/TAHOMABD.TTF",
             align=pyvips.Align.CENTRE,
@@ -100,7 +100,7 @@ def f1984(captions: typing.Sequence[str]):
         # generate text
         date = pyvips.Image.text(
             captions[1].upper(),
-            font=f"Twemoji Color Emoji,ImpactMix",
+            font=f"ImpactMix,Twemoji Color Emoji",
             rgba=True,
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
@@ -129,7 +129,7 @@ def epicbirthdaytext(caption: str):
     # generate text
     text = pyvips.Image.text(
         f"<span foreground=\"white\">{caption.upper()}</span>",
-        font=f"Twemoji Color Emoji,MarkerFeltWide",
+        font=f"MarkerFeltWide,Twemoji Color Emoji",
         rgba=True,
         fontfile="rendering/fonts/MarkerFeltWide Regular.ttf",
         align=pyvips.Align.CENTRE,
