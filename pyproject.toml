@@ -2,7 +2,7 @@
 name = "mediaforge"
 version = "2.0.0"
 description = "A Discord bot for editing and creating videos, images, GIFs, and more!"
-authors = ["reticivis"]
+authors = ["machineonamission"]
 license = "GPL-3.0"
 package-mode = false
 

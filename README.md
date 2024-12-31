@@ -3,9 +3,9 @@
 
 [![Discord Bots](https://top.gg/api/widget/780570413767983122.svg)](https://top.gg/bot/780570413767983122)
 
-![Total Lines](https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/reticivis-net/mediaforge/badge?filter=.py&style=flat&label=Lines%20of%20Code)
-[![wakatime](https://wakatime.com/badge/github/reticivis-net/mediaforge.svg)](https://wakatime.com/badge/github/reticivis-net/mediaforge)
-[![stars](https://img.shields.io/github/stars/reticivis-net/mediaforge?style=social)](https://github.com/reticivis-net/mediaforge/stargazers)
+![Total Lines](https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/machineonamission/mediaforge/badge?filter=.py&style=flat&label=Lines%20of%20Code)
+[![wakatime](https://wakatime.com/badge/github/machineonamission/mediaforge.svg)](https://wakatime.com/badge/github/machineonamission/mediaforge)
+[![stars](https://img.shields.io/github/stars/machineonamission/mediaforge?style=social)](https://github.com/machineonamission/mediaforge/stargazers)
 [![uptime](https://app.statuscake.com/button/index.php?Track=6022597&Design=6)](https://uptime.statuscake.com/?TestID=JyWrfGfIjT)
 [![MediaForge Discord](https://discordapp.com/api/guilds/803788965215338546/widget.png)](https://discord.gg/xwWjgyVqBz)
 [![built with immense swag](https://img.shields.io/static/v1?label=built+with&message=immense+swag&color=D262BA)](https://knowyourmeme.com/memes/trollface)
@@ -33,7 +33,7 @@ apt libraries MediaForge does, see [to self-host natively](#to-self-host-nativel
 once that's installed, run these commands in your terminal of choice.
 
 ```shell
-docker build -t melodyflorum/mediaforge https://github.com/reticivis-net/mediaforge.git
+docker build -t melodyflorum/mediaforge https://github.com/machineonamission/mediaforge.git
 docker run -it --cap-add SYS_NICE --shm-size 8G --name mediaforge melodyflorum/mediaforge
 ```
 
@@ -168,7 +168,7 @@ the bot uses many external CLI programs for media processing.
     - on windows, [`powershell`](https://aka.ms/powershell) is used to
       access [Windows's native TTS](https://docs.microsoft.com/en-us/uwp/api/windows.media.speechsynthesis.speechsynthesizer)
       . Both are included in modern versions of Windows, but ensure powershell is in the system path.
-  - the "retro" voice uses [sam-cli](https://github.com/reticivis-net/sam-cli). it is included, but it
+  - the "retro" voice uses [sam-cli](https://github.com/machineonamission/sam-cli). it is included, but it
       requires [node.js](https://nodejs.org/) to be installed and added to the system path
         - pretty sure both the windows & linux installers add it to path on installation but cant hurt to check
 
