@@ -103,22 +103,22 @@ async def ensuresize(ctx, file, minsize, maxsize):
         # the min(-1,maxsize) thing is to prevent a case where someone puts in like a 1x1000 image and it gets resized
         # to 200x200000 which is very large so even though it wont preserve aspect ratio it's an edge case anyways
 
-        file = await resize(file, minsize, f"min(-1, {maxsize * 2})")
+        file = await resize(file, minsize, f"min(-1, {maxsize * 2})", png=True)
         w, h = await get_resolution(file)
         resized = True
     if h < minsize:
-        file = await resize(file, f"min(-1, {maxsize * 2})", minsize)
+        file = await resize(file, f"min(-1, {maxsize * 2})", minsize, png=True)
         w, h = await get_resolution(file)
         resized = True
     if await ctx.bot.is_owner(ctx.author):
         logger.debug(f"bot owner is exempt from downsize checks")
         return file
     if w > maxsize:
-        file = await resize(file, maxsize, "-1")
+        file = await resize(file, maxsize, "-1", png=True)
         w, h = await get_resolution(file)
         resized = True
     if h > maxsize:
-        file = await resize(file, "-1", maxsize)
+        file = await resize(file, "-1", maxsize, png=True)
         w, h = await get_resolution(file)
         resized = True
     if resized:
