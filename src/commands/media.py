@@ -90,7 +90,8 @@ class Media(commands.Cog, name="Editing"):
         :param noise: value of 0 makes no change to the image. must be between 0 and 100.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.ffmpeg.other.deepfry, [["VIDEO", "GIF", "IMAGE"]], brightness, contrast, sharpness,
+        await process(ctx, processing.ffmpeg.other.deepfry, [["VIDEO", "GIF", "IMAGE"]], brightness, contrast,
+                      sharpness,
                       saturation, noise)
 
     @commands.hybrid_command(aliases=["pad"])
@@ -224,7 +225,7 @@ class Media(commands.Cog, name="Editing"):
         """
         await process(ctx, processing.ffmpeg.other.tint, [["GIF", "IMAGE", "VIDEO"]], color)
 
-    @commands.hybrid_command(aliases=["round", "circlecrop", "roundcrop", "circle", "roundedcorners"])
+    @commands.hybrid_command(aliases=["roundedcorners", "roundcrop", "round"])
     async def roundcorners(self, ctx, radius: int = 10):
         """
         Round corners of media
@@ -237,6 +238,10 @@ class Media(commands.Cog, name="Editing"):
         if not 0 <= radius:
             raise commands.BadArgument(f"Border radius percent must be above 0")
         await process(ctx, processing.ffmpeg.other.round_corners, [["GIF", "IMAGE", "VIDEO"]], radius)
+
+    @commands.hybrid_command(aliases=["circlecrop"])
+    async def circle(self, ctx):
+        await process(ctx, processing.ffmpeg.other.circle, [["GIF", "IMAGE", "VIDEO"]])
 
     @commands.hybrid_command()
     async def volume(self, ctx, volume: commands.Range[float, 0, 32]):
@@ -340,7 +345,8 @@ class Media(commands.Cog, name="Editing"):
         :mediaparam video1: A video or gif.
         :mediaparam video2: A video or gif.
         """
-        await process(ctx, processing.ffmpeg.other.overlay, [["VIDEO", "GIF", "IMAGE"], ["VIDEO", "GIF", "IMAGE"]], alpha,
+        await process(ctx, processing.ffmpeg.other.overlay, [["VIDEO", "GIF", "IMAGE"], ["VIDEO", "GIF", "IMAGE"]],
+                      alpha,
                       "overlay")
 
     @commands.hybrid_command(aliases=["overlayadd", "addition"])

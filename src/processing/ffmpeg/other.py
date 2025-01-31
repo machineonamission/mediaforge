@@ -400,13 +400,21 @@ async def tint(file, col: discord.Color):
                       f"format=rgba", "-c:v", "ffv1", "-fps_mode", "vfr", out)
     return out
 
+@gif_output
+async def circle(media):
+    # gh copilot spat this out based on https://stackoverflow.com/a/62400465/9044183
+    outfile = reserve_tempfile("mkv")
+    await run_command("ffmpeg", "-i", media, "-filter_complex",
+                      f"geq=lum='p(X,Y)':a='if(lte(hypot(W/2-X,H/2-Y),H/2),255,0)'",
+                      "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
+    return outfile
 
 @gif_output
 async def round_corners(media, border_radius=10):
     outfile = reserve_tempfile("mkv")
     # https://stackoverflow.com/a/62400465/9044183
     await run_command("ffmpeg", "-i", media, "-filter_complex",
-                      f"format=rgba,"
+                      # f"format=rgba,"
                       f"geq=lum='p(X,Y)':a='"
                       f"if(gt(abs(W/2-X),W/2-{border_radius})*gt(abs(H/2-Y),"
                       f"H/2-{border_radius}),"
