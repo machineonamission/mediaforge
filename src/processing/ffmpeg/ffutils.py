@@ -253,18 +253,19 @@ async def trim(file, length, start=0):
 
 
 @gif_output
-async def resize(image, width, height):
+async def resize(image, width, height, png = False):
     """
     resizes image
 
     :param image: file
     :param width: new width, thrown directly into ffmpeg so it can be things like -1 or iw/2
     :param height: new height, same as width
+    :param png: whether to output as png
     :return: processed media
     """
-    out = reserve_tempfile("mkv")
+    out = reserve_tempfile("png" if png else "mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "ffv1", "-pix_fmt", "rgba", "-c:a",
-                      "copy", "-fps_mode", "vfr", out)
+                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "png" if png else "ffv1", "-pix_fmt",
+                      "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
     return out

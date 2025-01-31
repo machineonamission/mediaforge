@@ -135,7 +135,7 @@ async def intelligentdownsize(media, maxsize: int):
         new_w = math.floor(math.sqrt(reduction_ratio * (w ** 2)))
         new_h = math.floor(math.sqrt(reduction_ratio * (h ** 2)))
         logger.info(f"trying to resize from {w}x{h} to {new_w}x{new_h} (~{reduction_ratio} reduction)")
-        resized = await resize(media, new_w, new_h)
+        resized = await resize(media, new_w, new_h, png=True)
         if (size := os.path.getsize(resized)) < maxsize:
             logger.info(f"successfully created {humanize.naturalsize(size)} media!")
             return resized
