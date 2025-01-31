@@ -425,7 +425,7 @@ async def deepfry(media, brightness, contrast, sharpness, saturation, noise):
     await run_command("ffmpeg", "-i", media, "-vf",
                       f"eq=contrast={contrast}:brightness={brightness}:saturation={saturation},"
                       f"unsharp=luma_msize_x=7:luma_msize_y=7:luma_amount={sharpness},"
-                      f"noise=alls={noise}", "-fps_mode", "vfr", outfile)
+                      f"noise=alls={noise}", "-fps_mode", "vfr", "-c:v", "ffv1", outfile)
     return outfile
 
 
