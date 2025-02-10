@@ -177,7 +177,7 @@ class Media(commands.Cog, name="Editing"):
 
         await process(ctx, processing.ffmpeg.other.gifloop, [[GIF]], loop)
 
-    @commands.hybrid_command(aliases=["vloop"])
+    @commands.hybrid_command(aliases=["vloop", "contentloop"])
     async def videoloop(self, ctx, loop: commands.Range[int, 1, 15] = 1):
         """
         Loops a video
@@ -187,7 +187,7 @@ class Media(commands.Cog, name="Editing"):
         :param loop: number of times to loop.
         :mediaparam media: A video.
         """
-        await process(ctx, processing.ffmpeg.other.videoloop, [[VIDEO]], loop)
+        await process(ctx, processing.ffmpeg.other.videoloop, [[VIDEO, AUDIO]], loop)
 
     @commands.hybrid_command(aliases=["flip", "rot"])
     async def rotate(self, ctx, rottype: typing.Literal["90", "90ccw", "180", "vflip", "hflip"]):

@@ -137,7 +137,7 @@ async def gifloop(file, loop):
 
     return outname
 
-
+@gif_output
 async def videoloop(file, loop):
     """
     loops a gif
@@ -145,13 +145,9 @@ async def videoloop(file, loop):
     :param loop: # of times to loop
     :return: processed media
     """
-    mt = await file.mediatype()
-    exts = {
-        VIDEO: "mkv",
-        GIF: "gif"
-    }
-    outname = reserve_tempfile(exts[mt])
-    await run_command("ffmpeg", "-hide_banner", "-stream_loop", str(loop), "-i", file, "-vcodec", "copy", outname)
+    outname = reserve_tempfile("mkv")
+    await run_command("ffmpeg", "-hide_banner", "-stream_loop", str(loop), "-i", file,
+                      "-c:v", "copy", "-c:a", "copy", outname)
 
     return outname
 
