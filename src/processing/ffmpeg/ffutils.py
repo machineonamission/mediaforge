@@ -6,7 +6,7 @@ import processing.common
 from core.clogs import logger
 from processing.ffmpeg.conversion import videotogif, mediatopng
 from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
-from processing.ffmpeg.mediatype import mediatype
+from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
 from utils.tempfiles import reserve_tempfile
 from processing.common import run_command, NonBugError
 import processing.vips as vips
@@ -36,7 +36,7 @@ def gif_output(f):
     async def wrapper(media, *args, **kwargs):
         mt = await mediatype(media)
         out = await f(media, *args, **kwargs)
-        if mt == "GIF":
+        if mt == GIF:
             out = await videotogif(out)
         return out
 
@@ -53,7 +53,7 @@ def dual_gif_output(f):
         mt2 = await mediatype(media2)
         out = await f(media1, media2, *args, **kwargs)
         # if there are gifs, but no videos, convert to gif
-        if (mt1 == "GIF" or mt2 == "GIF") and not (mt1 == "VIDEO" or mt2 == "VIDEO"):
+        if (mt1 == GIF or mt2 == GIF) and not (mt1 == VIDEO or mt2 == VIDEO):
             out = await videotogif(out)
         return out
 
@@ -65,7 +65,7 @@ async def naive_vstack(file0, file1):
     stacks media assuming files are same width
     """
     mts = await asyncio.gather(mediatype(file0), mediatype(file1))
-    if mts[0] == "IMAGE" and mts[1] == "IMAGE":
+    if mts[0] == IMAGE and mts[1] == IMAGE:
         # sometimes can be ffv1 mkvs with 1 frame, which vips has no idea what to do with
         file0, file1 = await asyncio.gather(mediatopng(file0), mediatopng(file1))
         return await processing.common.run_parallel(vips.vipsutils.naive_stack, file0, file1)
@@ -78,7 +78,7 @@ async def naive_vstack(file0, file1):
                           # "-fs", config.max_temp_file_size,
                           "-fps_mode", "vfr", out)
 
-        if "VIDEO" in mts:
+        if VIDEO in mts:
             return out
         else:  # gif and image only
             return await videotogif(out)
@@ -95,7 +95,7 @@ async def ensuresize(ctx, file, minsize, maxsize):
     :return: original or resized media
     """
     resized = False
-    if await mediatype(file) not in ["IMAGE", "VIDEO", "GIF"]:
+    if await mediatype(file) not in [IMAGE, VIDEO, GIF]:
         return file
     w, h = await get_resolution(file)
     owidth = w
@@ -171,7 +171,7 @@ async def naive_overlay(im1, im2):
     outname = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-i", im1, "-i", im2, "-filter_complex", "overlay=format=auto", "-c:v", "ffv1", "-fs",
                       config.max_temp_file_size, "-fps_mode", "vfr", outname)
-    if mts[0] == "IMAGE" and mts[1] == "IMAGE":
+    if mts[0] == IMAGE and mts[1] == IMAGE:
         outname = await mediatopng(outname)
     return outname
 
@@ -195,8 +195,8 @@ async def repeat_shorter_video(video1, video2):
     if someone has a better solution https://superuser.com/q/1854904/1001487
     :return: processed media
     """
-    im1 = await mediatype(video1) == "IMAGE"
-    im2 = await mediatype(video2) == "IMAGE"
+    im1 = await mediatype(video1) == IMAGE
+    im2 = await mediatype(video2) == IMAGE
     if im1 and im2:
         return video1, video2
     dur1 = 0 if im1 else await get_duration(video1)
@@ -264,7 +264,7 @@ async def resize(image, width, height, png = False):
     :param png: whether to output as png
     :return: processed media
     """
-    if await mediatype(image) != "IMAGE":
+    if await mediatype(image) != IMAGE:
         png = False
     out = reserve_tempfile("png" if png else "mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",

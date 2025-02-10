@@ -14,7 +14,7 @@ import utils
 from core.clogs import logger
 from processing.common import NonBugError, run_command, ReturnedNothing
 from processing.ffmpeg.ffprobe import get_frame_rate, get_duration, get_resolution
-from processing.ffmpeg.mediatype import mediatype
+from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
 from processing.ffmpeg.ffutils import changefps, trim, resize
 from utils.tempfiles import reserve_tempfile
 
@@ -46,7 +46,7 @@ async def ensureduration(media, ctx: commands.Context):
     if await ctx.bot.is_owner(ctx.author):
         logger.debug(f"bot owner is exempt from duration checks.")
         return media
-    if await mediatype(media) != "VIDEO":
+    if await mediatype(media) != VIDEO:
         return media
     max_fps = config.max_fps if hasattr(config, "max_fps") else None
     fps = await get_frame_rate(media)
@@ -163,10 +163,10 @@ async def assurefilesize(media):
                           f"{humanize.naturalsize(config.way_too_big_size)}")
     if size < config.file_upload_limit:
         return media
-    if mt == "VIDEO":
+    if mt == VIDEO:
         # fancy ffmpeg based video thing
         return await twopasscapvideo(media, config.file_upload_limit)
-    elif mt in ["IMAGE", "GIF"]:
+    elif mt in [IMAGE, GIF]:
         # file size should be roughly proportional to # of pixels so we can work with that :3
         return await intelligentdownsize(media, config.file_upload_limit)
     else:

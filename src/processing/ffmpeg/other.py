@@ -9,7 +9,7 @@ import processing.common
 from processing.ffmpeg.conversion import mediatopng
 import processing.vips as vips
 from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio
-from processing.ffmpeg.mediatype import mediatype
+from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
 from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, dual_gif_output, scale2ref, changefps, \
     resize
 from utils.tempfiles import reserve_tempfile
@@ -28,7 +28,7 @@ async def speed(file, sp):
     # https://stackoverflow.com/questions/65728616/how-to-get-ffmpeg-to-consistently-apply-speed-effect-to-first-few-frames
     mt = await mediatype(file)
     outname = reserve_tempfile("mkv")
-    if mt == "AUDIO":
+    if mt == AUDIO:
         duration = await get_duration(file)
         await run_command("ffmpeg", "-hide_banner", "-i", file, "-filter_complex",
                           f"{expanded_atempo(sp)}", "-t", str(duration / float(sp)), "-c:a", "flac", outname)
@@ -112,7 +112,7 @@ async def pad(file):
     :return: processed media
     """
     mt = await mediatype(file)
-    if mt == "IMAGE":
+    if mt == IMAGE:
         outname = reserve_tempfile("png")
     else:
         outname = reserve_tempfile("mkv")
@@ -144,8 +144,8 @@ async def videoloop(file, loop):
     """
     mt = await mediatype(file)
     exts = {
-        "VIDEO": "mkv",
-        "GIF": "gif"
+        VIDEO: "mkv",
+        GIF: "gif"
     }
     outname = reserve_tempfile(exts[mt])
     await run_command("ffmpeg", "-hide_banner", "-stream_loop", str(loop), "-i", file, "-vcodec", "copy", outname)
@@ -179,10 +179,10 @@ async def addaudio(file0, file1, loops=0):
     audio = file1
     media = file0
     mt = await mediatype(media)
-    if mt == "IMAGE":
+    if mt == IMAGE:
         # no use reinventing the wheel
         return await imageaudio(file0, file1)
-    elif mt == "GIF":
+    elif mt == GIF:
         # GIF case is like imageaudio, but with stream_loop instead of loop.
         outname = reserve_tempfile("mkv")
         if loops >= 0:
@@ -252,7 +252,7 @@ async def stack(file0, file1, style):
     :return: processed media
     """
     mts = [await mediatype(file0), await mediatype(file1)]
-    if mts[0] == "IMAGE" and mts[1] == "IMAGE":  # easier to just make this an edge case
+    if mts[0] == IMAGE and mts[1] == IMAGE:  # easier to just make this an edge case
         # sometimes can be ffv1 mkvs with 1 frame, which vips has no idea what to do with
         file0, file1 = await asyncio.gather(mediatopng(file0), mediatopng(file1))
         return await processing.common.run_parallel(vips.vipsutils.stack, file0, file1, style)
@@ -321,7 +321,7 @@ async def overlay(file0, file1, alpha: float, mode: str = 'overlay'):
 
     # for file in [video0, video1, fixedvideo1, fixedvideo0, fixedfixedvideo1]:
     #     os.remove(file)
-    if mts[0] == "IMAGE" and mts[1] == "IMAGE":
+    if mts[0] == IMAGE and mts[1] == IMAGE:
         outname = await mediatopng(outname)
     return outname
 
@@ -468,5 +468,5 @@ async def speech_bubble(media, position: typing.Literal["top", "bottom"] = "top"
                           # mask input media
                           f"{mask_filter}"
                           "[0:v][1:v]overlay=format=auto",
-                          "-c:v", "png" if mt == "IMAGE" else "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
+                          "-c:v", "png" if mt == IMAGE else "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
     return outfile

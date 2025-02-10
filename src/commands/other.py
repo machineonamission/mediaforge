@@ -22,6 +22,7 @@ from utils.dpy import UnicodeEmojiConverter, showcog
 from utils.dpy import add_long_field
 from utils.scandiscord import imagesearch
 from utils.web import saveurls
+from processing.ffmpeg.mediatype import IMAGE, VIDEO, GIF, AUDIO
 
 
 class Other(commands.Cog, name="Other"):
@@ -81,7 +82,7 @@ class Other(commands.Cog, name="Other"):
         :param name: The emoji name. Must be at least 2 characters.
         :mediaparam media: A gif or image.
         """
-        await process(ctx, utils.discordmisc.add_emoji, [["GIF", "IMAGE"]], ctx.guild, name, expectimage=False,
+        await process(ctx, utils.discordmisc.add_emoji, [[GIF, IMAGE]], ctx.guild, name, expectimage=False,
                       resize=False)
 
     # TODO: fix?
@@ -100,7 +101,7 @@ class Other(commands.Cog, name="Other"):
         :param name: The sticker name. Must be at least 2 characters.
         :mediaparam media: A gif or image.
         """
-        await process(ctx, utils.discordmisc.add_sticker, [["GIF", "IMAGE"]], ctx.guild, stickeremoji, name,
+        await process(ctx, utils.discordmisc.add_sticker, [[GIF, IMAGE]], ctx.guild, stickeremoji, name,
                       expectimage=False, resize=False)
 
     @commands.guild_only()
@@ -118,7 +119,7 @@ class Other(commands.Cog, name="Other"):
         if "BANNER" not in ctx.guild.features:
             await ctx.reply(f"{config.emojis['x']} This guild does not support banners.")
             return
-        await process(ctx, utils.discordmisc.set_banner, [["IMAGE"]], ctx.guild, expectimage=False,
+        await process(ctx, utils.discordmisc.set_banner, [[IMAGE]], ctx.guild, expectimage=False,
                       resize=False)
 
     @commands.guild_only()
@@ -133,7 +134,7 @@ class Other(commands.Cog, name="Other"):
         :param ctx: discord context
         :mediaparam media: An image or gif.
         """
-        await process(ctx, utils.discordmisc.set_icon, [["IMAGE", "GIF"]], ctx.guild, expectimage=False,
+        await process(ctx, utils.discordmisc.set_icon, [[IMAGE, GIF]], ctx.guild, expectimage=False,
                       resize=False)
 
     @commands.hybrid_command(aliases=["statistics"])

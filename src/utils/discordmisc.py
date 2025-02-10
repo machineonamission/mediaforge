@@ -5,7 +5,7 @@ import humanize
 
 import config
 from core.clogs import logger
-from processing.ffmpeg.mediatype import mediatype
+from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
 
 
 async def count_emoji(guild: discord.Guild):
@@ -106,7 +106,7 @@ async def set_icon(file, guild: discord.Guild):
     :param guild: guild to add it to
     :return:
     """
-    if (await mediatype(file)) == "GIF" and "ANIMATED_ICON" not in guild.features:
+    if (await mediatype(file)) == GIF and "ANIMATED_ICON" not in guild.features:
         return f"{config.emojis['x']} This guild does not support animated icons."
     with open(file, "rb") as f:
         data = f.read()

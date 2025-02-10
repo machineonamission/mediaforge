@@ -3,6 +3,7 @@ from discord.ext import commands
 import processing.ffmpeg.caption
 import processing.vips.caption
 
+from processing.ffmpeg.mediatype import IMAGE, VIDEO, GIF, AUDIO
 import processing.vips.vipsutils
 from core.process import process
 
@@ -27,7 +28,7 @@ class Caption(commands.Cog, name="Captioning"):
         caption = caption.split("|")
         if len(caption) == 1:
             caption.append("")
-        await process(ctx, processing.ffmpeg.caption.motivate, [["VIDEO", "GIF", "IMAGE"]], caption)
+        await process(ctx, processing.ffmpeg.caption.motivate, [[VIDEO, GIF, IMAGE]], caption)
 
     @commands.hybrid_command(aliases=["toptextbottomtext", "impact", "adviceanimal"])
     async def meme(self, ctx, *, caption):
@@ -41,7 +42,7 @@ class Caption(commands.Cog, name="Captioning"):
         caption = caption.split("|")
         if len(caption) == 1:
             caption.append("")
-        await process(ctx, processing.vips.vipsutils.generic_caption_overlay, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_overlay, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.meme, caption)
 
     @commands.hybrid_command(aliases=["snapchat", "snap", "snapcap", "snapcaption", "snapchatcap", "classiccaption"])
@@ -53,7 +54,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.vips.vipsutils.generic_caption_overlay, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_overlay, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.snapchat, [caption])
 
     @commands.hybrid_command(aliases=["whisper", "wcap", "wcaption"])
@@ -65,7 +66,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.vips.vipsutils.generic_caption_overlay, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_overlay, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.whisper, [caption])
 
     @commands.hybrid_command(aliases=["news"])
@@ -85,7 +86,7 @@ class Caption(commands.Cog, name="Captioning"):
         if len(caption) == 1:
             caption.append("")
         raise NotImplementedError  # TODO: implement
-        # await process(ctx, captionfunctions.breakingnews, [["VIDEO", "GIF", "IMAGE"]], *caption,
+        # await process(ctx, captionfunctions.breakingnews, [[VIDEO, GIF, IMAGE]], *caption,
         #                 handleanimated=True)
 
     @commands.hybrid_command(aliases=["tenor"])
@@ -100,7 +101,7 @@ class Caption(commands.Cog, name="Captioning"):
         caption = caption.split("|")
         if len(caption) == 1:
             caption.append("")
-        await process(ctx, processing.vips.vipsutils.generic_caption_overlay, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_overlay, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.tenor, caption)
 
     @commands.hybrid_command(name="caption", aliases=["cap"])
@@ -112,7 +113,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.mediaforge_caption, [caption])
 
     @commands.hybrid_command(aliases=["imstuff"])
@@ -124,7 +125,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.generic_image_caption, [caption], "rendering/images/Stuff.PNG", reverse=True)
 
     @commands.hybrid_command(aliases=["eminemcaption", "eminemcap"])
@@ -136,7 +137,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.generic_image_caption, [caption], "rendering/images/eminem.png", reverse=True)
 
     @commands.hybrid_command(aliases=["peter", "peterexplain", "petersay", "petergriffinexplain", "petergriffinsay"])
@@ -148,7 +149,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.generic_image_caption, [caption], "rendering/images/Peter_Griffin.png", reverse=True)
 
     @commands.hybrid_command(aliases=["bottomcap", "botcap"])
@@ -160,7 +161,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.mediaforge_caption, [caption], reverse=True)
 
     @commands.hybrid_command(aliases=["esm", "&caption", "essemcaption", "esmbotcaption", "esmcap"])
@@ -172,7 +173,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [["VIDEO", "GIF", "IMAGE"]],
+        await process(ctx, processing.vips.vipsutils.generic_caption_stack, [[VIDEO, GIF, IMAGE]],
                       processing.vips.caption.esmcaption, [caption])
 
     @commands.hybrid_command(aliases=["twitter", "twitcap", "twittercap"])
@@ -184,7 +185,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.ffmpeg.caption.twitter_caption, [["VIDEO", "GIF", "IMAGE"]], [caption], False)
+        await process(ctx, processing.ffmpeg.caption.twitter_caption, [[VIDEO, GIF, IMAGE]], [caption], False)
 
     @commands.hybrid_command(aliases=["twitterdark", "twitcapdark", "twittercapdark"])
     async def twittercaptiondark(self, ctx, *, caption):
@@ -195,7 +196,7 @@ class Caption(commands.Cog, name="Captioning"):
         :param caption: The caption text.
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.ffmpeg.caption.twitter_caption, [["VIDEO", "GIF", "IMAGE"]], [caption], True)
+        await process(ctx, processing.ffmpeg.caption.twitter_caption, [[VIDEO, GIF, IMAGE]], [caption], True)
 
     @commands.hybrid_command()
     async def freezemotivate(self, ctx, *, caption):
@@ -209,7 +210,7 @@ class Caption(commands.Cog, name="Captioning"):
         caption = caption.split("|")
         if len(caption) == 1:
             caption.append("")
-        await process(ctx, processing.ffmpeg.caption.freezemotivate, [["VIDEO", "GIF"]], *caption)
+        await process(ctx, processing.ffmpeg.caption.freezemotivate, [[VIDEO, GIF]], *caption)
 
     @commands.hybrid_command()
     async def freezemotivateaudio(self, ctx, *, caption):
@@ -225,4 +226,4 @@ class Caption(commands.Cog, name="Captioning"):
         caption = caption.split("|")
         if len(caption) == 1:
             caption.append("")
-        await process(ctx, processing.ffmpeg.caption.freezemotivateaudio, [["VIDEO", "GIF"], ["AUDIO"]], *caption)
+        await process(ctx, processing.ffmpeg.caption.freezemotivateaudio, [[VIDEO, GIF], [AUDIO]], *caption)

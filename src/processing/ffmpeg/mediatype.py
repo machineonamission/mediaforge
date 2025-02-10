@@ -1,5 +1,5 @@
+import enum
 import json
-from enum import Enum
 
 import magic
 from PIL import Image, UnidentifiedImageError
@@ -8,14 +8,24 @@ from core.clogs import logger
 from processing.common import run_command
 
 
-class MediaType(Enum):
-    VIDEO = "VIDEO"
-    AUDIO = "AUDIO"
-    IMAGE = "IMAGE"
-    GIF = "GIF"
+class InvalidMediaType(Exception):
+    pass
 
 
-async def mediatype(image):
+class MediaType(enum.StrEnum):
+    VIDEO = VIDEO
+    AUDIO = AUDIO
+    IMAGE = IMAGE
+    GIF = GIF
+
+
+VIDEO = MediaType.VIDEO
+AUDIO = MediaType.AUDIO
+IMAGE = MediaType.IMAGE
+GIF = MediaType.GIF
+
+
+async def mediatype(image) -> MediaType:
     """
     Gets basic type of media
     :param image: filename of media
@@ -61,12 +71,11 @@ async def mediatype(image):
                 # this is intentional behavior as most commands treat gifs as videos
     # ok so a container can have multiple formats, we need to return based on expected priority
     if props["video"]:
-        return MediaType.VIDEO
+        return VIDEO
     if props["gif"]:
-        return MediaType.GIF
+        return GIF
     if props["audio"]:
-        return MediaType.AUDIO
+        return AUDIO
     if props["image"]:
-        return MediaType.IMAGE
-    logger.debug(f"mediatype None due to unclassified type {mime}")
-    return None
+        return IMAGE
+    raise InvalidMediaType(f"Unknown media type for {image} due to unclassified type {mime}")

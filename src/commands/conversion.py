@@ -22,6 +22,7 @@ from utils.common import prefix_function
 from utils.dpy import UnicodeEmojisConverter
 from utils.scandiscord import tenorsearch
 from utils.tempfiles import reserve_tempfile
+from processing.ffmpeg.mediatype import IMAGE, VIDEO, GIF, AUDIO
 
 
 class Conversion(commands.Cog, name="Conversion"):
@@ -148,7 +149,7 @@ class Conversion(commands.Cog, name="Conversion"):
         :param ctx: discord context
         :mediaparam video: A video.
         """
-        await process(ctx, processing.ffmpeg.conversion.videotogif, [["VIDEO"]])
+        await process(ctx, processing.ffmpeg.conversion.videotogif, [[VIDEO]])
 
     @commands.hybrid_command(aliases=["apng", "videotoapng", "giftoapng"])
     async def toapng(self, ctx):
@@ -158,7 +159,7 @@ class Conversion(commands.Cog, name="Conversion"):
         :param ctx: discord context
         :mediaparam video: A video or gif.
         """
-        await process(ctx, processing.ffmpeg.conversion.toapng, [["VIDEO", "GIF"]], resize=False)
+        await process(ctx, processing.ffmpeg.conversion.toapng, [[VIDEO, GIF]], resize=False)
 
     @commands.hybrid_command(aliases=["audio", "mp3", "tomp3", "aac", "toaac"])
     async def toaudio(self, ctx):
@@ -168,7 +169,7 @@ class Conversion(commands.Cog, name="Conversion"):
         :param ctx: discord context
         :mediaparam video: A video.
         """
-        await process(ctx, processing.ffmpeg.conversion.toaudio, [["VIDEO", "AUDIO"]])
+        await process(ctx, processing.ffmpeg.conversion.toaudio, [[VIDEO, AUDIO]])
 
     @commands.hybrid_command(aliases=["tenorgif", "tenormp4", "rawtenor"])
     async def tenorurl(self, ctx, gif: bool = True):
@@ -194,7 +195,7 @@ class Conversion(commands.Cog, name="Conversion"):
         :param ctx: discord context
         :mediaparam gif: A gif.
         """
-        await process(ctx, processing.ffmpeg.conversion.giftomp4, [["GIF"]])
+        await process(ctx, processing.ffmpeg.conversion.giftomp4, [[GIF]])
 
     @commands.hybrid_command(aliases=["png", "mediatopng"])
     async def topng(self, ctx):
@@ -204,7 +205,7 @@ class Conversion(commands.Cog, name="Conversion"):
         :param ctx: discord context
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.ffmpeg.conversion.mediatopng, [["VIDEO", "GIF", "IMAGE"]])
+        await process(ctx, processing.ffmpeg.conversion.mediatopng, [[VIDEO, GIF, IMAGE]])
 
     @commands.command(aliases=["emoji", "emojiimage", "emote", "emoteurl"])  # TODO: hybrid
     async def emojiurl(self, ctx, *custom_emojis: discord.PartialEmoji):

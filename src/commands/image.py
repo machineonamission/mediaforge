@@ -9,6 +9,7 @@ import processing.vips
 import processing.vips.creation
 from core.process import process
 from processing import sus
+from processing.ffmpeg.mediatype import IMAGE, VIDEO, GIF, AUDIO
 
 
 class Image(commands.Cog, name="Creation"):
@@ -55,7 +56,7 @@ class Image(commands.Cog, name="Creation"):
         :param ctx: discord context
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.ffmpeg.creation.trollface, [["VIDEO", "GIF", "IMAGE"]])
+        await process(ctx, processing.ffmpeg.creation.trollface, [[VIDEO, GIF, IMAGE]])
 
     @commands.hybrid_command(aliases=["emsay"])
     async def eminemsay(self, ctx, *, text):
@@ -81,7 +82,7 @@ class Image(commands.Cog, name="Creation"):
         :param text: The text to put next to your image.
         :mediaparam media: An image, video, or gif
         """
-        await process(ctx, processing.vips.caption.generic_image_caption, [["IMAGE"]],
+        await process(ctx, processing.vips.caption.generic_image_caption, [[IMAGE]],
                       [text],
                       processing.vips.vipsutils.ImageSize(1000, 1000), run_parallel=True)
 
@@ -94,7 +95,7 @@ class Image(commands.Cog, name="Creation"):
         :param ctx: discord context
         :mediaparam media: The media to be overlayed over his hand.
         """
-        await process(ctx, processing.ffmpeg.creation.give_me_your_phone_now, [["IMAGE", "VIDEO", "GIF"]])
+        await process(ctx, processing.ffmpeg.creation.give_me_your_phone_now, [[IMAGE, VIDEO, GIF]])
 
     @commands.hybrid_command(aliases=["texttospeak", "speak", "talk", "speech", "espeak"])
     async def tts(self, ctx: commands.Context,

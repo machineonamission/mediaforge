@@ -1,6 +1,6 @@
 from processing.common import run_command
 from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate
-from processing.ffmpeg.mediatype import mediatype
+from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
 from utils.tempfiles import reserve_tempfile
 
 
@@ -25,7 +25,7 @@ async def videotogif(video):
 
 async def video_reencode(
         video):  # reencodes mp4 as libx264 since the png format used cant be played by like literally anything
-    assert (mt := await mediatype(video)) in ["VIDEO", "GIF"], f"file {video} with type {mt} passed to reencode()"
+    assert (mt := await mediatype(video)) in [VIDEO, GIF], f"file {video} with type {mt} passed to reencode()"
     # only reencode if need to ;)
     vcodec, acodec = await va_codecs(video)
     vcode = ["copy"] if vcodec == "h264" else ["libx264", "-pix_fmt", "yuv420p", "-vf",
@@ -50,13 +50,13 @@ async def audio_reencode(audio):
 
 async def allreencode(file, fail_if_gif=True):
     mt = await mediatype(file)
-    if mt == "IMAGE":
+    if mt == IMAGE:
         return await mediatopng(file)
-    elif mt == "VIDEO":
+    elif mt == VIDEO:
         return await video_reencode(file)
-    elif mt == "AUDIO":
+    elif mt == AUDIO:
         return await audio_reencode(file)
-    elif mt == "GIF" and not fail_if_gif:
+    elif mt == GIF and not fail_if_gif:
         return file
     else:
         raise Exception(f"{file} of type {mt} cannot be re-encoded")
@@ -65,14 +65,14 @@ async def allreencode(file, fail_if_gif=True):
 async def forcereencode(file):
     # cant use the other reencode functions cause this function never copies
     mt = await mediatype(file)
-    if mt == "IMAGE":
+    if mt == IMAGE:
         outname = reserve_tempfile("png")
         await run_command("ffmpeg", "-hide_banner", "-i", file, "-frames:v", "1", "-c:v",
                           "png", "-pix_fmt", "rgba",
                           outname)
 
         return outname
-    elif mt == "VIDEO":
+    elif mt == VIDEO:
         outname = reserve_tempfile("mp4")
         await run_command("ffmpeg", "-hide_banner", "-i", file, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-vf",
                           "scale=ceil(iw/2)*2:ceil(ih/2)*2,"
@@ -81,11 +81,11 @@ async def forcereencode(file):
                           "-max_muxing_queue_size", "9999", "-movflags", "+faststart", outname)
 
         return outname
-    elif mt == "AUDIO":
+    elif mt == AUDIO:
         outname = reserve_tempfile("m4a")
         await run_command("ffmpeg", "-hide_banner", "-i", file, "-c:a", "aac", "-q:a", "2", outname)
         return outname
-    elif mt == "GIF":
+    elif mt == GIF:
         return await videotogif(file)
     else:
         raise Exception(f"{file} of type {mt} cannot be re-encoded")
