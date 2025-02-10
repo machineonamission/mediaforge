@@ -4,6 +4,7 @@ import sys
 import apng
 
 from processing.run_command import run_command
+from utils.tempfiles import reserve_tempfile
 
 if sys.platform == "win32":  # this hopefully wont cause any problems :>
     from winmagic import magic
