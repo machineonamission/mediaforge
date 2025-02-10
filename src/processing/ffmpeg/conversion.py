@@ -133,10 +133,14 @@ async def mediatopng(media):
     return outname
 
 
+# this shit brokey, discord fucks apngs
 async def toapng(video):
-    outname = reserve_tempfile("png")
+    outname = reserve_tempfile("apng")
     outname.lock_codec = True
-    await run_command("ffmpeg", "-i", video, "-f", "apng", "-fps_mode", "vfr", outname)
+    await run_command("ffmpeg", "-i", video, "-f", "apng", "-plays", "0",
+                      # "-filter_complex", "split[v],palettegen,[v]paletteuse",
+                      # "-fps_mode", "vfr",
+                      outname)
 
     return outname
     # ffmpeg method, removes dependence on apngasm but bigger and worse quality

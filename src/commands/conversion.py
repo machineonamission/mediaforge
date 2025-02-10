@@ -151,15 +151,16 @@ class Conversion(commands.Cog, name="Conversion"):
         """
         await process(ctx, processing.ffmpeg.conversion.videotogif, [[VIDEO]])
 
-    @commands.hybrid_command(aliases=["apng", "videotoapng", "giftoapng"])
-    async def toapng(self, ctx):
-        """
-        Converts a video or gif to an animated png.
-
-        :param ctx: discord context
-        :mediaparam video: A video or gif.
-        """
-        await process(ctx, processing.ffmpeg.conversion.toapng, [[VIDEO, GIF]], resize=False)
+    # discord fucks apng uploads, not much i can do about that
+    # @commands.hybrid_command(aliases=["apng", "videotoapng", "giftoapng"])
+    # async def toapng(self, ctx):
+    #     """
+    #     Converts a video or gif to an animated png.
+    #
+    #     :param ctx: discord context
+    #     :mediaparam video: A video or gif.
+    #     """
+    #     await process(ctx, processing.ffmpeg.conversion.toapng, [[VIDEO, GIF]], resize=False)
 
     @commands.hybrid_command(aliases=["audio", "mp3", "tomp3", "aac", "toaac"])
     async def toaudio(self, ctx):

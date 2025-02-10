@@ -220,7 +220,7 @@ async def resize(image, width, height, lock_codec = False):
     :param lock_codec: attempt to keep the input codec
     :return: processed media
     """
-    gif = image.mediatype() == GIF
+    gif = await image.mediatype() == GIF
     ext = image.split(".")[-1]
     vcod = (await get_vcodec(image))["codec_name"]
     out = reserve_tempfile(ext if lock_codec and not gif else "mkv")
