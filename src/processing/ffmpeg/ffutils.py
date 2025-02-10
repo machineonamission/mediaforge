@@ -263,7 +263,7 @@ async def resize(image, width, height, png = False):
     :param png: whether to output as png
     :return: processed media
     """
-    if mediatype(image) != "IMAGE":
+    if await mediatype(image) != "IMAGE":
         png = False
     out = reserve_tempfile("png" if png else "mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
