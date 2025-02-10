@@ -16,7 +16,7 @@ from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, d
 from utils.tempfiles import reserve_tempfile
 from processing.common import NonBugError
 from processing.run_command import run_command
-from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF, mediatype
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 
 
 @gif_output

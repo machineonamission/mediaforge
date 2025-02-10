@@ -7,7 +7,8 @@ import processing.common
 import processing.ffmpeg.conversion
 
 from core.clogs import logger
-from utils.tempfiles import reserve_tempfile
+from processing.mediatype import GIF
+from utils.tempfiles import reserve_tempfile, TenorUrl
 
 
 async def saveurl(url: str) -> str:
@@ -17,7 +18,7 @@ async def saveurl(url: str) -> str:
     :param url: web url of a file
     :return: path to file
     """
-    tenorgif = url.startswith("https://media.tenor.com") and url.endswith("/mp4")  # tenor >:(
+    tenorgif = isinstance(url, TenorUrl)
     extension = None
     if tenorgif:
         extension = "mp4"
@@ -27,6 +28,8 @@ async def saveurl(url: str) -> str:
             extension = after_slash.split(".")[-1]
         # extension will stay None if no extension detected.
     name = reserve_tempfile(extension)
+    if tenorgif:
+        name.mt = GIF
 
     # https://github.com/aio-libs/aiohttp/issues/3904#issuecomment-632661245
     async with aiohttp.ClientSession(headers={'Connection': 'keep-alive'},
@@ -49,8 +52,6 @@ async def saveurl(url: str) -> str:
                 logger.error(f"aiohttp status {resp.status}")
                 logger.error(f"aiohttp status {await resp.read()}")
                 resp.raise_for_status()
-    if tenorgif and name:
-        name = await processing.ffmpeg.conversion.videotogif(name)
     return name
 
 

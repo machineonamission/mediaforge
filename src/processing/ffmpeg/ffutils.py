@@ -5,11 +5,11 @@ import config
 import processing.common
 import processing.mediatype
 from processing.ffmpeg.conversion import videotogif, mediatopng
-from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution, va_codecs
+from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution, va_codecs, get_vcodec
 from utils.tempfiles import reserve_tempfile
 from processing.common import NonBugError
 from processing.run_command import run_command
-from processing.mediatype import VIDEO, IMAGE, GIF, mediatype
+from processing.mediatype import VIDEO, IMAGE, GIF, AUDIO
 import processing.vips as vips
 
 
@@ -65,7 +65,7 @@ async def naive_vstack(file0, file1):
     """
     stacks media assuming files are same width
     """
-    mts = await asyncio.gather(mediatype(file0), mediatype(file1))
+    mts = await asyncio.gather(file0.mediatype(), file1.mediatype())
     if mts[0] == IMAGE and mts[1] == IMAGE:
         # sometimes can be ffv1 mkvs with 1 frame, which vips has no idea what to do with
         file0, file1 = await asyncio.gather(mediatopng(file0), mediatopng(file1))
@@ -79,10 +79,9 @@ async def naive_vstack(file0, file1):
                           # "-fs", config.max_temp_file_size,
                           "-fps_mode", "vfr", out)
 
-        if VIDEO in mts:
-            return out
-        else:  # gif and image only
-            return await videotogif(out)
+        if VIDEO not in mts:  # gif and image only
+            out.mt = GIF
+        return out
         # return await processing.vips.vstack(file0, file1)
 
 
@@ -223,7 +222,7 @@ async def resize(image, width, height, lock_codec = False):
     """
     gif = image.mediatype() == GIF
     ext = image.split(".")[-1]
-    vcod, _ = await va_codecs(image)
+    vcod = (await get_vcodec(image))["codec_name"]
     out = reserve_tempfile(ext if lock_codec and not gif else "mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",

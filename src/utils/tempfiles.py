@@ -107,3 +107,7 @@ def handle_tfs_parallel(func: typing.Callable, *args, **kwargs):
         return True, res, session.get()
     except Exception as e:
         return False, e, session.get()
+
+
+class TenorUrl(str):
+    pass

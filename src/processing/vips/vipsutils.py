@@ -15,7 +15,7 @@ class ImageSize:
     height: int
 
 
-async def generic_caption_stack(media: str, capfunc: callable, captions: typing.Sequence[str], *args, reverse=False):
+async def generic_caption_stack(media, capfunc: callable, captions: typing.Sequence[str], *args, reverse=False):
     size = ImageSize(*await processing.ffmpeg.ffprobe.get_resolution(media))
     captext = await run_parallel(capfunc, *args, captions, size)
     args = (media, captext) if reverse else (captext, media)
