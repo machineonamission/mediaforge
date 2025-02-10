@@ -34,7 +34,7 @@ def gif_output(f):
     """
 
     async def wrapper(media, *args, **kwargs):
-        mt = await mediatype(media)
+        mt = await media.mediatype()
         out = await f(media, *args, **kwargs)
         if mt == GIF:
             out = await videotogif(out)
@@ -49,8 +49,8 @@ def dual_gif_output(f):
     """
 
     async def wrapper(media1, media2, *args, **kwargs):
-        mt1 = await mediatype(media1)
-        mt2 = await mediatype(media2)
+        mt1 = await media1.mediatype()
+        mt2 = await media2.mediatype()
         out = await f(media1, media2, *args, **kwargs)
         # if there are gifs, but no videos, convert to gif
         if (mt1 == GIF or mt2 == GIF) and not (mt1 == VIDEO or mt2 == VIDEO):
@@ -95,7 +95,7 @@ async def ensuresize(ctx, file, minsize, maxsize):
     :return: original or resized media
     """
     resized = False
-    if await mediatype(file) not in [IMAGE, VIDEO, GIF]:
+    if await file.mediatype() not in [IMAGE, VIDEO, GIF]:
         return file
     w, h = await get_resolution(file)
     owidth = w
@@ -167,7 +167,7 @@ async def trim_top(file, trim_size):
 
 @dual_gif_output
 async def naive_overlay(im1, im2):
-    mts = [await mediatype(im1), await mediatype(im2)]
+    mts = [await im1.mediatype(), await im2.mediatype()]
     outname = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-i", im1, "-i", im2, "-filter_complex", "overlay=format=auto", "-c:v", "ffv1", "-fs",
                       config.max_temp_file_size, "-fps_mode", "vfr", outname)
@@ -195,8 +195,8 @@ async def repeat_shorter_video(video1, video2):
     if someone has a better solution https://superuser.com/q/1854904/1001487
     :return: processed media
     """
-    im1 = await mediatype(video1) == IMAGE
-    im2 = await mediatype(video2) == IMAGE
+    im1 = await video1.mediatype() == IMAGE
+    im2 = await video2.mediatype() == IMAGE
     if im1 and im2:
         return video1, video2
     dur1 = 0 if im1 else await get_duration(video1)
@@ -264,7 +264,7 @@ async def resize(image, width, height, png = False):
     :param png: whether to output as png
     :return: processed media
     """
-    if await mediatype(image) != IMAGE:
+    if await image.mediatype() != IMAGE:
         png = False
     out = reserve_tempfile("png" if png else "mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",

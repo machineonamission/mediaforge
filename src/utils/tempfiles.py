@@ -18,7 +18,7 @@ from processing.ffmpeg.mediatype import MediaType, mediatype
 @dataclasses.dataclass
 class TempFile(str):
     mt: MediaType = None
-    do_not_reencode: bool = False
+    lock_codec: bool = False
 
     async def mediatype(self):
         if self.mt is None:

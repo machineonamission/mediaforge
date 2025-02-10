@@ -26,7 +26,7 @@ async def speed(file, sp):
     """
 
     # https://stackoverflow.com/questions/65728616/how-to-get-ffmpeg-to-consistently-apply-speed-effect-to-first-few-frames
-    mt = await mediatype(file)
+    mt = await file.mediatype()
     outname = reserve_tempfile("mkv")
     if mt == AUDIO:
         duration = await get_duration(file)
@@ -111,7 +111,7 @@ async def pad(file):
     :param file: media
     :return: processed media
     """
-    mt = await mediatype(file)
+    mt = await file.mediatype()
     if mt == IMAGE:
         outname = reserve_tempfile("png")
     else:
@@ -142,7 +142,7 @@ async def videoloop(file, loop):
     :param loop: # of times to loop
     :return: processed media
     """
-    mt = await mediatype(file)
+    mt = await file.mediatype()
     exts = {
         VIDEO: "mkv",
         GIF: "gif"
@@ -178,7 +178,7 @@ async def addaudio(file0, file1, loops=0):
     # TODO: this can trim media short? not sure why...
     audio = file1
     media = file0
-    mt = await mediatype(media)
+    mt = await media.mediatype()
     if mt == IMAGE:
         # no use reinventing the wheel
         return await imageaudio(file0, file1)
@@ -251,7 +251,7 @@ async def stack(file0, file1, style):
     :param style: "hstack" or "vstack"
     :return: processed media
     """
-    mts = [await mediatype(file0), await mediatype(file1)]
+    mts = [await file0.mediatype(), await file1.mediatype()]
     if mts[0] == IMAGE and mts[1] == IMAGE:  # easier to just make this an edge case
         # sometimes can be ffv1 mkvs with 1 frame, which vips has no idea what to do with
         file0, file1 = await asyncio.gather(mediatopng(file0), mediatopng(file1))
@@ -296,7 +296,7 @@ async def overlay(file0, file1, alpha: float, mode: str = 'overlay'):
     """
     assert mode in ['overlay', 'add']
     assert 0 <= alpha <= 1
-    mts = [await mediatype(file0), await mediatype(file1)]
+    mts = [await file0.mediatype(), await file1.mediatype()]
 
     outname = reserve_tempfile("mkv")
     blendlogic = ""
@@ -441,7 +441,7 @@ async def deepfry(media, brightness, contrast, sharpness, saturation, noise):
 @gif_output
 async def speech_bubble(media, position: typing.Literal["top", "bottom"] = "top",
                         color: typing.Literal["transparent", "white", "black"] = "transparent"):
-    mt = await mediatype(media)
+    mt = await media.mediatype()
     outfile = reserve_tempfile("mkv")
 
     bubble = await scale2ref("rendering/images/speechbubble.png", media)

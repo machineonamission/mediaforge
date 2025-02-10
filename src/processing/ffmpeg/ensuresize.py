@@ -46,7 +46,7 @@ async def ensureduration(media, ctx: commands.Context):
     if await ctx.bot.is_owner(ctx.author):
         logger.debug(f"bot owner is exempt from duration checks.")
         return media
-    if await mediatype(media) != VIDEO:
+    if await media.mediatype() != VIDEO:
         return media
     max_fps = config.max_fps if hasattr(config, "max_fps") else None
     fps = await get_frame_rate(media)
@@ -155,7 +155,7 @@ async def assurefilesize(media):
     """
     if not media:
         raise ReturnedNothing(f"assurefilesize() was passed no media.")
-    mt = await mediatype(media)
+    mt = await media.mediatype()
     size = os.path.getsize(media)
     if size > config.way_too_big_size:
         raise NonBugError(f"Resulting file is {humanize.naturalsize(size)}. "

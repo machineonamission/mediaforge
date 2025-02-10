@@ -106,7 +106,7 @@ async def set_icon(file, guild: discord.Guild):
     :param guild: guild to add it to
     :return:
     """
-    if (await mediatype(file)) == GIF and "ANIMATED_ICON" not in guild.features:
+    if (await file.mediatype()) == GIF and "ANIMATED_ICON" not in guild.features:
         return f"{config.emojis['x']} This guild does not support animated icons."
     with open(file, "rb") as f:
         data = f.read()

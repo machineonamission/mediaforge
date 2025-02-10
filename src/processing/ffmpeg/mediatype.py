@@ -6,6 +6,7 @@ from PIL import Image, UnidentifiedImageError
 
 from core.clogs import logger
 from processing.common import run_command
+from utils.tempfiles import TempFile
 
 
 class InvalidMediaType(Exception):
@@ -25,12 +26,14 @@ IMAGE = MediaType.IMAGE
 GIF = MediaType.GIF
 
 
-async def mediatype(image) -> MediaType:
+async def mediatype(image: str | TempFile) -> MediaType:
     """
     Gets basic type of media
     :param image: filename of media
     :return: can be VIDEO, AUDIO, GIF, IMAGE or None (invalid or other).
     """
+    if isinstance(image, TempFile) and image.mt is not None:
+        return image.mt
     # ffmpeg doesn't work well with detecting images so let PIL do that
     mime = magic.from_file(image, mime=True)
     try:

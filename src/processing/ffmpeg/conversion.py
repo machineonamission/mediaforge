@@ -25,7 +25,7 @@ async def videotogif(video):
 
 async def video_reencode(
         video):  # reencodes mp4 as libx264 since the png format used cant be played by like literally anything
-    assert (mt := await mediatype(video)) in [VIDEO, GIF], f"file {video} with type {mt} passed to reencode()"
+    assert (mt := await video.mediatype()) in [VIDEO, GIF], f"file {video} with type {mt} passed to reencode()"
     # only reencode if need to ;)
     vcodec, acodec = await va_codecs(video)
     vcode = ["copy"] if vcodec == "h264" else ["libx264", "-pix_fmt", "yuv420p", "-vf",
@@ -49,7 +49,7 @@ async def audio_reencode(audio):
 
 
 async def allreencode(file, fail_if_gif=True):
-    mt = await mediatype(file)
+    mt = await file.mediatype()
     if mt == IMAGE:
         return await mediatopng(file)
     elif mt == VIDEO:
@@ -64,7 +64,7 @@ async def allreencode(file, fail_if_gif=True):
 
 async def forcereencode(file):
     # cant use the other reencode functions cause this function never copies
-    mt = await mediatype(file)
+    mt = await file.mediatype()
     if mt == IMAGE:
         outname = reserve_tempfile("png")
         await run_command("ffmpeg", "-hide_banner", "-i", file, "-frames:v", "1", "-c:v",
