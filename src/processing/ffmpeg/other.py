@@ -8,7 +8,8 @@ import typing
 import processing.common
 from processing.ffmpeg.conversion import mediatopng
 import processing.vips as vips
-from processing.ffmpeg.ffprobe import mediatype, get_duration, get_frame_rate, count_frames, get_resolution, hasaudio
+from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio
+from processing.ffmpeg.mediatype import mediatype
 from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, dual_gif_output, scale2ref, changefps, \
     resize
 from utils.tempfiles import reserve_tempfile

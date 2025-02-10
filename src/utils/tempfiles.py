@@ -1,16 +1,29 @@
 import asyncio
 import contextvars
-import multiprocessing
+import dataclasses
 import os
 import random
 import shutil
 import string
 import tempfile
+import typing
 
 import aiofiles.os
 
 import config
 from core.clogs import logger
+from processing.ffmpeg.mediatype import MediaType, mediatype
+
+
+@dataclasses.dataclass
+class TempFile(str):
+    mt: MediaType = None
+    do_not_reencode: bool = False
+
+    async def mediatype(self):
+        if self.mt is None:
+            self.mt = await mediatype(self)
+        return self.mt
 
 
 def init():
@@ -59,7 +72,7 @@ def reserve_tempfile(arg):
     tfs.append(arg)
     session.set(tfs)
     logger.debug(f"Reserved new tempfile {arg}")
-    return arg
+    return TempFile(arg)
 
 
 class TempFileSession:
@@ -85,4 +98,13 @@ class TempFileSession:
         logger.debug(f"TempFileSession exited!")
 
 
-session: contextvars.ContextVar[list[str]] = contextvars.ContextVar("session")
+session: contextvars.ContextVar[list[TempFile]] = contextvars.ContextVar("session")
+
+
+def handle_tfs_parallel(func: typing.Callable, *args, **kwargs):
+    try:
+        session.set([])
+        res = func(*args, **kwargs)
+        return True, res, session.get()
+    except Exception as e:
+        return False, e, session.get()

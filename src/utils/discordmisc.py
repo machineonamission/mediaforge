@@ -5,7 +5,7 @@ import humanize
 
 import config
 from core.clogs import logger
-from processing.ffmpeg.ffprobe import mediatype
+from processing.ffmpeg.mediatype import mediatype
 
 
 async def count_emoji(guild: discord.Guild):

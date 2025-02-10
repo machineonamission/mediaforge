@@ -5,7 +5,8 @@ import config
 import processing.common
 from core.clogs import logger
 from processing.ffmpeg.conversion import videotogif, mediatopng
-from processing.ffmpeg.ffprobe import mediatype, get_duration, hasaudio, get_resolution
+from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
+from processing.ffmpeg.mediatype import mediatype
 from utils.tempfiles import reserve_tempfile
 from processing.common import run_command, NonBugError
 import processing.vips as vips

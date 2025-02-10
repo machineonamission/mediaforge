@@ -13,7 +13,8 @@ import config
 import utils
 from core.clogs import logger
 from processing.common import NonBugError, run_command, ReturnedNothing
-from processing.ffmpeg.ffprobe import mediatype, get_frame_rate, get_duration, get_resolution
+from processing.ffmpeg.ffprobe import get_frame_rate, get_duration, get_resolution
+from processing.ffmpeg.mediatype import mediatype
 from processing.ffmpeg.ffutils import changefps, trim, resize
 from utils.tempfiles import reserve_tempfile
 

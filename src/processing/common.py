@@ -8,7 +8,7 @@ import typing
 
 import utils.tempfiles
 from core.clogs import logger
-from utils.tempfiles import reserve_tempfile
+from utils.tempfiles import reserve_tempfile, handle_tfs_parallel
 
 
 class NonBugError(Exception):
@@ -97,15 +97,6 @@ async def tts(text: str, model: typing.Literal["male", "female", "retro"] = "mal
     await run_command("ffmpeg", "-hide_banner", "-i", ttswav, "-c:a", "libmp3lame", outname)
 
     return outname
-
-
-def handle_tfs_parallel(func: typing.Callable, *args, **kwargs):
-    try:
-        utils.tempfiles.session.set([])
-        res = func(*args, **kwargs)
-        return True, res, utils.tempfiles.session.get()
-    except Exception as e:
-        return False, e, utils.tempfiles.session.get()
 
 
 async def run_parallel(syncfunc: typing.Callable, *args, **kwargs):

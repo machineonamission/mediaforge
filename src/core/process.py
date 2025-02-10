@@ -11,6 +11,7 @@ import processing.ffmpeg.conversion
 import processing.ffmpeg.ensuresize
 
 import processing.ffmpeg.ffprobe
+import processing.ffmpeg.mediatype
 from core import queue
 from core.clogs import logger
 from utils.scandiscord import imagesearch
@@ -70,7 +71,7 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                 # check that each file is correct type
                 for i, file in enumerate(files):
                     # if file is incorrect type
-                    if (imtype := await processing.ffmpeg.ffprobe.mediatype(file)) not in inputs[i]:
+                    if (imtype := await processing.ffmpeg.mediatype.mediatype(file)) not in inputs[i]:
                         # send message and break
                         await ctx.reply(
                             f"{config.emojis['warning']} Media #{i + 1} is {imtype}, it must be: "
