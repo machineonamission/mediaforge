@@ -4,8 +4,10 @@ import discord
 import humanize
 
 import config
+import processing.common
+import processing.mediatype
 from core.clogs import logger
-from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF, mediatype
 
 
 async def count_emoji(guild: discord.Guild):

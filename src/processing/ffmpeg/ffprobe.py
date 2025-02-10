@@ -3,12 +3,15 @@ import sys
 
 import apng
 
+from processing.run_command import run_command
+
 if sys.platform == "win32":  # this hopefully wont cause any problems :>
     from winmagic import magic
 else:
     import magic
 
 from processing.common import *
+from core.clogs import logger
 
 
 async def is_apng(filename):

@@ -8,6 +8,9 @@ import config
 import utils.tempfiles
 from processing.ffmpeg.conversion import mediatopng
 from processing.ffmpeg.ffprobe import *
+from processing.run_command import run_command
+from core.clogs import logger
+from utils.tempfiles import reserve_tempfile
 
 
 class MyLogger(object):
@@ -75,3 +78,23 @@ async def magickone(media, strength):
     await run_command("magick", media, "-liquid-rescale", f"{strength}%x{strength}%", tosave)
 
     return tosave
+
+
+async def tts(text: str, model: typing.Literal["male", "female", "retro"] = "male"):
+    ttswav = reserve_tempfile("wav")
+    if model == "retro":
+        await run_command("node", "tts/sam.js", "--moderncmu", "--wav", ttswav, text)
+    else:
+        # espeak is a fucking nightmare on windows and windows has good native tts anyways sooooo
+        if sys.platform == "win32":
+            # https://docs.microsoft.com/en-us/dotnet/api/system.speech.synthesis.voicegender?view=netframework-4.8
+            voice = str({"male": 1, "female": 2}[model])
+            await run_command("powershell", "-File", "tts.ps1", ttswav, text, voice)
+        else:
+            await run_command("./tts/mimic", "-voice",
+                              "tts/mycroft_voice_4.0.flitevox" if model == "male" else "tts/cmu_us_slt.flitevox",
+                              "-o", ttswav, "-t", text)
+    outname = reserve_tempfile("mp3")
+    await run_command("ffmpeg", "-hide_banner", "-i", ttswav, "-c:a", "libmp3lame", outname)
+
+    return outname

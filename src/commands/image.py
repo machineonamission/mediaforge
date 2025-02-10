@@ -4,12 +4,13 @@ from discord.ext import commands
 
 import processing.common
 import processing.ffmpeg.creation
+import processing.other
 
 import processing.vips
 import processing.vips.creation
 from core.process import process
 from processing import sus
-from processing.ffmpeg.mediatype import IMAGE, VIDEO, GIF, AUDIO
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 
 
 class Image(commands.Cog, name="Creation"):
@@ -114,7 +115,7 @@ class Image(commands.Cog, name="Creation"):
         # shouldnt happen but sanity check
         if not voice:
             voice = "male"
-        await process(ctx, processing.common.tts, [], text, voice)
+        await process(ctx, processing.other.tts, [], text, voice)
 
     # WIP
     @commands.hybrid_command()

@@ -17,12 +17,12 @@ import utils.discordmisc
 import utils.web
 from core.process import process
 from processing.common import run_parallel
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 from processing.other import ytdownload
 from utils.common import prefix_function
 from utils.dpy import UnicodeEmojisConverter
 from utils.scandiscord import tenorsearch
 from utils.tempfiles import reserve_tempfile
-from processing.ffmpeg.mediatype import IMAGE, VIDEO, GIF, AUDIO
 
 
 class Conversion(commands.Cog, name="Conversion"):

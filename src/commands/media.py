@@ -10,7 +10,7 @@ import processing.other
 import processing.vips.other
 import utils
 from core.process import process
-from processing.ffmpeg.mediatype import IMAGE, VIDEO, GIF, AUDIO
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 
 
 class Media(commands.Cog, name="Editing"):
@@ -38,12 +38,12 @@ class Media(commands.Cog, name="Editing"):
     async def reencode(self, ctx):
         """
         Re-encodes media.
-        Videos become libx264 mp4s, audio files become libmp3lame mp3s, images become pngs.
+        Videos become libx264 mp4s, audio files become aac m4as, images become pngs.
 
         :param ctx: discord context
-        :mediaparam media: A video, image, or audio file.
+        :mediaparam media: A video, image, audio, or GIF file.
         """
-        await process(ctx, processing.ffmpeg.conversion.forcereencode, [[VIDEO, IMAGE, AUDIO, GIF]])
+        await process(ctx, processing.ffmpeg.conversion.allreencode, [[VIDEO, IMAGE, AUDIO, GIF]])
 
     @commands.hybrid_command(aliases=["audioadd", "dub"])
     async def addaudio(self, ctx, loops: commands.Range[int, -1, 100] = -1):

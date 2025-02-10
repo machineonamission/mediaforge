@@ -3,12 +3,13 @@ import math
 
 import config
 import processing.common
-from core.clogs import logger
+import processing.mediatype
 from processing.ffmpeg.conversion import videotogif, mediatopng
-from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
-from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
+from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution, va_codecs
 from utils.tempfiles import reserve_tempfile
-from processing.common import run_command, NonBugError
+from processing.common import NonBugError
+from processing.run_command import run_command
+from processing.mediatype import VIDEO, IMAGE, GIF, mediatype
 import processing.vips as vips
 
 
@@ -37,7 +38,7 @@ def gif_output(f):
         mt = await media.mediatype()
         out = await f(media, *args, **kwargs)
         if mt == GIF:
-            out = await videotogif(out)
+            out.mt = GIF
         return out
 
     return wrapper
@@ -54,7 +55,7 @@ def dual_gif_output(f):
         out = await f(media1, media2, *args, **kwargs)
         # if there are gifs, but no videos, convert to gif
         if (mt1 == GIF or mt2 == GIF) and not (mt1 == VIDEO or mt2 == VIDEO):
-            out = await videotogif(out)
+            out.mt = GIF
         return out
 
     return wrapper
@@ -83,50 +84,6 @@ async def naive_vstack(file0, file1):
         else:  # gif and image only
             return await videotogif(out)
         # return await processing.vips.vstack(file0, file1)
-
-
-async def ensuresize(ctx, file, minsize, maxsize):
-    """
-    Ensures valid media is between minsize and maxsize in resolution
-    :param ctx: discord context
-    :param file: media
-    :param minsize: minimum width/height in pixels
-    :param maxsize: maximum height in pixels
-    :return: original or resized media
-    """
-    resized = False
-    if await file.mediatype() not in [IMAGE, VIDEO, GIF]:
-        return file
-    w, h = await get_resolution(file)
-    owidth = w
-    oheight = h
-    if w < minsize:
-        # the min(-1,maxsize) thing is to prevent a case where someone puts in like a 1x1000 image and it gets resized
-        # to 200x200000 which is very large so even though it wont preserve aspect ratio it's an edge case anyways
-
-        file = await resize(file, minsize, f"min(-1, {maxsize * 2})", png=True)
-        w, h = await get_resolution(file)
-        resized = True
-    if h < minsize:
-        file = await resize(file, f"min(-1, {maxsize * 2})", minsize, png=True)
-        w, h = await get_resolution(file)
-        resized = True
-    if await ctx.bot.is_owner(ctx.author):
-        logger.debug(f"bot owner is exempt from downsize checks")
-        return file
-    if w > maxsize:
-        file = await resize(file, maxsize, "-1", png=True)
-        w, h = await get_resolution(file)
-        resized = True
-    if h > maxsize:
-        file = await resize(file, "-1", maxsize, png=True)
-        w, h = await get_resolution(file)
-        resized = True
-    if resized:
-        logger.info(f"Resized from {owidth}x{oheight} to {w}x{h}")
-        await ctx.reply(f"Resized input media from {int(owidth)}x{int(oheight)} to {int(w)}x{int(h)}.", delete_after=5,
-                        mention_author=False)
-    return file
 
 
 def nthroot(num: float, n: float):
@@ -254,21 +211,24 @@ async def trim(file, length, start=0):
 
 
 @gif_output
-async def resize(image, width, height, png = False):
+async def resize(image, width, height, lock_codec = False):
     """
     resizes image
 
     :param image: file
     :param width: new width, thrown directly into ffmpeg so it can be things like -1 or iw/2
     :param height: new height, same as width
-    :param png: whether to output as png
+    :param lock_codec: attempt to keep the input codec
     :return: processed media
     """
-    if await image.mediatype() != IMAGE:
-        png = False
-    out = reserve_tempfile("png" if png else "mkv")
+    gif = image.mediatype() == GIF
+    ext = image.split(".")[-1]
+    vcod, _ = await va_codecs(image)
+    out = reserve_tempfile(ext if lock_codec and not gif else "mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "png" if png else "ffv1", "-pix_fmt",
-                      "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
+                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", vcod if lock_codec and not gif else "ffv1",
+                      "-pix_fmt", "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
+    if gif and lock_codec:
+        out = await videotogif(out)
     return out

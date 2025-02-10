@@ -1,6 +1,8 @@
-from processing.common import run_command
+import processing.common
+import processing.mediatype
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF, mediatype
+from processing.run_command import run_command
 from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate
-from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
 from utils.tempfiles import reserve_tempfile
 
 
@@ -48,7 +50,9 @@ async def audio_reencode(audio):
     return outname
 
 
-async def allreencode(file, fail_if_gif=True):
+async def allreencode(file):
+    if file.lock_codec:
+        return file
     mt = await file.mediatype()
     if mt == IMAGE:
         return await mediatopng(file)
@@ -56,35 +60,6 @@ async def allreencode(file, fail_if_gif=True):
         return await video_reencode(file)
     elif mt == AUDIO:
         return await audio_reencode(file)
-    elif mt == GIF and not fail_if_gif:
-        return file
-    else:
-        raise Exception(f"{file} of type {mt} cannot be re-encoded")
-
-
-async def forcereencode(file):
-    # cant use the other reencode functions cause this function never copies
-    mt = await file.mediatype()
-    if mt == IMAGE:
-        outname = reserve_tempfile("png")
-        await run_command("ffmpeg", "-hide_banner", "-i", file, "-frames:v", "1", "-c:v",
-                          "png", "-pix_fmt", "rgba",
-                          outname)
-
-        return outname
-    elif mt == VIDEO:
-        outname = reserve_tempfile("mp4")
-        await run_command("ffmpeg", "-hide_banner", "-i", file, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-vf",
-                          "scale=ceil(iw/2)*2:ceil(ih/2)*2,"
-                          # turns transparency into blackness
-                          "premultiply=inplace=1", "-c:a", "aac", "-q:a", "2",
-                          "-max_muxing_queue_size", "9999", "-movflags", "+faststart", outname)
-
-        return outname
-    elif mt == AUDIO:
-        outname = reserve_tempfile("m4a")
-        await run_command("ffmpeg", "-hide_banner", "-i", file, "-c:a", "aac", "-q:a", "2", outname)
-        return outname
     elif mt == GIF:
         return await videotogif(file)
     else:
@@ -133,6 +108,7 @@ async def mediatopng(media):
 
 async def toapng(video):
     outname = reserve_tempfile("png")
+    outname.lock_codec = True
     await run_command("ffmpeg", "-i", video, "-f", "apng", "-fps_mode", "vfr", outname)
 
     return outname

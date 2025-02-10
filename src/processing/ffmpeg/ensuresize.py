@@ -10,11 +10,14 @@ import humanize
 from discord.ext import commands
 
 import config
+import processing.common
+import processing.mediatype
 import utils
 from core.clogs import logger
-from processing.common import NonBugError, run_command, ReturnedNothing
+from processing.common import NonBugError, ReturnedNothing
+from processing.run_command import run_command
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF, mediatype
 from processing.ffmpeg.ffprobe import get_frame_rate, get_duration, get_resolution
-from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
 from processing.ffmpeg.ffutils import changefps, trim, resize
 from utils.tempfiles import reserve_tempfile
 
@@ -77,6 +80,7 @@ async def ensureduration(media, ctx: commands.Context):
             logger.debug(e)
         return media
 
+TOLERANCES = [.98, .95, .90, .75, .5, .25, .1]
 
 async def twopasscapvideo(video, maxsize: int, audio_bitrate=128000):
     """
@@ -93,7 +97,7 @@ async def twopasscapvideo(video, maxsize: int, audio_bitrate=128000):
     duration = await get_duration(video)
     # bytes to bits
     target_total_bitrate = (maxsize * 8) / duration
-    for tolerance in [.98, .95, .90, .75, .5, .25, .1]:
+    for tolerance in TOLERANCES:
         target_video_bitrate = (target_total_bitrate - audio_bitrate) * tolerance
         if target_video_bitrate <= 0:
             raise NonBugError("Cannot fit video into Discord.")
@@ -130,18 +134,18 @@ async def intelligentdownsize(media, maxsize: int):
 
     size = os.path.getsize(media)
     w, h = await get_resolution(media)
-    for tolerance in [.98, .95, .90, .75, .5, .25, .1]:
+    for tolerance in TOLERANCES:
         reduction_ratio = (maxsize / size) * tolerance
         # this took me longer to figure out than i am willing to admit
         new_w = math.floor(math.sqrt(reduction_ratio * (w ** 2)))
         new_h = math.floor(math.sqrt(reduction_ratio * (h ** 2)))
         logger.info(f"trying to resize from {w}x{h} to {new_w}x{new_h} (~{reduction_ratio} reduction)")
-        resized = await resize(media, new_w, new_h, png=True)
-        if (size := os.path.getsize(resized)) < maxsize:
-            logger.info(f"successfully created {humanize.naturalsize(size)} media!")
+        resized = await resize(media, new_w, new_h, lock_codec=True)
+        if (newsize := os.path.getsize(resized)) < maxsize:
+            logger.info(f"successfully created {humanize.naturalsize(newsize)} media!")
             return resized
         else:
-            logger.info(f"tolerance {tolerance} failed. output is {humanize.naturalsize(size)}")
+            logger.info(f"tolerance {tolerance} failed. output is {humanize.naturalsize(newsize)}")
     raise NonBugError(f"Unable to fit {media} within {humanize.naturalsize(maxsize)}")
 
 
@@ -171,3 +175,47 @@ async def assurefilesize(media):
         return await intelligentdownsize(media, config.file_upload_limit)
     else:
         raise NonBugError(f"File is too big to upload.")
+
+
+async def ensuresize(ctx, file, minsize, maxsize):
+    """
+    Ensures valid media is between minsize and maxsize in resolution
+    :param ctx: discord context
+    :param file: media
+    :param minsize: minimum width/height in pixels
+    :param maxsize: maximum height in pixels
+    :return: original or resized media
+    """
+    resized = False
+    if await file.mediatype() not in [IMAGE, VIDEO, GIF]:
+        return file
+    w, h = await get_resolution(file)
+    owidth = w
+    oheight = h
+    if w < minsize:
+        # the min(-1,maxsize) thing is to prevent a case where someone puts in like a 1x1000 image and it gets resized
+        # to 200x200000 which is very large so even though it wont preserve aspect ratio it's an edge case anyways
+
+        file = await resize(file, minsize, f"min(-1, {maxsize * 2})")
+        w, h = await get_resolution(file)
+        resized = True
+    if h < minsize:
+        file = await resize(file, f"min(-1, {maxsize * 2})", minsize)
+        w, h = await get_resolution(file)
+        resized = True
+    # if await ctx.bot.is_owner(ctx.author):
+    #     logger.debug(f"bot owner is exempt from downsize checks")
+    #     return file
+    if w > maxsize:
+        file = await resize(file, maxsize, "-1")
+        w, h = await get_resolution(file)
+        resized = True
+    if h > maxsize:
+        file = await resize(file, "-1", maxsize)
+        w, h = await get_resolution(file)
+        resized = True
+    if resized:
+        logger.info(f"Resized from {owidth}x{oheight} to {w}x{h}")
+        await ctx.reply(f"Resized input media from {int(owidth)}x{int(oheight)} to {int(w)}x{int(h)}.", delete_after=5,
+                        mention_author=False)
+    return file

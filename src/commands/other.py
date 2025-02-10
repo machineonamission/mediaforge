@@ -13,6 +13,7 @@ import core.queue
 import processing.common
 
 import processing.ffmpeg.ffprobe
+import processing.run_command
 import utils.discordmisc
 import utils.tempfiles
 from core import database
@@ -22,7 +23,7 @@ from utils.dpy import UnicodeEmojiConverter, showcog
 from utils.dpy import add_long_field
 from utils.scandiscord import imagesearch
 from utils.web import saveurls
-from processing.ffmpeg.mediatype import IMAGE, VIDEO, GIF, AUDIO
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 
 
 class Other(commands.Cog, name="Other"):
@@ -219,8 +220,8 @@ class Other(commands.Cog, name="Other"):
 
         :param ctx: discord context
         """
-        await processing.common.run_command("git", "fetch")
-        status = await processing.common.run_command("git", "status")
+        await processing.run_command.run_command("git", "fetch")
+        status = await processing.run_command.run_command("git", "status")
         with io.StringIO() as buf:
             buf.write(status)
             buf.seek(0)
@@ -235,7 +236,7 @@ class Other(commands.Cog, name="Other"):
 
         :param ctx: discord context
         """
-        status = await processing.common.run_command("ffmpeg", "-version")
+        status = await processing.run_command.run_command("ffmpeg", "-version")
         with io.StringIO() as buf:
             buf.write(status)
             buf.seek(0)

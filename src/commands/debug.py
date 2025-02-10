@@ -11,6 +11,7 @@ import config
 import core.queue
 import processing.common
 import processing.other
+import processing.run_command
 import utils.tempfiles
 from core import database, heartbeat
 from core.clogs import logger
@@ -97,7 +98,7 @@ class Debug(commands.Cog, name="Owner Only", command_attrs=dict(hidden=True)):
         """
         Raise an error from the commandline
         """
-        await processing.common.run_command("ffmpeg", "-hide_banner", "dsfasdfsadfasdfasdf")
+        await processing.run_command.run_command("ffmpeg", "-hide_banner", "dsfasdfsadfasdfasdf")
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -186,7 +187,7 @@ class Debug(commands.Cog, name="Owner Only", command_attrs=dict(hidden=True)):
     @commands.command()
     @commands.is_owner()
     async def devshm(self, ctx):
-        await ctx.reply(await processing.common.run_command("ls", "/dev/shm/mediaforge"))
+        await ctx.reply(await processing.run_command.run_command("ls", "/dev/shm/mediaforge"))
 
     @commands.command()
     @commands.is_owner()

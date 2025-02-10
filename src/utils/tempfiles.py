@@ -12,10 +12,9 @@ import aiofiles.os
 
 import config
 from core.clogs import logger
-from processing.ffmpeg.mediatype import MediaType, mediatype
+from processing.mediatype import MediaType, mediatype
 
 
-@dataclasses.dataclass
 class TempFile(str):
     mt: MediaType = None
     lock_codec: bool = False

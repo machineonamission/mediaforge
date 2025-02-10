@@ -3,7 +3,7 @@ from discord.ext import commands
 import processing.ffmpeg.caption
 import processing.vips.caption
 
-from processing.ffmpeg.mediatype import IMAGE, VIDEO, GIF, AUDIO
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 import processing.vips.vipsutils
 from core.process import process
 

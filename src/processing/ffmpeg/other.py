@@ -2,6 +2,8 @@ import math
 
 import discord
 import asyncio
+
+import processing.mediatype
 from core.clogs import logger
 import typing
 
@@ -9,11 +11,12 @@ import processing.common
 from processing.ffmpeg.conversion import mediatopng
 import processing.vips as vips
 from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio
-from processing.ffmpeg.mediatype import mediatype, IMAGE, VIDEO, GIF, AUDIO
 from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, dual_gif_output, scale2ref, changefps, \
     resize
 from utils.tempfiles import reserve_tempfile
-from processing.common import run_command, NonBugError
+from processing.common import NonBugError
+from processing.run_command import run_command
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF, mediatype
 
 
 @gif_output
