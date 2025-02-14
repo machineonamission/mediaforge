@@ -1,40 +1,33 @@
-[tool.poetry]
+[project]
 name = "mediaforge"
 version = "2.0.0"
 description = "A Discord bot for editing and creating videos, images, GIFs, and more!"
 authors = ["machineonamission"]
 license = "GPL-3.0"
 package-mode = false
-
-[tool.poetry.dependencies]
-python = "^3.11"
-"discord.py" = "^2.4.0"
-# dpy extras minus aiodns
-Brotli = "*"
-orjson = ">=3.5.4"
-
-aiofiles = "^24.1.0"
-humanize = "^4.8.0"
-coloredlogs = "^15.0.1"
-Pillow = "^10.0.1"
-regex = "^2024.9.11"
-aiosqlite = "^0.20.0"
-psutil = "^6.0.0"
-apng = "^0.3.4"
-docstring-parser = "^0.16"
-yt-dlp = "^2025.1.26"
-emojis = "^0.7.0"
-python-magic = { version = "^0.4.13", markers = "sys_platform != 'win32'" }
-python-magic-win64 = { version = "^0.4.13", markers = "sys_platform == 'win32'" }
-requests = "^2.31.0"
-"discordlists.py" = "^1.1.1"
-pyvips = "^2.2.1"
-tblib = "^3.0.0"
-audioop-lts = {version = "^0.2.1", python = ">=3.13"}
-
-
-[build-system]
-requires = [
-    "poetry-core>=1.0.0",
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "aiofiles>=24.1.0",
+    "aiosqlite>=0.21.0",
+    "apng>=0.3.4",
+    "audioop-lts>=0.2.1 ; python_version >= \"3.13\"",
+    "brotli>=1.1.0",
+    "coloredlogs>=15.0.1",
+    "discord-py>=2.4.0",
+    "discordlists-py>=1.1.1",
+    "docstring-parser>=0.16",
+    "emojis>=0.7.0",
+    "humanize>=4.12.0",
+    "orjson>=3.10.15",
+    "pillow>=11.1.0",
+    "psutil>=7.0.0",
+    "python-magic>=0.4.13 ; sys_platform != 'win32'",
+    "python-magic-win64>=0.4.13 ; sys_platform == 'win32'",
+    "pyvips>=2.2.3",
+    "regex>=2024.11.6",
+    "requests>=2.32.3",
+    "tblib>=3.0.0",
+    "yt-dlp>=2025.1.26",
 ]
-build-backend = "poetry.core.masonry.api"
+
