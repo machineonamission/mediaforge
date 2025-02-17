@@ -32,19 +32,25 @@ async def speed(file, sp):
     mt = await file.mediatype()
     outname = reserve_tempfile("mkv")
     if mt == AUDIO:
-        duration = await get_duration(file)
+        # duration = await get_duration(file)
         await run_command("ffmpeg", "-hide_banner", "-i", file, "-filter_complex",
-                          f"{expanded_atempo(sp)}", "-t", str(duration / float(sp)), "-c:a", "flac", outname)
+                          f"{expanded_atempo(sp)}",
+                          # "-t", str(duration / float(sp)),
+                          "-c:a", "flac", outname)
     else:
+        # ffv1 is really fucky about having not enough frames, so just pre-emptively check
+        if (await count_frames(file)) / sp <= 2:
+            raise NonBugError("Aborting speed because output file will have less than 2 frames. Try reducing the speed.")
         fps = await get_frame_rate(file)
-        duration = await get_duration(file)
+        # duration = await get_duration(file)
         await run_command("ffmpeg", "-hide_banner", "-i", await forceaudio(file), "-filter_complex",
                           f"[0:v]setpts=PTS/{sp},fps={fps}[v];[0:a]{expanded_atempo(sp)}[a]",
-                          "-map", "[v]", "-map", "[a]", "-t", str(duration / float(sp)), "-c:v", "ffv1", "-c:a", "flac",
+                          "-map", "[v]", "-map", "[a]",
+                          # "-t", str(duration / float(sp)),
+                          "-c:v", "ffv1", "-c:a", "flac",
                           "-fps_mode",
                           "vfr", outname)
-        if await count_frames(outname) < 2:
-            raise NonBugError("Output file has less than 2 frames. Try reducing the speed.")
+
 
     return outname
 
