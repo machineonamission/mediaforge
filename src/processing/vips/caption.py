@@ -26,7 +26,8 @@ def esmcaption(captions: typing.Sequence[str], size: ImageSize):
         rgba=True,
         fontfile="rendering/fonts/caption.otf",
         align=pyvips.Align.CENTRE,
-        width=textwidth
+        width=textwidth,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # overlay white background
     out = out.composite((255, 255, 255, 255), mode=pyvips.BlendMode.DEST_OVER)
@@ -55,7 +56,8 @@ def mediaforge_caption(captions: typing.Sequence[str], size: ImageSize):
         rgba=True,
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
         align=pyvips.Align.CENTRE,
-        width=textwidth
+        width=textwidth,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # overlay white background
     out = out.composite((255, 255, 255, 255), mode=pyvips.BlendMode.DEST_OVER)
@@ -98,7 +100,8 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
             rgba=True,
             fontfile="rendering/fonts/times new roman.ttf",
             align=pyvips.Align.CENTRE,
-            width=width
+            width=width,
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         toptext = toptext.gravity(pyvips.CompassDirection.CENTRE, width, toptext.height + (textsize / 4),
                                   extend=pyvips.Extend.BLACK)
@@ -112,7 +115,8 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
             rgba=True,
             fontfile="rendering/fonts/times new roman.ttf",
             align=pyvips.Align.CENTRE,
-            width=width
+            width=width,
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         bottomtext = bottomtext.gravity(pyvips.CompassDirection.CENTRE, width,
                                         bottomtext.height + (textsize / 4),
@@ -155,7 +159,8 @@ def meme(captions: typing.Sequence[str], size: ImageSize):
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
-            height=int((size.height * .95) / 3)
+            height=int((size.height * .95) / 3),
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         overlay = overlay.composite2(toptext, pyvips.BlendMode.OVER,
                                      x=((size.width - toptext.width) / 2),
@@ -171,7 +176,8 @@ def meme(captions: typing.Sequence[str], size: ImageSize):
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
-            height=int((size.height * .95) / 3)
+            height=int((size.height * .95) / 3),
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         overlay = overlay.composite2(bottomtext, pyvips.BlendMode.OVER,
                                      x=((size.width - bottomtext.width) / 2),
@@ -200,7 +206,8 @@ def tenor(captions: typing.Sequence[str], size: ImageSize):
             fontfile="rendering/fonts/Ubuntu-R.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
-            height=int((size.height * .95) / 3)
+            height=int((size.height * .95) / 3),
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         overlay = overlay.composite2(toptext, pyvips.BlendMode.OVER,
                                      x=((size.width - toptext.width) / 2),
@@ -216,7 +223,8 @@ def tenor(captions: typing.Sequence[str], size: ImageSize):
             fontfile="rendering/fonts/Ubuntu-R.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
-            height=int((size.height * .95) / 3)
+            height=int((size.height * .95) / 3),
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         overlay = overlay.composite2(bottomtext, pyvips.BlendMode.OVER,
                                      x=((size.width - bottomtext.width) / 2),
@@ -244,7 +252,8 @@ def whisper(captions: typing.Sequence[str], size: ImageSize):
         fontfile="rendering/fonts/whisper.otf",
         align=pyvips.Align.CENTRE,
         width=int(size.width * .95),
-        height=int(size.height * .95)
+        height=int(size.height * .95),
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     overlay = overlay_in_middle(overlay, text)
 
@@ -265,7 +274,8 @@ def snapchat(captions: typing.Sequence[str], size: ImageSize):
         fontfile="rendering/fonts/HelveticaNeue.otf",
         align=pyvips.Align.CENTRE,
         width=int(size.width * .98),
-        height=size.height // 3
+        height=size.height // 3,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # background
     bg = pyvips.Image.black(size.width, text.height + size.width // 25).new_from_image([0, 0, 0, 178]).copy(
@@ -296,7 +306,8 @@ def generic_image_caption(image: str, captions: typing.Sequence[str], size: Imag
         rgba=True,
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
         align=pyvips.Align.CENTRE,
-        width=textwidth
+        width=textwidth,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # load stuff
     im = normalize(pyvips.Image.new_from_file(image))
@@ -334,7 +345,8 @@ def twitter_text(captions: typing.Sequence[str], size: ImageSize, dark: bool):
         rgba=True,
         fontfile="rendering/fonts/TwitterChirp.otf",
         align=pyvips.Align.LOW,
-        width=size.width
+        width=size.width,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # pad text to image width left aligned
     out = out.gravity(pyvips.CompassDirection.WEST, size.width, out.height + fontsize,

@@ -28,7 +28,8 @@ def yskysn(captions: typing.Sequence[str]):
         align=pyvips.Align.CENTRE,
         width=w,
         height=h,
-        autofit_dpi=True
+        autofit_dpi=True,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     autofit_dpi = autofit_dict["autofit_dpi"]
     if autofit_dpi <= 72:
@@ -47,7 +48,8 @@ def yskysn(captions: typing.Sequence[str]):
             align=pyvips.Align.CENTRE,
             width=w,
             height=h,
-            dpi=72
+            dpi=72,
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
     # pad to expected size, 48 is margin
     text = text.gravity(pyvips.CompassDirection.CENTRE, w + 48, h + 48, extend=pyvips.Extend.BLACK)
@@ -87,7 +89,8 @@ def f1984(captions: typing.Sequence[str]):
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
         align=pyvips.Align.CENTRE,
         width=290,
-        height=90
+        height=90,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # pad to expected size
     speech_bubble = speech_bubble.gravity(pyvips.CompassDirection.CENTRE, 290, 90, extend=pyvips.Extend.BLACK)
@@ -105,7 +108,8 @@ def f1984(captions: typing.Sequence[str]):
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
             width=124,
-            height=34
+            height=34,
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         # pad to expected size
         date = date.gravity(pyvips.CompassDirection.CENTRE, 124, 34, extend=pyvips.Extend.BLACK)
@@ -134,7 +138,8 @@ def epicbirthdaytext(caption: str):
         fontfile="rendering/fonts/MarkerFeltWide Regular.ttf",
         align=pyvips.Align.CENTRE,
         width=540,
-        height=260
+        height=260,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     outfile = reserve_tempfile("png")
     text.pngsave(outfile)
