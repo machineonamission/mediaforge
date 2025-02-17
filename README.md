@@ -4,7 +4,7 @@
 [![Discord Bots](https://top.gg/api/widget/780570413767983122.svg)](https://top.gg/bot/780570413767983122)
 
 ![Total Lines](https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/machineonamission/mediaforge/badge?filter=.py&style=flat&label=Lines%20of%20Code)
-[![wakatime](https://wakatime.com/badge/user/ceaa3b2d-5469-499f-97ed-b23bda26c31a/project/7114917f-f795-4c9f-aadf-0e66528176be.svg)](https://wakatime.com/badge/user/ceaa3b2d-5469-499f-97ed-b23bda26c31a/project/7114917f-f795-4c9f-aadf-0e66528176be)
+[![wakatime](https://wakatime.com/badge/user/ceaa3b2d-5469-499f-97ed-b23bda26c31a/project/7114917f-f795-4c9f-aadf-0e66528176be.svg)](https://wakatime.com/@machineonamission/projects/ttvriomkzo)
 [![stars](https://img.shields.io/github/stars/machineonamission/mediaforge?style=social)](https://github.com/machineonamission/mediaforge/stargazers)
 [![uptime](https://app.statuscake.com/button/index.php?Track=6022597&Design=6)](https://uptime.statuscake.com/?TestID=JyWrfGfIjT)
 [![MediaForge Discord](https://discordapp.com/api/guilds/803788965215338546/widget.png)](https://discord.gg/xwWjgyVqBz)
