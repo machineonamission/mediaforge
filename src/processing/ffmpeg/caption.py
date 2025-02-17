@@ -57,7 +57,6 @@ async def freezemotivateaudio(video, audio, *caption):
     :param caption: caption to pass to motivate()
     :return: processed media
     """
-    # TODO: this shit dont work
     lastframe = await frame_n(video, -1)
     clastframe = await motivate(lastframe, caption)
     freezeframe = await imageaudio(clastframe, audio)
