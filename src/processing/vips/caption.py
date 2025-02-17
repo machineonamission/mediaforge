@@ -71,8 +71,21 @@ def mediaforge_caption(captions: typing.Sequence[str], size: ImageSize):
 def motivate_text(captions: typing.Sequence[str], size: ImageSize):
     captions = escape(captions)
     textsize = size.width / 5
-    width = math.floor(size.width + (size.width / 60))
-    width = math.floor(width + (width / 30))
+
+    # its verbose but it exactly matches the code in ffmpeg.caption.motivate
+    width, height = size.width, size.height
+
+    pad1_w = width + width // 60
+    pad1_h = height + width // 60
+
+    pad2_w = pad1_w + width // 30
+    pad2_h = pad1_h + width // 30
+
+    pad3_w = pad2_w
+    pad3_h = pad2_h + width // 30
+
+    width, height = pad3_w, pad3_h
+
     toptext = None
     bottomtext = None
     if captions[0]:
@@ -87,7 +100,7 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
             align=pyvips.Align.CENTRE,
             width=width
         )
-        toptext = toptext.gravity(pyvips.CompassDirection.CENTRE, toptext.width, toptext.height + (textsize / 4),
+        toptext = toptext.gravity(pyvips.CompassDirection.CENTRE, width, toptext.height + (textsize / 4),
                                   extend=pyvips.Extend.BLACK)
     if captions[1]:
         # technically redundant but adds twemoji font
@@ -101,7 +114,7 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
             align=pyvips.Align.CENTRE,
             width=width
         )
-        bottomtext = bottomtext.gravity(pyvips.CompassDirection.CENTRE, bottomtext.width,
+        bottomtext = bottomtext.gravity(pyvips.CompassDirection.CENTRE, width,
                                         bottomtext.height + (textsize / 4),
                                         extend=pyvips.Extend.BLACK)
     if toptext and bottomtext:
