@@ -71,7 +71,7 @@ class Media(commands.Cog, name="Editing"):
         :param quality: quality of JPEG compression. must be between 1 and 95.
         :mediaparam media: An image.
         """
-        await process(ctx, processing.vips.other.jpeg, [[IMAGE]], strength, stretch, quality, run_parallel=True)
+        await process(ctx, processing.vips.other.jpeg_wrapper, [[IMAGE]], strength, stretch, quality)
 
     @commands.hybrid_command()
     async def deepfry(self, ctx, brightness: commands.Range[float, -1, 1] = 0.5,
