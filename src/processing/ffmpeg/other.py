@@ -32,19 +32,25 @@ async def speed(file, sp):
     mt = await file.mediatype()
     outname = reserve_tempfile("mkv")
     if mt == AUDIO:
-        duration = await get_duration(file)
+        # duration = await get_duration(file)
         await run_command("ffmpeg", "-hide_banner", "-i", file, "-filter_complex",
-                          f"{expanded_atempo(sp)}", "-t", str(duration / float(sp)), "-c:a", "flac", outname)
+                          f"{expanded_atempo(sp)}",
+                          # "-t", str(duration / float(sp)),
+                          "-c:a", "flac", outname)
     else:
+        # ffv1 is really fucky about having not enough frames, so just pre-emptively check
+        if (await count_frames(file)) / sp <= 2:
+            raise NonBugError("Aborting speed because output file will have less than 2 frames. Try reducing the speed.")
         fps = await get_frame_rate(file)
-        duration = await get_duration(file)
+        # duration = await get_duration(file)
         await run_command("ffmpeg", "-hide_banner", "-i", await forceaudio(file), "-filter_complex",
                           f"[0:v]setpts=PTS/{sp},fps={fps}[v];[0:a]{expanded_atempo(sp)}[a]",
-                          "-map", "[v]", "-map", "[a]", "-t", str(duration / float(sp)), "-c:v", "ffv1", "-c:a", "flac",
+                          "-map", "[v]", "-map", "[a]",
+                          # "-t", str(duration / float(sp)),
+                          "-c:v", "ffv1", "-c:a", "flac",
                           "-fps_mode",
                           "vfr", outname)
-        if await count_frames(outname) < 2:
-            raise NonBugError("Output file has less than 2 frames. Try reducing the speed.")
+
 
     return outname
 
@@ -216,7 +222,7 @@ async def concatv(file0, file1):
     """
     video0 = file0  # await forceaudio(file0)
     fixedvideo0 = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", video0, "-c:v", "ffv1", "-c:a", "copy", "-ar",
+    await run_command("ffmpeg", "-hide_banner", "-i", video0, "-c:v", "ffv1", "-c:a", "flac", "-ar",
                       "48000",
                       "-max_muxing_queue_size", "4096", "-fps_mode", "vfr", fixedvideo0)
     video1 = file1  # await forceaudio(file1)
@@ -228,7 +234,7 @@ async def concatv(file0, file1):
     await run_command("ffmpeg", "-hide_banner", "-i", video1, "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp", "-vf",
                       f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:-2:-2:color=black", "-c:v",
-                      "ffv1", "-c:a", "copy", "-ar", "48000", "-fps_mode", "vfr", fixedvideo1)
+                      "ffv1", "-c:a", "flac", "-ar", "48000", "-fps_mode", "vfr", fixedvideo1)
     fixedfixedvideo1 = await changefps(fixedvideo1, fps)
 
     concatdemuxer = reserve_tempfile("txt")
@@ -236,7 +242,7 @@ async def concatv(file0, file1):
         f.write(f"file '{fixedvideo0}'\nfile '{fixedfixedvideo1}'")
     outname = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-hide_banner", "-safe", "0", "-f", "concat", "-i", concatdemuxer, "-c:v", "ffv1",
-                      "-c:a", "copy", outname)
+                      "-c:a", "flac", outname)
     # for file in [video0, video1, fixedvideo1, fixedvideo0, fixedfixedvideo1, concatdemuxer]:
     #     os.remove(file)
     return outname

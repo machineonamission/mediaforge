@@ -156,7 +156,7 @@ class ErrorHandlerCog(commands.Cog):
             embed.add_field(name=f"{config.emojis['2exclamation']} Report Issue to GitHub",
                             value=f"[Create New Issue](https://github.com/machineonamission/mediaforge"
                                   f"/issues/new?labels=bug&template=bug_report.yaml&title"
-                                  f"={urllib.parse.quote(str(commanderror), safe='')[:(1024-183)]})\n[View Issu"
+                                  f"={urllib.parse.quote(str(commanderror), safe='')[:(1024-191)]})\n[View Issu"
                                   f"es](https://github.com/machineonamission/mediaforge/issues)")
             with io.BytesIO() as buf:
                 if ctx.interaction:

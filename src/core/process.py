@@ -96,7 +96,7 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                         nonlocal args
                         nonlocal files
                         logger.info("Processing...")
-                        await updatestatus("Processing...")
+                        await updatestatus("Forging...")
 
                         # remove too long videossss
                         for i in range(len(files)):
