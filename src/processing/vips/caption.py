@@ -319,7 +319,7 @@ def generic_image_caption(image: str, captions: typing.Sequence[str], size: Imag
     # resize
     im = im.resize((size.width / 3) / im.width)
     # pad text to image width
-    padded = out.gravity(pyvips.CompassDirection.CENTRE, size.width * (2 / 3), max(out.height + fontsize, im.height),
+    padded = out.gravity(pyvips.CompassDirection.CENTRE, size.width - im.width, max(out.height + fontsize, im.height),
                          extend=pyvips.Extend.BLACK)
 
     # join
