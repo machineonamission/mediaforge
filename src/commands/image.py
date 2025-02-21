@@ -150,4 +150,4 @@ class Image(commands.Cog, name="Creation"):
         :param ctx: discord context
         :param text: The text to cut and splice.
         """
-        await process(ctx, processing.ffmpeg.heartlocket.heart_locket, ["IMAGE"])
+        await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [["IMAGE"]])
