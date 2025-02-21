@@ -4,6 +4,7 @@ from discord.ext import commands
 
 import processing.common
 import processing.ffmpeg.creation
+import processing.ffmpeg.heartlocket
 import processing.other
 
 import processing.vips
@@ -140,3 +141,13 @@ class Image(commands.Cog, name="Creation"):
         :param text: The text to cut and splice.
         """
         await process(ctx, sus.sus, [], text, run_parallel=True)
+
+    @commands.hybrid_command(aliases=['locket', 'heart'])
+    async def heartlocket(self, ctx, *, text="my beloved"):
+        """
+        Put your image and text into a 3d animated heart locket
+        based on https://makesweet.com/big/heart-locket#
+        :param ctx: discord context
+        :param text: The text to cut and splice.
+        """
+        await process(ctx, processing.ffmpeg.heartlocket.heart_locket, ["IMAGE"])
