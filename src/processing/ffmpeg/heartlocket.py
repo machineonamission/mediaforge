@@ -6,7 +6,7 @@ from utils.tempfiles import TempFile, reserve_tempfile
 
 async def heart_locket(media: TempFile):
     out = reserve_tempfile("mkv")
-    media = await resize(media, 256,256)
+    # media = await resize(media, 256,256)
     w,h = await get_resolution(media)
     scalefactor = 16
     pixelscalefactor = 1
@@ -16,13 +16,13 @@ async def heart_locket(media: TempFile):
     # xmap = "X"
     # ymap = "Y"
     xmap = (
-        f"( ( ((r(X,Y)/255)) )"
-        f" + 256*mod((b(X,Y)/255),16) )"  # 0..255
+        f"( ( (floor(r(X,Y)/255)) )"
+        f" + 256*mod(floor(b(X,Y)/255),16) )"  # 0..255
         f" * {w} / 4096"                  # scale to 0..w
     )
     ymap = (
-        f"( ( ((g(X,Y)/255)) )"
-        f" + 256*floor((b(X,Y)/255)/16) )"  # 0..255
+        f"( ( (floor(g(X,Y)/255)) )"
+        f" + 256*floor(floor(b(X,Y)/255)/16) )"  # 0..255
         f" * {h} / 4096"                    # scale to 0..h
     )
     # xmap = "0.5"
