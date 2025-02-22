@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import subprocess
 import sys
 
@@ -40,6 +41,8 @@ async def run_command(*args: str):
         result = stdout.decode().strip() + stderr.decode().strip()
     except UnicodeDecodeError:
         result = stdout.decode("ascii", 'ignore').strip() + stderr.decode("ascii", 'ignore').strip()
+    # no ffmpeg you cannot hide from me
+    result = re.sub(r'\r(?!\n)', '\n', result)
     # Progress
     if process.returncode == 0:
         logger.debug(f"PID {process.pid} Done.")
@@ -50,7 +53,7 @@ async def run_command(*args: str):
             f"PID {process.pid} Failed: {args} result: {result}",
         )
         # adds command output to traceback
-        raise CMDError(f"Command {args} failed.") from CMDError(result)
+        raise CMDError(f"Command failed with exit code {process.returncode}: {args}.") from CMDError(result)
     # Result
 
     # Return stdout

@@ -144,3 +144,26 @@ def epicbirthdaytext(caption: str):
     outfile = reserve_tempfile("png")
     text.pngsave(outfile)
     return outfile
+
+def heartlockettext(caption:str):
+    caption = escape(caption)
+    # technically redundant but adds twemoji font
+    out = pyvips.Image.text(".", fontfile=twemoji)
+    # generate text
+    out = pyvips.Image.text(
+        caption,
+        font=f"Arial,Twemoji Color Emoji 100px",
+        rgba=True,
+        fontfile="rendering/fonts/arial.ttf",
+        align=pyvips.Align.CENTRE,
+        width=512,
+        height=512,
+        wrap=pyvips.TextWrap.WORD_CHAR
+    )
+    # overlay white background
+    out = out.composite((255, 255, 255, 255), mode=pyvips.BlendMode.DEST_OVER)
+    # pad text to image width
+    out = out.gravity(pyvips.CompassDirection.CENTRE, 512, 512, extend=pyvips.Extend.WHITE)
+    outfile = reserve_tempfile("png")
+    out.pngsave(outfile)
+    return outfile

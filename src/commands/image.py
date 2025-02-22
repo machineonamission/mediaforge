@@ -143,11 +143,25 @@ class Image(commands.Cog, name="Creation"):
         await process(ctx, sus.sus, [], text, run_parallel=True)
 
     @commands.hybrid_command(aliases=['locket', 'heart'])
-    async def heartlocket(self, ctx, *, text="my beloved"):
+    async def heartlocket(self, ctx, *, text=""):
         """
         Put your image and text into a 3d animated heart locket
         based on https://makesweet.com/big/heart-locket#
         :param ctx: discord context
         :param text: The text to cut and splice.
         """
-        await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [["IMAGE"]])
+        if text == "":
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [["IMAGE"], ["IMAGE"]],
+                          processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA)
+        split = text.split("|")
+        if len(split) == 1:
+            split.append("")
+        if split[0] == "" and split[1] != "":
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [["IMAGE"]], split[1],
+                          processing.ffmpeg.heartlocket.ArgType.MEDIA_TEXT)
+        if split[0] != "" and split[1] == "":
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [["IMAGE"]], split[0],
+                          processing.ffmpeg.heartlocket.ArgType.TEXT_MEDIA)
+        if split[0] != "" and split[1] != "":
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [], split[0], split[1],
+                          processing.ffmpeg.heartlocket.ArgType.TEXT_TEXT)
