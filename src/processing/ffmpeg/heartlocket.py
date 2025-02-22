@@ -65,15 +65,17 @@ async def heart_locket(arg1, arg2, type: ArgType):
         "ffmpeg",
         # "-r", "10.13",
         # "-start_number", "9",
+        "-r", "10.13", "-loop", "1", "-i", media1,
+        "-r", "10.13", "-loop", "1", "-i", media2,
         "-r", "10.13", "-i", "rendering/heartlocket/mapper.mkv",  # The color "every pixel" map
         "-r", "10.13", "-i", "rendering/heartlocket/mapper2.mkv",  # maps each half of the locket
         "-r", "10.13", "-i", "rendering/heartlocket/neutral.mkv",  # the background
-        "-r", "10.13", "-loop", "1", "-i", media1,
-        "-r", "10.13", "-loop", "1", "-i", media2,
+        "-r", "10.13", "-i", "rendering/heartlocket/light.mkv",  # shading
+        "-r", "10.13", "-i", "rendering/heartlocket/dark.mkv",  # highlighting
         "-filter_complex",
         (
             # pre-process
-            "[0:v]format=rgba64,split=4[colormapx1][colormapy1][colormapx2][colormapy2];"
+            "[2:v]format=rgba64,split=4[colormapx1][colormapy1][colormapx2][colormapy2];"
             # convert from weird proprietary color thing to x map
             f"[colormapx1]geq=r='{xmap1}':g='{xmap1}':b='{xmap1}',format=gray16le[xmap1];"
             # convert from weird proprietary color thing to y map
@@ -83,14 +85,26 @@ async def heart_locket(arg1, arg2, type: ArgType):
             # convert from weird proprietary color thing to y map
             f"[colormapy2]geq=r='{ymap2}':g='{ymap2}':b='{ymap2}',format=gray16le[ymap2];"
             # map the input image onto the locket
-            "[3:v][xmap1][ymap1]remap[mapped1];"
-            "[4:v][xmap2][ymap2]remap[mapped2];"
-            "[1:v]split=2[2v1][2v2];"
+            "[0:v][xmap1][ymap1]remap[mapped1];"
+            "[1:v][xmap2][ymap2]remap[mapped2];"
+            # add the shading
+            # TODO: the shading doesn't perfectly replicate the original.
+            #  the original does some indecipherable pixel math
+            #  the main difference is that the blending between the edges is smooth, but this will do
+            "[5:v]geq=r='0':g='0':b='0':a='255-r(X,Y)',format=rgba,split=2[shading1][shading2];"
+            "[6:v]geq=r='255':g='255':b='255':a='r(X,Y)',format=rgba,split=2[highlight1][highlight2];"
+            "[mapped1][shading1]overlay[shaded1];"
+            "[shaded1][highlight1]overlay[highlighted1];"
+            "[mapped2][shading2]overlay[shaded2];"
+            "[shaded2][highlight2]overlay[highlighted2];"
+            # trim the image to each half of the locket
+            "[3:v]split=2[2v1][2v2];"
             "[2v1]geq=r='0':g='0':b='0':a='if(eq(r(X, Y), 1), 255, 0)',format=rgba,alphaextract[mask1];"
             "[2v2]geq=r='0':g='0':b='0':a='if(eq(r(X, Y), 2), 255, 0)',format=rgba,alphaextract[mask2];"
-            "[mapped1][mask1]alphamerge[trimmed1];"
-            "[mapped2][mask2]alphamerge[trimmed2];"
-            "[2:v][trimmed1]overlay[combined1];"
+            "[highlighted1][mask1]alphamerge[trimmed1];"
+            "[highlighted2][mask2]alphamerge[trimmed2];"
+            # combine everything
+            "[4:v][trimmed1]overlay[combined1];"
             "[combined1][trimmed2]overlay"
             # "[2v1]geq=if(eq(r(X,Y),2),255,0)[mask2]"
         ),
