@@ -1,7 +1,7 @@
 import processing.vips.creation
 from processing.common import run_parallel
 from processing.ffmpeg.ffprobe import get_resolution
-from processing.ffmpeg.ffutils import resize
+import processing.mediatype
 from processing.run_command import run_command
 
 from utils.tempfiles import TempFile, reserve_tempfile
@@ -19,17 +19,17 @@ async def heart_locket(arg1, arg2, type: ArgType):
     # processing always does in order of media, text, so
     match type:
         case ArgType.MEDIA_MEDIA:
-            media1 = arg1
-            media2 = arg2
+            media1: TempFile = arg1
+            media2: TempFile = arg2
         case ArgType.TEXT_MEDIA:
-            media1 = arg1
-            media2 = await run_parallel(processing.vips.creation.heartlockettext, arg2)
+            media1: TempFile = await run_parallel(processing.vips.creation.heartlockettext, arg2)
+            media2: TempFile = arg1
         case ArgType.MEDIA_TEXT:
-            media2 = await run_parallel(processing.vips.creation.heartlockettext, arg2)
-            media1 = arg1
+            media1: TempFile = arg1
+            media2: TempFile = await run_parallel(processing.vips.creation.heartlockettext, arg2)
         case ArgType.TEXT_TEXT:
-            media1 = await run_parallel(processing.vips.creation.heartlockettext, arg1)
-            media2 = await run_parallel(processing.vips.creation.heartlockettext, arg2)
+            media1: TempFile = await run_parallel(processing.vips.creation.heartlockettext, arg1)
+            media2: TempFile = await run_parallel(processing.vips.creation.heartlockettext, arg2)
 
     # input is RTL, but filter is LTR
     media1, media2 = media2, media1
@@ -110,5 +110,6 @@ async def heart_locket(arg1, arg2, type: ArgType):
         ),
         "-c:v", "ffv1", "-t", str(length),
         out)
+    out.mt = processing.mediatype.MediaType.GIF
     # await run_command("ffplay", out)
     return out
