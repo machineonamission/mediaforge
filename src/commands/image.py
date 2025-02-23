@@ -142,7 +142,7 @@ class Image(commands.Cog, name="Creation"):
         """
         await process(ctx, sus.sus, [], text, run_parallel=True)
 
-    @commands.hybrid_command(aliases=['locket', 'heart'])
+    @commands.hybrid_command(aliases=['locket', 'heart', "beloved", "mybeloved"])
     async def heartlocket(self, ctx, *, text="my beloved"):
         """
         Put your image and text into a 3d animated heart locket
