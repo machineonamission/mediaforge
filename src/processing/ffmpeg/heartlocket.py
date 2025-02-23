@@ -1,5 +1,8 @@
+import asyncio
+
 import processing.vips.creation
 from processing.common import run_parallel
+from processing.ffmpeg.conversion import mediatopng
 from processing.ffmpeg.ffprobe import get_resolution
 import processing.mediatype
 from processing.run_command import run_command
@@ -32,7 +35,7 @@ async def heart_locket(arg1, arg2, type: ArgType):
             media2: TempFile = await run_parallel(processing.vips.creation.heartlockettext, arg2)
 
     # input is RTL, but filter is LTR
-    media1, media2 = media2, media1
+    media1, media2 = await asyncio.gather(mediatopng(media2), mediatopng(media1))
     out = reserve_tempfile("mkv")
     w1, h1 = await get_resolution(media1)
     w2, h2 = await get_resolution(media2)
