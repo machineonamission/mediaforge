@@ -152,7 +152,7 @@ def heartlockettext(caption:str):
     # generate text
     out = pyvips.Image.text(
         caption,
-        font=f"Arial,Twemoji Color Emoji 100px",
+        font=f"Arial,Twemoji Color Emoji 0.3",
         rgba=True,
         fontfile="rendering/fonts/arial.ttf",
         align=pyvips.Align.CENTRE,

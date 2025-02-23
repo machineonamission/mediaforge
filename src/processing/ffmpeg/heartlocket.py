@@ -84,9 +84,14 @@ async def heart_locket(arg1, arg2, type: ArgType):
             f"[colormapx2]geq=r='{xmap2}':g='{xmap2}':b='{xmap2}',format=gray16le[xmap2];"
             # convert from weird proprietary color thing to y map
             f"[colormapy2]geq=r='{ymap2}':g='{ymap2}':b='{ymap2}',format=gray16le[ymap2];"
+            # remove alpha
+            "[0:v]split=2[bg1][fg1];[bg1]drawbox=c=white@1:replace=1:t=fill[bg1];"
+            "[bg1][fg1]overlay=format=auto[media0];"
+            "[1:v]split=2[bg2][fg2];[bg2]drawbox=c=white@1:replace=1:t=fill[bg2];"
+            "[bg2][fg2]overlay=format=auto[media1];"
             # map the input image onto the locket
-            "[0:v][xmap1][ymap1]remap[mapped1];"
-            "[1:v][xmap2][ymap2]remap[mapped2];"
+            "[media0][xmap1][ymap1]remap[mapped1];"
+            "[media1][xmap2][ymap2]remap[mapped2];"
             # add the shading
             # TODO: the shading doesn't perfectly replicate the original.
             #  the original does some indecipherable pixel math
