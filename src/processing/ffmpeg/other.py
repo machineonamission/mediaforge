@@ -13,7 +13,7 @@ import processing.vips as vips
 from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio
 from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, dual_gif_output, scale2ref, changefps, \
     resize
-from utils.tempfiles import reserve_tempfile
+from utils.tempfiles import reserve_tempfile, TempFile
 from processing.common import NonBugError
 from processing.run_command import run_command
 from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
@@ -449,7 +449,7 @@ async def speech_bubble(media, position: typing.Literal["top", "bottom"] = "top"
     mt = await media.mediatype()
     outfile = reserve_tempfile("mkv")
 
-    bubble = await scale2ref("rendering/images/speechbubble.png", media)
+    bubble = await scale2ref(TempFile("rendering/images/speechbubble.png"), media)
 
     if color == "transparent":
         await run_command("ffmpeg", "-i", media, "-i", bubble,
