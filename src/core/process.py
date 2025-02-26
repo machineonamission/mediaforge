@@ -11,7 +11,6 @@ import processing.ffmpeg.conversion
 import processing.ffmpeg.ensuresize
 
 import processing.ffmpeg.ffprobe
-import processing.ffmpeg.mediatype
 import processing.mediatype
 from core import queue
 from core.clogs import logger

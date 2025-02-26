@@ -159,17 +159,18 @@ class Image(commands.Cog, name="Creation"):
         :mediaparam media1: (Optional) The media to be put in the left side of the locket
         :mediaparam media2: (Optional) The media to be put in the right side of the locket
         """
-        if text == "":
-            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [["IMAGE"], ["IMAGE"]],
-                          processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA)
+        hlmt = [IMAGE, GIF, VIDEO]
         split = text.split("|")
         if len(split) == 1:
             split.append("")
+        if split[0] == "" and split[1] == "":
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt, hlmt],
+                          processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA)
         if split[0] == "" and split[1] != "":
-            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [["IMAGE"]], split[1],
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[1],
                           processing.ffmpeg.heartlocket.ArgType.MEDIA_TEXT)
         if split[0] != "" and split[1] == "":
-            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [["IMAGE"]], split[0],
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[0],
                           processing.ffmpeg.heartlocket.ArgType.TEXT_MEDIA)
         if split[0] != "" and split[1] != "":
             await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [], split[0], split[1],
