@@ -8,9 +8,9 @@ from core.clogs import logger
 import typing
 
 import processing.common
-from processing.ffmpeg.conversion import mediatopng
+from processing.ffmpeg.conversion import mediatopng, videotogif
 import processing.vips as vips
-from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio
+from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio, get_vcodec
 from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, dual_gif_output, scale2ref, changefps, \
     resize
 from utils.tempfiles import reserve_tempfile, TempFile
@@ -138,10 +138,16 @@ async def gifloop(file, loop):
     :param loop: # of times to loop
     :return: processed media
     """
-    outname = reserve_tempfile("gif")
-    await run_command("ffmpeg", "-hide_banner", "-i", file, "-loop", str(loop), "-vcodec", "copy", outname)
 
-    return outname
+    if (await get_vcodec(file))["codec_name"]  == "gif":
+        out = reserve_tempfile("gif")
+        await run_command("ffmpeg", "-hide_banner", "-i", file, "-loop", str(loop), "-vcodec", "copy", out)
+        out.lock_codec = True
+    else:
+        out = file
+    out.mt = GIF
+    out.glc = loop
+    return out
 
 @gif_output
 async def videoloop(file, loop):

@@ -5,21 +5,25 @@ from utils.tempfiles import reserve_tempfile
 
 
 async def videotogif(video):
+    if (await get_vcodec(video))["codec_name"] == "gif":
+        return video
     outname = reserve_tempfile("gif")
     fps = await get_frame_rate(video)
+    lc = await video.gif_loop_count()
     await run_command("ffmpeg", "-i", video,
                       # prevent partial frames, makes filesize worse but fixes issues with transparency
                       "-gifflags", "-transdiff",
+                      "-loop", str(lc),
                       "-vf",
                       # cap fps because gifs are wackyyyyyy
                       # TODO: https://superuser.com/q/1854904/1001487
                       ("fps=fps=50," if fps > 50 else "") + \
                       # make and use nice palette
-                      "split[s0][s1];[s0]palettegen=reserve_transparent=1[p];[s1][p]paletteuse=bayer",
+                      "split[s0][s1];[s0]palettegen=reserve_transparent=1[p];[s1][p]paletteuse",
                       # i fucking hate gifs so much man
                       "-fps_mode", "vfr",
                       outname)
-
+    # outname.glc = lc
     return outname
 
 

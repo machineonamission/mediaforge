@@ -12,17 +12,24 @@ import aiofiles.os
 
 import config
 from core.clogs import logger
+from processing.ffmpeg.glc import get_gif_loop_count
 from processing.mediatype import MediaType, mediatype
 
 
 class TempFile(str):
     mt: MediaType = None
     lock_codec: bool = False
+    glc: int = None
 
     async def mediatype(self):
         if self.mt is None:
             self.mt = await mediatype(self)
         return self.mt
+
+    async def gif_loop_count(self):
+        if self.glc is None:
+            self.glc = await get_gif_loop_count(self)
+        return self.glc
 
 
 def init():

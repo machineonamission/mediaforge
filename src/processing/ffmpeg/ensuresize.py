@@ -49,7 +49,7 @@ async def ensureduration(media, ctx: commands.Context):
     if await ctx.bot.is_owner(ctx.author):
         logger.debug(f"bot owner is exempt from duration checks.")
         return media
-    if await media.mediatype() != VIDEO:
+    if await media.mediatype() not in [VIDEO, GIF]:
         return media
     max_fps = config.max_fps if hasattr(config, "max_fps") else None
     fps = await get_frame_rate(media)
@@ -70,12 +70,12 @@ async def ensureduration(media, ctx: commands.Context):
     else:
         newdur = max_frames / fps
         tmsg = f"{config.emojis['warning']} input file is too long (~{frames} frames)! " \
-               f"Trimming to {round(newdur, 1)}s (~{max_frames} frames)... "
+               f"Trimming to {round(newdur, 1)}s (~{max_frames} frames)..."
         logger.debug(tmsg)
         msg = await ctx.reply(tmsg)
         media = await trim(media, newdur)
         try:
-            await edit_msg_with_webhookmessage_polyfill(msg, delete_after=5, content=tmsg + "Done!")
+            await edit_msg_with_webhookmessage_polyfill(msg, delete_after=5, content=tmsg + " Done!")
         except discord.NotFound as e:
             logger.debug(e)
         return media
@@ -153,8 +153,8 @@ async def assurefilesize(media):
     """
     compresses files to fit within config set discord limit
 
-    :param re_encode: try to reencode media?
-    :param media: media
+    :param media: media to check size of
+    :param original: original media to actually downsize
     :return: filename of fixed media if it works, False if it still is too big.
     """
     if not media:
