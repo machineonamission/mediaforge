@@ -17,9 +17,13 @@ async def videotogif(video):
                       "-vf",
                       # cap fps because gifs are wackyyyyyy
                       # TODO: https://superuser.com/q/1854904/1001487
-                      ("fps=fps=50," if fps > 50 else "") + \
+                      f"{"fps=fps=50," if fps > 50 else ""}"
                       # make and use nice palette
-                      "split[s0][s1];[s0]palettegen=reserve_transparent=1[p];[s1][p]paletteuse",
+                      # pisscord seems to fuck with gifs in the low res preview,
+                      # fuckign up my dithering and throwing away multi frame palettes
+                      "split[s0][s1];"
+                      "[s0]palettegen=reserve_transparent=1:[p];" # stats_mode=single
+                      "[s1][p]paletteuse=dither=sierra3", # :new=1
                       # i fucking hate gifs so much man
                       "-fps_mode", "vfr",
                       outname)

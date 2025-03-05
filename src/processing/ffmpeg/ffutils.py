@@ -222,39 +222,14 @@ async def resize(image, width, height, lock_codec=False):
     :param lock_codec: attempt to keep the input codec
     :return: processed media
     """
-    if await image.mediatype() == GIF and lock_codec:
-        return await gif_resize(image, width, height)
+    gif = await image.mediatype() == GIF
     ext = image.split(".")[-1]
     out = reserve_tempfile(ext if lock_codec else "mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "copy" if lock_codec else "ffv1",
+                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "copy" if lock_codec and not gif else "ffv1",
                       "-pix_fmt", "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
-    return out
-
-
-async def gif_resize(gif, width, height):
-    out = reserve_tempfile("gif")
-    fps = await get_frame_rate(gif)
-    lc = await gif.gif_loop_count()
-    # cloned from videotogif
-    await run_command(
-        "ffmpeg", "-i", gif,
-        "-gifflags", "-transdiff",
-        "-max_muxing_queue_size", "9999",
-        "-sws_flags", "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-        "-loop", str(lc),
-
-        "-vf",
-        # resize
-        f"scale='{width}:{height}',setsar=1:1,"
-        # gif shit
-        f"{"fps=fps=50," if fps > 50 else ""}split[s0][s1];"
-        f"[s0]palettegen=reserve_transparent=1[p];"
-        f"[s1][p]paletteuse",
-
-        "-c:v", "gif",
-        "-fps_mode", "vfr", out
-    )
-    out.mt = GIF
-    return out
+    if gif and lock_codec:
+        return await videotogif(out)
+    else:
+        return out
