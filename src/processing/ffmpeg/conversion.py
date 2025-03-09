@@ -1,6 +1,6 @@
 from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 from processing.run_command import run_command
-from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate
+from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate, get_resolution
 from utils.tempfiles import reserve_tempfile
 
 
@@ -18,12 +18,21 @@ async def videotogif(video):
                       # cap fps because gifs are wackyyyyyy
                       # TODO: https://superuser.com/q/1854904/1001487
                       f"{'fps=fps=50,' if fps > 50 else ''}"
-                      # make and use nice palette
-                      # pisscord seems to fuck with gifs in the low res preview,
-                      # fuckign up my dithering and throwing away multi frame palettes
                       "split[s0][s1];"
-                      "[s0]palettegen=reserve_transparent=1[p];" # stats_mode=single
-                      "[s1][p]paletteuse=dither=sierra3", # :new=1
+                      "[s0]"
+                      # "What happens is that the color values are rounded to the nearest value that has a remainder of 4 when divided by 8."
+                      # https://glq.pages.dev/posts/high_quality_gifs/
+                      # this is only in the image preview, the effect goes away when downloaded, but thats where most of these are viewed from
+                      # there's still 32^3 (32768) possible colors with this crushing, so a constant palette isnt viable
+                      # code directly taken from lilliput, fast and accurate, and only decimated to feed to palettegen
+                      # https://github.com/discord/lilliput/blob/e1547514bd5f32800c612e5564b18a60f046b1af/giflib.cpp#L848
+                      "geq=r='bitor(bitand(r(X,Y), 248), 4)':g='bitor(bitand(g(X,Y), 248), 4)':b='bitor(bitand(b(X,Y), 248), 4)',"
+                      # make and use nice palette
+                      # from what i can tell, discord does preserve multi frame palettes
+                      "palettegen=reserve_transparent=1:stats_mode=single"
+                      "[p];"
+                      # for some god forsaken reason, discord destroys any dither that isn't bayer
+                      "[s1][p]paletteuse=dither=bayer:bayer_scale=3:new=1",
                       # i fucking hate gifs so much man
                       "-fps_mode", "vfr",
                       outname)
