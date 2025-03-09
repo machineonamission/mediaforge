@@ -24,7 +24,7 @@ def get_caption_height(file, tolerance: float):
 
 
 async def uncaption(file, frame_to_try: int, tolerance: float):
-    frame_to_try = await processing.ffmpeg.ffprobe.frame_n(file, frame_to_try)
+    frame_to_try = await mediatopng(await processing.ffmpeg.ffprobe.frame_n(file, frame_to_try))
     cap_height = await run_parallel(get_caption_height, frame_to_try, tolerance)
     return await processing.ffmpeg.ffutils.trim_top(file, cap_height)
 
