@@ -1,9 +1,12 @@
 import asyncio
 import math
 
+import aiofiles
+
 import config
 import processing.common
 import processing.mediatype
+from core.clogs import logger
 from processing.ffmpeg.conversion import videotogif, mediatopng
 from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution, va_codecs, get_vcodec, get_frame_rate
 from utils.tempfiles import reserve_tempfile, TempFile
@@ -233,3 +236,25 @@ async def resize(image, width, height, lock_codec=False):
         return await videotogif(out)
     else:
         return out
+
+async def splitaudio(video):
+    """
+    splits audio from a file
+    :param video: file
+    :return: filename of audio (aac) if file has audio, False if it doesn't
+    """
+    ifaudio = await run_command("ffprobe", "-i", video, "-show_streams", "-select_streams", "a", "-loglevel", "panic")
+    if ifaudio:
+        logger.info("Splitting audio...")
+        name = reserve_tempfile("flac")
+        await run_command("ffmpeg", "-hide_banner", "-i", video, "-vn", "-acodec", "flac", name)
+        return name
+    else:
+        logger.info("No audio detected.")
+        return None
+
+async def concat_demuxer(files):
+    concatdemuxer = reserve_tempfile("txt")
+    async with aiofiles.open(concatdemuxer, "w+") as f:
+        await f.write("\n".join([f"file '{file}'" for file in files]))
+    return concatdemuxer

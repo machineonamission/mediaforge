@@ -12,7 +12,7 @@ from processing.ffmpeg.conversion import mediatopng, videotogif
 import processing.vips as vips
 from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio, get_vcodec
 from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, dual_gif_output, scale2ref, changefps, \
-    resize
+    resize, concat_demuxer
 from utils.tempfiles import reserve_tempfile, TempFile
 from processing.common import NonBugError
 from processing.run_command import run_command
@@ -243,9 +243,7 @@ async def concatv(file0, file1):
                       "ffv1", "-c:a", "flac", "-ar", "48000", "-fps_mode", "vfr", fixedvideo1)
     fixedfixedvideo1 = await changefps(fixedvideo1, fps)
 
-    concatdemuxer = reserve_tempfile("txt")
-    with open(concatdemuxer, "w+") as f:
-        f.write(f"file '{fixedvideo0}'\nfile '{fixedfixedvideo1}'")
+    concatdemuxer = await concat_demuxer([fixedvideo0, fixedfixedvideo1])
     outname = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-hide_banner", "-safe", "0", "-f", "concat", "-i", concatdemuxer, "-c:v", "ffv1",
                       "-c:a", "flac", outname)
