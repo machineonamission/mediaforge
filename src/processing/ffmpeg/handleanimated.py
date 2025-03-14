@@ -28,7 +28,7 @@ def run_sync_per_frame(syncfunc: callable, inoutfiles, *args, **kwargs):
     return [syncfunc(file, *args, **kwargs) for file in inoutfiles]
 
 
-async def handleanimated(media, function: callable, *args, **kwargs):
+async def handleanimated(media: TempFile, function: callable, *args, **kwargs):
     """
     handles animated media
     :param media: media
@@ -46,14 +46,15 @@ async def handleanimated(media, function: callable, *args, **kwargs):
 
     outdemuxer = await concat_demuxer(outnames)
 
-    outfile = await reserve_tempfile("mkv")
+    outfile = reserve_tempfile("mkv")
     if audio:
-        await run_command("ffmpeg", "-r", str(fps), "-f", " concat", "-safe", "0", "-i", outdemuxer, "-i", audio,
+        await run_command("ffmpeg", "-r", str(fps), "-f", "concat", "-safe", "0", "-i", outdemuxer, "-i", audio,
                           "-c:v", "ffv1", "-c:a", "copy", outfile)
     else:
-        await run_command("ffmpeg", "-r", str(fps), "-f", " concat", "-safe", "0", "-i", outdemuxer, "-c:v", "ffv1",
+        await run_command("ffmpeg", "-r", str(fps), "-f", "concat", "-safe", "0", "-i", outdemuxer, "-c:v", "ffv1",
                           outfile)
-
+    if await media.mediatype() == GIF:
+        outfile.mt = GIF
     return outfile
 
 

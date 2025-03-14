@@ -74,7 +74,7 @@ def ytdownload(vid, form):
 
 async def magickone(media, strength):
     tosave = reserve_tempfile("png")
-    media = await mediatopng(media)
+    # media = await mediatopng(media)
     await run_command("magick", media, "-liquid-rescale", f"{strength}%x{strength}%", tosave)
 
     return tosave

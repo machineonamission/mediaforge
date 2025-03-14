@@ -29,10 +29,6 @@ async def uncaption(file, frame_to_try: int, tolerance: float):
     return await processing.ffmpeg.ffutils.trim_top(file, cap_height)
 
 
-async def jpeg_wrapper(file, *args, **kwargs):
-    return await run_parallel(jpeg, await mediatopng(file), *args, **kwargs)
-
-
 def jpeg(file, strength, stretch, quality):
     im = normalize(pyvips.Image.new_from_file(file))
     orig_w = im.width

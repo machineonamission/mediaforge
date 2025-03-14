@@ -5,6 +5,7 @@ from discord.ext import commands
 
 import config
 import processing.ffmpeg.conversion
+import processing.ffmpeg.handleanimated
 
 import processing.other
 import processing.vips.other
@@ -71,7 +72,7 @@ class Media(commands.Cog, name="Editing"):
         :param quality: quality of JPEG compression. must be between 1 and 95.
         :mediaparam media: An image.
         """
-        await process(ctx, processing.vips.other.jpeg_wrapper, [[IMAGE]], strength, stretch, quality)
+        await process(ctx, processing.ffmpeg.handleanimated.animatedmultiplexer, [[IMAGE, VIDEO, GIF]], processing.vips.other.jpeg, strength, stretch, quality)
 
     @commands.hybrid_command()
     async def deepfry(self, ctx, brightness: commands.Range[float, -1, 1] = 0.5,
@@ -154,8 +155,7 @@ class Media(commands.Cog, name="Editing"):
         the original size. must be between 1 and 99.
         :mediaparam media: An image.
         """
-        # TODO: add support for gifs/videos
-        await process(ctx, processing.other.magickone, [[IMAGE]], strength)
+        await process(ctx, processing.ffmpeg.handleanimated.animatedmultiplexer,  [[IMAGE, VIDEO, GIF]], processing.other.magickone, strength)
 
     @commands.hybrid_command(aliases=["repeat"], hidden=True)
     async def loop(self, ctx):
