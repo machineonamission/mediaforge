@@ -25,24 +25,24 @@
 
 ### to install
 
-All you need to install yourself is [Docker Desktop](https://docs.docker.com/get-docker/)
-
 as of writing, a working docker copy of MediaForge takes up ~3.46GB. if this is a concern and you are using some of the
 apt libraries MediaForge does, see [to self-host natively](#to-self-host-natively)
+
+All you need to install yourself is [Docker Desktop](https://docs.docker.com/get-docker/)
 
 once that's installed, run these commands in your terminal of choice.
 
 ```shell
-docker build -t melodyflorum/mediaforge https://github.com/machineonamission/mediaforge.git
-docker run -it --cap-add SYS_NICE --shm-size 8G --name mediaforge melodyflorum/mediaforge
+docker build -t machineonamission/mediaforge https://github.com/machineonamission/mediaforge.git
+docker run -it --cap-add SYS_NICE --shm-size 8G --name mediaforge machineonamission/mediaforge
 ```
 
 on linux, you may need to run docker with `sudo`
 
 replace `8G` with how much free RAM your system has that you would like to give MediaForge (in gigabytes). At least `1G`
 is suggested. Making this too small can make commands fail due to not enough space, as the `/dev/shm` in-memory
-filesystem is, by default, MediaForge's sole temporary directory. Override the `override_temp_dir` option in `config.py`
-if you can't allocate enough memory.
+filesystem is, by default, MediaForge's sole temporary directory. If you don't have enough memory to allocate, or expect
+high command volume, remove `--shm-size 8G` from the `docker run` command to use your regular disk as temp storage.
 
 if the installation succeeded, you should be prompted with some options. you'll need to select "Edit Config". this will
 open a text editor within your terminal. the 2 required config settings to change for proper functionality are the
@@ -65,11 +65,19 @@ by default, MediaForge will await user input for 10 seconds before attempting to
 
 killing the terminal window/`CTRL+C` won't kill the bot, because docker runs in the background.
 
-to kill the bot, run
+to stop the bot, run
 
 ```shell
 docker stop mediaforge
 ```
+
+if the bot refuses to stop for some reason, you can run 
+
+```shell
+docker kill mediaforge
+```
+
+to forcibly kill it.
 
 ### to limit resource consumption
 
