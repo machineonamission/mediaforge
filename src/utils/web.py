@@ -5,7 +5,6 @@ import humanize
 import config
 import processing.common
 import processing.ffmpeg.conversion
-
 from core.clogs import logger
 from processing.mediatype import GIF
 from utils.tempfiles import reserve_tempfile, TenorUrl

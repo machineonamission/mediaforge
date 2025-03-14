@@ -4,8 +4,8 @@ import typing
 import pyvips
 
 from processing.vips.vipsutils import ImageSize, escape, outline, overlay_in_middle
-from utils.tempfiles import reserve_tempfile
 from processing.vips.vipsutils import normalize
+from utils.tempfiles import reserve_tempfile
 
 twemoji = "rendering/fonts/TwemojiCOLR0.otf"
 

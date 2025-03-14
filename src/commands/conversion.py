@@ -11,7 +11,6 @@ from discord.ext import commands
 import config
 import processing.ffmpeg.conversion
 import processing.ffmpeg.ensuresize
-
 import processing.ffmpeg.ffprobe
 import utils.discordmisc
 import utils.web

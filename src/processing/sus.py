@@ -1,6 +1,4 @@
-import os
 import random
-import string
 
 from PIL import Image, ImageDraw, ImageFont
 

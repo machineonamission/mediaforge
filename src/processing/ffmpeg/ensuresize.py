@@ -10,15 +10,13 @@ import humanize
 from discord.ext import commands
 
 import config
-import processing.common
-import processing.mediatype
 import utils
 from core.clogs import logger
 from processing.common import NonBugError, ReturnedNothing
-from processing.run_command import run_command
-from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 from processing.ffmpeg.ffprobe import get_frame_rate, get_duration, get_resolution
 from processing.ffmpeg.ffutils import changefps, trim, resize
+from processing.mediatype import VIDEO, IMAGE, GIF
+from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile
 
 

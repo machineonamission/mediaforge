@@ -2,10 +2,9 @@ from discord.ext import commands
 
 import processing.ffmpeg.caption
 import processing.vips.caption
-
-from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 import processing.vips.vipsutils
 from core.process import process
+from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 
 
 class Caption(commands.Cog, name="Captioning"):

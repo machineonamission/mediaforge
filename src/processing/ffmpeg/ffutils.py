@@ -7,15 +7,14 @@ import aiofiles
 import config
 import processing.common
 import processing.mediatype
-from core.clogs import logger
-from processing.ffmpeg.conversion import videotogif, mediatopng, mediatobmp
-from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution, va_codecs, get_vcodec, get_frame_rate
-from utils.tempfiles import reserve_tempfile, TempFile
-from processing.common import NonBugError
-from processing.run_command import run_command
-from processing.mediatype import VIDEO, IMAGE, GIF, AUDIO
 import processing.vips as vips
-import re
+from core.clogs import logger
+from processing.common import NonBugError
+from processing.ffmpeg.conversion import videotogif, mediatobmp
+from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
+from processing.mediatype import VIDEO, IMAGE, GIF
+from processing.run_command import run_command
+from utils.tempfiles import reserve_tempfile, TempFile
 
 
 async def forceaudio(video):

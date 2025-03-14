@@ -5,8 +5,8 @@ from processing import vips as vips
 from processing.ffmpeg.ffprobe import get_resolution, frame_n
 from processing.ffmpeg.ffutils import gif_output
 from processing.ffmpeg.other import imageaudio, concatv
-from utils.tempfiles import reserve_tempfile
 from processing.run_command import run_command
+from utils.tempfiles import reserve_tempfile
 
 
 @gif_output

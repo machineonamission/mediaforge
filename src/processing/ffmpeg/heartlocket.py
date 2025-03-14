@@ -1,16 +1,13 @@
 import asyncio
+from enum import Enum
 
+import processing.mediatype
 import processing.vips.creation
 from processing.common import run_parallel
-from processing.ffmpeg.conversion import mediatopng
-from processing.ffmpeg.ffprobe import get_resolution, hasaudio
-import processing.mediatype
-from processing.mediatype import VIDEO
+from processing.ffmpeg.ffprobe import hasaudio
+from processing.mediatype import VIDEO, IMAGE, GIF
 from processing.run_command import run_command
-
 from utils.tempfiles import TempFile, reserve_tempfile
-from enum import Enum
-from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 
 
 class ArgType(Enum):

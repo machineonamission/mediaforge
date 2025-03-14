@@ -6,12 +6,11 @@ import processing.common
 import processing.ffmpeg.creation
 import processing.ffmpeg.heartlocket
 import processing.other
-
 import processing.vips
 import processing.vips.creation
 from core.process import process
 from processing import sus
-from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
+from processing.mediatype import VIDEO, IMAGE, GIF
 
 
 class Image(commands.Cog, name="Creation"):

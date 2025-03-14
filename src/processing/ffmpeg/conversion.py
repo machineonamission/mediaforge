@@ -1,6 +1,6 @@
+from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate
 from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 from processing.run_command import run_command
-from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate, get_resolution
 from utils.tempfiles import reserve_tempfile
 
 

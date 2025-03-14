@@ -11,19 +11,18 @@ from discord.ext import commands
 import config
 import core.queue
 import processing.common
-
 import processing.ffmpeg.ffprobe
 import processing.run_command
 import utils.discordmisc
 import utils.tempfiles
 from core import database
 from core.process import process
+from processing.mediatype import IMAGE, GIF
 from utils.common import prefix_function
 from utils.dpy import UnicodeEmojiConverter, showcog
 from utils.dpy import add_long_field
 from utils.scandiscord import imagesearch
 from utils.web import saveurls
-from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 
 
 class Other(commands.Cog, name="Other"):

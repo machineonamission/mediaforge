@@ -6,7 +6,6 @@ from discord.ext import commands
 import config
 import processing.ffmpeg.conversion
 import processing.ffmpeg.handleanimated
-
 import processing.other
 import processing.vips.other
 import utils
