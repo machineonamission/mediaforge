@@ -18,8 +18,8 @@ class ImageSize:
 async def generic_caption_stack(media, capfunc: callable, captions: typing.Sequence[str], *args, reverse=False):
     size = ImageSize(*await processing.ffmpeg.ffprobe.get_resolution(media))
     captext = await run_parallel(capfunc, *args, captions, size)
-    args = (media, captext) if reverse else (captext, media)
-    return await processing.ffmpeg.ffutils.naive_vstack(*args)
+    vargs = (media, captext) if reverse else (captext, media)
+    return await processing.ffmpeg.ffutils.naive_vstack(*vargs)
 
 
 async def generic_caption_overlay(media: str, capfunc: callable, captions: typing.Sequence[str], *args):
@@ -35,7 +35,8 @@ def escape(arg: str | typing.Sequence[str]):
         return [html.escape(s, quote=False) for s in arg]
 
 
-def outline(image: pyvips.Image, radius: int | float | None = None, color: typing.Sequence[int] | None = None) -> pyvips.Image:
+def outline(image: pyvips.Image, radius: int | float | None = None,
+            color: typing.Sequence[int] | None = None) -> pyvips.Image:
     if color is None:
         color = [0, 0, 0]
     if radius is None:
