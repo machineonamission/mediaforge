@@ -18,7 +18,7 @@ async def ffmpegsplit(media):
     """
     logger.info("Splitting frames...")
     await run_command("ffmpeg", "-hide_banner", "-i", media, "-vsync", "1", f"{media.split('.')[0]}_%09d.png")
-    files = glob.glob(f"{media.split('.')[0]}_*.png")
+    files = sorted(glob.glob(f"{media.split('.')[0]}_*.png"))
     files = [reserve_tempfile(f) for f in files]
 
     return files
@@ -40,7 +40,7 @@ async def handleanimated(media: TempFile, function: callable, *args, **kwargs):
     audio = await splitaudio(media)
     outnames: list[str]
     if inspect.iscoroutinefunction(function):
-        outnames = [await function(file, *args, **kwargs) for file in files]
+        outnames = [(await function(file, *args, **kwargs)) for file in files]
     else:
         outnames = await run_parallel(run_sync_per_frame, function, files, *args, **kwargs)
 
