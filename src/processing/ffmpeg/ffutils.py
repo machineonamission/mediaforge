@@ -231,12 +231,14 @@ async def resize(image, width, height, lock_codec=False):
     out = reserve_tempfile(ext if lock_codec and not gif else "mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "copy" if lock_codec and not gif else "ffv1",
+                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v",
+                      "copy" if lock_codec and not gif else "ffv1",
                       "-pix_fmt", "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
     if gif and lock_codec:
         return await videotogif(out)
     else:
         return out
+
 
 async def splitaudio(video):
     """
@@ -254,6 +256,7 @@ async def splitaudio(video):
         logger.info("No audio detected.")
         return None
 
+
 async def concat_demuxer(files):
     concatdemuxer = reserve_tempfile("txt")
     async with aiofiles.open(concatdemuxer, "w+") as f:
@@ -269,6 +272,7 @@ async def ffmpegsplit(media):
     """
     logger.info("Splitting frames...")
     await run_command("ffmpeg", "-hide_banner", "-i", media, "-vsync", "1", f"{media.split('.')[0]}_%09d.bmp")
+    # fucking glob isnt sorted by default on linux
     files = sorted(glob.glob(f"{media.split('.')[0]}_*.bmp"))
     files = [reserve_tempfile(f) for f in files]
 

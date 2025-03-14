@@ -1,22 +1,23 @@
-import math
-
-import discord
 import asyncio
-
-import processing.mediatype
-from core.clogs import logger
+import math
+import random as rand
 import typing
 
+import discord
+
 import processing.common
-from processing.ffmpeg.conversion import mediatopng, videotogif, mediatobmp
+import processing.mediatype
 import processing.vips as vips
+from core.clogs import logger
+from processing.common import NonBugError
+from processing.ffmpeg.conversion import mediatobmp
 from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio, get_vcodec
 from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, dual_gif_output, scale2ref, changefps, \
     resize, concat_demuxer
-from utils.tempfiles import reserve_tempfile, TempFile
-from processing.common import NonBugError
+from processing.ffmpeg.handleanimated import animatedmultiplexer
+from processing.mediatype import AUDIO, IMAGE, GIF
 from processing.run_command import run_command
-from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
+from utils.tempfiles import reserve_tempfile, TempFile
 
 
 @gif_output
@@ -40,7 +41,8 @@ async def speed(file, sp):
     else:
         # ffv1 is really fucky about having not enough frames, so just pre-emptively check
         if (await count_frames(file)) / sp <= 2:
-            raise NonBugError("Aborting speed because output file will have less than 2 frames. Try reducing the speed.")
+            raise NonBugError(
+                "Aborting speed because output file will have less than 2 frames. Try reducing the speed.")
         fps = await get_frame_rate(file)
         # duration = await get_duration(file)
         await run_command("ffmpeg", "-hide_banner", "-i", await forceaudio(file), "-filter_complex",
@@ -50,7 +52,6 @@ async def speed(file, sp):
                           "-c:v", "ffv1", "-c:a", "flac",
                           "-fps_mode",
                           "vfr", outname)
-
 
     return outname
 
@@ -136,7 +137,7 @@ async def gifloop(file, loop):
     :return: processed media
     """
 
-    if (await get_vcodec(file))["codec_name"]  == "gif":
+    if (await get_vcodec(file))["codec_name"] == "gif":
         out = reserve_tempfile("gif")
         await run_command("ffmpeg", "-hide_banner", "-i", file, "-loop", str(loop), "-vcodec", "copy", out)
         out.lock_codec = True
@@ -145,6 +146,7 @@ async def gifloop(file, loop):
     out.mt = GIF
     out.glc = loop
     return out
+
 
 @gif_output
 async def videoloop(file, loop):
@@ -407,6 +409,7 @@ async def tint(file, col: discord.Color):
                       f"format=rgba", "-c:v", "ffv1", "-fps_mode", "vfr", out)
     return out
 
+
 @gif_output
 async def circle(media):
     # gh copilot spat this out based on https://stackoverflow.com/a/62400465/9044183
@@ -415,6 +418,7 @@ async def circle(media):
                       f"geq=lum='p(X,Y)':a='if(lte(hypot(W/2-X,H/2-Y),H/2),255,0)'",
                       "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
     return outfile
+
 
 @gif_output
 async def round_corners(media, border_radius=10):
@@ -476,3 +480,16 @@ async def speech_bubble(media, position: typing.Literal["top", "bottom"] = "top"
                           "[0:v][1:v]overlay=format=auto",
                           "-c:v", "png" if mt == IMAGE else "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
     return outfile
+
+
+def stretch_tuple(strength: int) -> tuple[int, int]:
+    """generates a random stretch for jpeg"""
+    return rand.randint(-strength, strength), rand.randint(-strength, strength)
+
+
+async def handle_jpeg(media: TempFile, strength: int, stretch: int, quality: int):
+    """provides consistent stretch randomness over all jpeg frames"""
+    # resize to anywhere between (original image width ± stretch, original image height ± stretch)
+    # simulates being reposted many times
+    stretch_list = [stretch_tuple(stretch) for _ in range(strength)] if stretch > 0 else None
+    return await animatedmultiplexer(media, processing.vips.other.jpeg, strength, stretch_list, quality)

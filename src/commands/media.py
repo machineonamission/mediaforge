@@ -67,12 +67,12 @@ class Media(commands.Cog, name="Editing"):
 
         :param ctx: discord context
         :param strength: amount of times to jpegify image. must be between 1 and 100.
-        :param stretch: randomly stretch the image by this number on each jpegification, simulates being reposted many
-        times. can cause strange effects on videos. must be between 0 and 40.
+        :param stretch: randomly stretch the image by up to this many pixels on each jpegification, simulates being reposted many
+        times. set to 0 to disable. must be between 0 and 40.
         :param quality: quality of JPEG compression. must be between 1 and 95.
         :mediaparam media: An image, video, or GIF.
         """
-        await process(ctx, processing.ffmpeg.handleanimated.animatedmultiplexer, [[IMAGE, VIDEO, GIF]], processing.vips.other.jpeg, strength, stretch, quality)
+        await process(ctx, processing.ffmpeg.other.handle_jpeg, [[IMAGE, VIDEO, GIF]], strength, stretch, quality)
 
     @commands.hybrid_command()
     async def deepfry(self, ctx, brightness: commands.Range[float, -1, 1] = 0.5,
