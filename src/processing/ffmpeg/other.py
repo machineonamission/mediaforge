@@ -8,7 +8,7 @@ from core.clogs import logger
 import typing
 
 import processing.common
-from processing.ffmpeg.conversion import mediatopng, videotogif
+from processing.ffmpeg.conversion import mediatopng, videotogif, mediatobmp
 import processing.vips as vips
 from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio, get_vcodec
 from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, dual_gif_output, scale2ref, changefps, \
@@ -121,10 +121,7 @@ async def pad(file):
     :return: processed media
     """
     mt = await file.mediatype()
-    if mt == IMAGE:
-        outname = reserve_tempfile("png")
-    else:
-        outname = reserve_tempfile("mkv")
+    outname = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-hide_banner", "-i", file, "-vf",
                       "pad=width='max(iw,ih)':height='max(iw,ih)':x='(ih-iw)/2':y='(iw-ih)/2':color=white", "-c:v",
                       "ffv1", "-fps_mode", "vfr", outname)
@@ -170,7 +167,7 @@ async def imageaudio(image, audio):
     :param files: [image, audio]
     :return: video
     """
-    image = await mediatopng(image)  # -loop 1 only works with proper images
+    image = await mediatobmp(image)  # -loop 1 only works with proper images
     outname = reserve_tempfile("mkv")
     duration = await get_duration(audio)  # it is a couple seconds too long without it :(
     await run_command("ffmpeg", "-hide_banner", "-i", audio, "-loop", "1", "-i", image, "-pix_fmt", "yuv420p", "-vf",
@@ -263,7 +260,7 @@ async def stack(file0, file1, style):
     mts = [await file0.mediatype(), await file1.mediatype()]
     if mts[0] == IMAGE and mts[1] == IMAGE:  # easier to just make this an edge case
         # sometimes can be ffv1 mkvs with 1 frame, which vips has no idea what to do with
-        file0, file1 = await asyncio.gather(mediatopng(file0), mediatopng(file1))
+        file0, file1 = await asyncio.gather(mediatobmp(file0), mediatobmp(file1))
         return await processing.common.run_parallel(vips.vipsutils.stack, file0, file1, style)
     # file0, file1 = await repeat_shorter_video(file0, file1)  # scale2ref is fucky
     w0, h0 = await get_resolution(file0)
@@ -331,7 +328,7 @@ async def overlay(file0, file1, alpha: float, mode: str = 'overlay'):
     # for file in [video0, video1, fixedvideo1, fixedvideo0, fixedfixedvideo1]:
     #     os.remove(file)
     if mts[0] == IMAGE and mts[1] == IMAGE:
-        outname = await mediatopng(outname)
+        outname = await mediatobmp(outname)
     return outname
 
 

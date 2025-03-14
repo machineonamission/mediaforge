@@ -149,6 +149,14 @@ async def mediatopng(media):
 
     return outname
 
+async def mediatobmp(media):
+    outname = reserve_tempfile("bmp")
+    await run_command("ffmpeg", "-hide_banner", "-i", media, "-frames:v", "1", "-c:v",
+                      "copy" if (await get_vcodec(media))["codec_name"] == "bmp" else "bmp", "-pix_fmt", "rgba",
+                      outname)
+
+    return outname
+
 
 # this shit brokey, discord fucks apngs
 async def toapng(video):

@@ -1,27 +1,11 @@
-import glob
 import inspect
 
-from core.clogs import logger
 from processing.common import run_parallel
 from processing.ffmpeg.ffprobe import get_frame_rate
-from processing.ffmpeg.ffutils import splitaudio, concat_demuxer
+from processing.ffmpeg.ffutils import splitaudio, concat_demuxer, ffmpegsplit
 from processing.mediatype import VIDEO, GIF
 from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile, TempFile
-
-
-async def ffmpegsplit(media):
-    """
-    splits the input file into frames
-    :param media: file
-    :return: [list of files, ffmpeg key to find files]
-    """
-    logger.info("Splitting frames...")
-    await run_command("ffmpeg", "-hide_banner", "-i", media, "-vsync", "1", f"{media.split('.')[0]}_%09d.png")
-    files = sorted(glob.glob(f"{media.split('.')[0]}_*.png"))
-    files = [reserve_tempfile(f) for f in files]
-
-    return files
 
 
 def run_sync_per_frame(syncfunc: callable, inoutfiles, *args, **kwargs):

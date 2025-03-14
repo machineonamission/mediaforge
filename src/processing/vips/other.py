@@ -30,24 +30,23 @@ async def uncaption(file, frame_to_try: int, tolerance: float):
 
 
 def jpeg(file, strength, stretch, quality):
+    do_stretching = stretch > 0
     im = normalize(pyvips.Image.new_from_file(file))
     orig_w = im.width
     orig_h = im.height
-    # do one less iteration if we are strecthing so it getsstretched back
-    for i in range(strength - 1 if stretch > 0 else strength):
-        if stretch > 0:
+    for i in range(strength):
+        if do_stretching:
             # resize to anywhere between (original image width ± stretch, original image height ± stretch)
+            # simulates being reposted many times
             w_add = random.randint(-stretch, stretch)
             h_add = random.randint(-stretch, stretch)
             im = processing.vips.vipsutils.resize(im, orig_w + w_add, orig_h + h_add)
         # save to jpeg and read back to image
         im = pyvips.Image.new_from_buffer(im.write_to_buffer(".jpg", Q=quality), ".jpg")
-    if stretch > 0:
+    if do_stretching:
         # resize back to original size
         im = processing.vips.vipsutils.resize(im, orig_w, orig_h)
-        # save to jpeg and read back to image
-        im = pyvips.Image.new_from_buffer(im.write_to_buffer(".jpg", Q=quality), ".jpg")
     # save
-    outfile = reserve_tempfile("png")
-    im.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    im.write_to_file(outfile)
     return outfile

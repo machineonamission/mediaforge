@@ -136,6 +136,6 @@ def sus(input_string: str):
         total_width += scan_line.width
     final_image = final_image.crop((0, 0, total_width, final_image.height))
     # final_image.show()
-    filename = reserve_tempfile("png")
+    filename = reserve_tempfile("bmp")
     final_image.save(filename)
     return filename

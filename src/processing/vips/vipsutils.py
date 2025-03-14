@@ -69,8 +69,8 @@ def naive_stack(file0, file1):
     # stack
     out = im0.join(im1, pyvips.Direction.VERTICAL, expand=True, align=pyvips.Align.CENTRE)
     # save
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
 
     return outfile
 
@@ -88,8 +88,8 @@ def stack(file0, file1, style):
     out = im0.join(im1, pyvips.Direction.VERTICAL if style == "vstack" else pyvips.Direction.HORIZONTAL, expand=True,
                    align=pyvips.Align.CENTRE)
     # save
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
 
     return outfile
 

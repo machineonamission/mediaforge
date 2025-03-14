@@ -1,4 +1,5 @@
 import asyncio
+import glob
 import math
 
 import aiofiles
@@ -7,7 +8,7 @@ import config
 import processing.common
 import processing.mediatype
 from core.clogs import logger
-from processing.ffmpeg.conversion import videotogif, mediatopng
+from processing.ffmpeg.conversion import videotogif, mediatopng, mediatobmp
 from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution, va_codecs, get_vcodec, get_frame_rate
 from utils.tempfiles import reserve_tempfile, TempFile
 from processing.common import NonBugError
@@ -73,7 +74,7 @@ async def naive_vstack(file0, file1):
     mts = await asyncio.gather(file0.mediatype(), file1.mediatype())
     if mts[0] == IMAGE and mts[1] == IMAGE:
         # sometimes can be ffv1 mkvs with 1 frame, which vips has no idea what to do with
-        file0, file1 = await asyncio.gather(mediatopng(file0), mediatopng(file1))
+        file0, file1 = await asyncio.gather(mediatobmp(file0), mediatobmp(file1))
         return await processing.common.run_parallel(vips.vipsutils.naive_stack, file0, file1)
     else:
         out = reserve_tempfile("mkv")
@@ -133,7 +134,7 @@ async def naive_overlay(im1, im2):
     await run_command("ffmpeg", "-i", im1, "-i", im2, "-filter_complex", "overlay=format=auto", "-c:v", "ffv1", "-fs",
                       config.max_temp_file_size, "-fps_mode", "vfr", outname)
     if mts[0] == IMAGE and mts[1] == IMAGE:
-        outname = await mediatopng(outname)
+        outname = await mediatobmp(outname)
     return outname
 
 
@@ -258,3 +259,17 @@ async def concat_demuxer(files):
     async with aiofiles.open(concatdemuxer, "w+") as f:
         await f.write("\n".join([f"file '{file}'" for file in files]))
     return concatdemuxer
+
+
+async def ffmpegsplit(media):
+    """
+    splits the input file into frames
+    :param media: file
+    :return: [list of files, ffmpeg key to find files]
+    """
+    logger.info("Splitting frames...")
+    await run_command("ffmpeg", "-hide_banner", "-i", media, "-vsync", "1", f"{media.split('.')[0]}_%09d.bmp")
+    files = sorted(glob.glob(f"{media.split('.')[0]}_*.bmp"))
+    files = [reserve_tempfile(f) for f in files]
+
+    return files

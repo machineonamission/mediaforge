@@ -67,10 +67,10 @@ class Media(commands.Cog, name="Editing"):
 
         :param ctx: discord context
         :param strength: amount of times to jpegify image. must be between 1 and 100.
-        :param stretch: randomly stretch the image by this number on each jpegification. can cause strange effects
-        on videos. must be between 0 and 40.
+        :param stretch: randomly stretch the image by this number on each jpegification, simulates being reposted many
+        times. can cause strange effects on videos. must be between 0 and 40.
         :param quality: quality of JPEG compression. must be between 1 and 95.
-        :mediaparam media: An image.
+        :mediaparam media: An image, video, or GIF.
         """
         await process(ctx, processing.ffmpeg.handleanimated.animatedmultiplexer, [[IMAGE, VIDEO, GIF]], processing.vips.other.jpeg, strength, stretch, quality)
 
@@ -146,14 +146,14 @@ class Media(commands.Cog, name="Editing"):
     @commands.hybrid_command(aliases=["magic", "magik", "contentawarescale", "liquidrescale"])
     async def magick(self, ctx, strength: commands.Range[int, 1, 99] = 50):
         """
-        Apply imagemagick's liquid/content aware scale to an image.
+        Apply imagemagick's liquid/"content-aware" scale to an image.
         This command is a bit slow.
         https://legacy.imagemagick.org/Usage/resize/#liquid-rescale
 
         :param ctx: discord context
         :param strength: how strongly to compress the image. smaller is stronger. output image will be strength% of
         the original size. must be between 1 and 99.
-        :mediaparam media: An image.
+        :mediaparam media: An image, video, or GIF.
         """
         await process(ctx, processing.ffmpeg.handleanimated.animatedmultiplexer,  [[IMAGE, VIDEO, GIF]], processing.other.magickone, strength)
 
