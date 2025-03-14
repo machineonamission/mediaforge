@@ -5,8 +5,9 @@ from core.clogs import logger
 from processing.common import run_parallel
 from processing.ffmpeg.ffprobe import get_frame_rate
 from processing.ffmpeg.ffutils import splitaudio, concat_demuxer
+from processing.mediatype import VIDEO, GIF
 from processing.run_command import run_command
-from utils.tempfiles import reserve_tempfile
+from utils.tempfiles import reserve_tempfile, TempFile
 
 
 async def ffmpegsplit(media):
@@ -54,3 +55,14 @@ async def handleanimated(media, function: callable, *args, **kwargs):
                           outfile)
 
     return outfile
+
+
+async def animatedmultiplexer(media: TempFile, function: callable, *args, **kwargs):
+    mt = await media.mediatype()
+    if mt in [VIDEO, GIF]:
+        return await handleanimated(media, function, *args, **kwargs)
+    else:
+        if inspect.iscoroutinefunction(function):
+            return await function(media, *args, **kwargs)
+        else:
+            return await run_parallel(function, *args, **kwargs)
