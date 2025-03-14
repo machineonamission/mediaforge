@@ -164,15 +164,13 @@ class Caption(commands.Cog, name="Captioning"):
         :mediaparam media: A video, gif, or image.
         :mediaparam image: An image that will say something.
         """
-        # generic_image_caption takes params in a different order than process can natively provide, so we have to rearrange
-        await process(
-            ctx,
-            lambda media, image, gic, caption:
-            processing.vips.vipsutils.generic_caption_stack(media, gic, caption, image, reverse=True),
-            [[VIDEO, GIF, IMAGE], [IMAGE]],
-            processing.vips.caption.generic_image_caption,
-            [caption]
-        )
+
+        async def func(media, image, gic, caption):
+            # generic_image_caption takes params in a different order than process can natively provide, so we have to rearrange
+            return await processing.vips.vipsutils.generic_caption_stack(media, gic, caption, image, reverse=True)
+
+        await process(ctx, func, [[VIDEO, GIF, IMAGE], [IMAGE]], processing.vips.caption.generic_image_caption,
+                      [caption])
 
     @commands.hybrid_command(aliases=["bottomcap", "botcap"])
     async def bottomcaption(self, ctx, *, caption):
