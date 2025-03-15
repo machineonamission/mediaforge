@@ -11,12 +11,13 @@ from discord.ext import commands
 import config
 import core.queue
 import processing.common
-
 import processing.ffmpeg.ffprobe
+import processing.run_command
 import utils.discordmisc
 import utils.tempfiles
 from core import database
 from core.process import process
+from processing.mediatype import IMAGE, GIF
 from utils.common import prefix_function
 from utils.dpy import UnicodeEmojiConverter, showcog
 from utils.dpy import add_long_field
@@ -81,7 +82,7 @@ class Other(commands.Cog, name="Other"):
         :param name: The emoji name. Must be at least 2 characters.
         :mediaparam media: A gif or image.
         """
-        await process(ctx, utils.discordmisc.add_emoji, [["GIF", "IMAGE"]], ctx.guild, name, expectimage=False,
+        await process(ctx, utils.discordmisc.add_emoji, [[GIF, IMAGE]], ctx.guild, name, expectimage=False,
                       resize=False)
 
     # TODO: fix?
@@ -100,7 +101,7 @@ class Other(commands.Cog, name="Other"):
         :param name: The sticker name. Must be at least 2 characters.
         :mediaparam media: A gif or image.
         """
-        await process(ctx, utils.discordmisc.add_sticker, [["GIF", "IMAGE"]], ctx.guild, stickeremoji, name,
+        await process(ctx, utils.discordmisc.add_sticker, [[GIF, IMAGE]], ctx.guild, stickeremoji, name,
                       expectimage=False, resize=False)
 
     @commands.guild_only()
@@ -118,7 +119,7 @@ class Other(commands.Cog, name="Other"):
         if "BANNER" not in ctx.guild.features:
             await ctx.reply(f"{config.emojis['x']} This guild does not support banners.")
             return
-        await process(ctx, utils.discordmisc.set_banner, [["IMAGE"]], ctx.guild, expectimage=False,
+        await process(ctx, utils.discordmisc.set_banner, [[IMAGE]], ctx.guild, expectimage=False,
                       resize=False)
 
     @commands.guild_only()
@@ -133,7 +134,7 @@ class Other(commands.Cog, name="Other"):
         :param ctx: discord context
         :mediaparam media: An image or gif.
         """
-        await process(ctx, utils.discordmisc.set_icon, [["IMAGE", "GIF"]], ctx.guild, expectimage=False,
+        await process(ctx, utils.discordmisc.set_icon, [[IMAGE, GIF]], ctx.guild, expectimage=False,
                       resize=False)
 
     @commands.hybrid_command(aliases=["statistics"])
@@ -184,7 +185,7 @@ class Other(commands.Cog, name="Other"):
         embed.add_field(name="Add MediaForge to your server",
                         value=f"https://discord.com/api/oauth2/authorize?client_id=780570413767983122&permissions=3"
                               f"79968&scope=bot")
-        embed.add_field(name="MediaForge GitHub", value=f"https://github.com/reticivis-net/mediaforge")
+        embed.add_field(name="MediaForge GitHub", value=f"https://github.com/machineonamission/mediaforge")
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(aliases=["privacypolicy"])
@@ -206,20 +207,20 @@ class Other(commands.Cog, name="Other"):
                                                          f"storage, but you can join the MediaForge discord "
                                                          f"server (https://discord.gg/QhMyz3n4V7) or raise an "
                                                          f"issue on the GitHub ("
-                                                         f"https://github.com/reticivis-net/mediaforge).")
+                                                         f"https://github.com/machineonamission/mediaforge).")
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command(aliases=["github", "git"])
     async def version(self, ctx):
         """
         Shows information on how this copy of MediaForge compares to the latest code on github.
-        https://github.com/reticivis-net/mediaforge
+        https://github.com/machineonamission/mediaforge
         This command returns the output of `git status`.
 
         :param ctx: discord context
         """
-        await processing.common.run_command("git", "fetch")
-        status = await processing.common.run_command("git", "status")
+        await processing.run_command.run_command("git", "fetch")
+        status = await processing.run_command.run_command("git", "status")
         with io.StringIO() as buf:
             buf.write(status)
             buf.seek(0)
@@ -234,7 +235,7 @@ class Other(commands.Cog, name="Other"):
 
         :param ctx: discord context
         """
-        status = await processing.common.run_command("ffmpeg", "-version")
+        status = await processing.run_command.run_command("ffmpeg", "-version")
         with io.StringIO() as buf:
             buf.write(status)
             buf.seek(0)
@@ -403,18 +404,18 @@ class Other(commands.Cog, name="Other"):
                                           "links are provided below.",
                               color=discord.Color(0xD262BA))
         embed.add_field(name="Report a bug",
-                        value="To report a bug, make an issue at\nhttps://github.com/reticivis-net/mediaforge/issues",
+                        value="To report a bug, make an issue at\nhttps://github.com/machineonamission/mediaforge/issues",
                         inline=False)
         embed.add_field(name="Ask a question", value="Have a question? Use the Q&A Discussion "
-                                                     "page.\nhttps://github.com/reticivis-net/mediaforge/discussions/c"
+                                                     "page.\nhttps://github.com/machineonamission/mediaforge/discussions/c"
                                                      "ategories/q-a", inline=False)
         embed.add_field(name="Give an idea",
                         value="Have an idea or suggestion? Use the Ideas Discussion page.\nhtt"
-                              "ps://github.com/reticivis-net/mediaforge/discussions/categories/id"
+                              "ps://github.com/machineonamission/mediaforge/discussions/categories/id"
                               "eas", inline=False)
         embed.add_field(name="Something else?",
                         value="Anything is welcome in the discussion page!\nhttps://github."
-                              "com/reticivis-net/mediaforge/discussions", inline=False)
+                              "com/machineonamission/mediaforge/discussions", inline=False)
         embed.add_field(name="Why GitHub?",
                         value="Using GitHub for feedback makes it much easier to organize any i"
                               "ssues and to implement them into the bot's code.")

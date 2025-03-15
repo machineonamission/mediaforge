@@ -5,22 +5,46 @@ from processing import vips as vips
 from processing.ffmpeg.ffprobe import get_resolution, frame_n
 from processing.ffmpeg.ffutils import gif_output
 from processing.ffmpeg.other import imageaudio, concatv
+from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile
-from processing.common import run_command
 
 
 @gif_output
 async def motivate(media, captions: typing.Sequence[str]):
+    width, height = await get_resolution(media)
     text = await processing.common.run_parallel(vips.caption.motivate_text, captions,
-                                                vips.vipsutils.ImageSize(*await get_resolution(media)))
+                                                vips.vipsutils.ImageSize(width, height))
     outfile = reserve_tempfile("mkv")
+
+    # do pixel math in python to guarantee no rounding issues
+    wtext, htext = await get_resolution(text)
+
+    pad1_w = width + width // 60
+    pad1_h = height + width // 60
+    pad1_x = width // 120
+    pad1_y = width // 120
+
+    pad2_w = pad1_w + width // 30
+    pad2_h = pad1_h + width // 30
+    pad2_x = width // 60
+    pad2_y = width // 60
+
+    pad3_w = pad2_w
+    pad3_h = pad2_h + width // 30
+    
+    pad4_w = pad3_w + width // 5
+    pad4_h = pad3_h + htext + width // 10 + width // 30
+    pad4_x = width // 10
+    pad4_y = width // 10
+
     await run_command("ffmpeg", "-i", media, "-i", text, "-filter_complex",
-                      "[0]pad=w=iw+(iw/60):h=ih+(iw/60):x=(iw/120):y=(iw/120):color=black[0p0];"
-                      "[0p0]pad=w=iw+(iw/30):h=ih+(iw/30):x=(iw/60):y=(iw/60):color=white[0p1];"
-                      "[0p1]pad=w=iw:h=ih+(iw/30):x=0:y=0[0p2];"
-                      "[0p2][1]vstack=inputs=2[s];"
-                      "[s]pad=w=iw+(iw/5):h=ih+(iw/10)+(iw/30):x=(iw/10):y=(iw/10):color=black",
-                      "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr",
+                      f"[0]format=rgba,"  # THIS IS CRUCIAL OR ELSE THE SIZE GETS ROUNDED TO NEAREST EVEN INTEGER
+                      f"pad=w={pad1_w}:h={pad1_h}:x={pad1_x}:y={pad1_y}:color=black,"
+                      f"pad=w={pad2_w}:h={pad2_h}:x={pad2_x}:y={pad2_y}:color=white,"
+                      f"pad=w={pad3_w}:h={pad3_h}:x=0:y=0[i];"
+                      f"[i][1]vstack=inputs=2,"
+                      f"pad=w={pad4_w}:h={pad4_h}:x={pad4_x}:y={pad4_y}:color=black",
+    "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr",
                       outfile)
     return outfile
 
@@ -33,7 +57,6 @@ async def freezemotivateaudio(video, audio, *caption):
     :param caption: caption to pass to motivate()
     :return: processed media
     """
-    # TODO: this shit dont work
     lastframe = await frame_n(video, -1)
     clastframe = await motivate(lastframe, caption)
     freezeframe = await imageaudio(clastframe, audio)

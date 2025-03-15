@@ -1,14 +1,20 @@
 import asyncio
+import glob
 import math
+
+import aiofiles
 
 import config
 import processing.common
-from core.clogs import logger
-from processing.ffmpeg.conversion import videotogif, mediatopng
-from processing.ffmpeg.ffprobe import mediatype, get_duration, hasaudio, get_resolution
-from utils.tempfiles import reserve_tempfile
-from processing.common import run_command, NonBugError
+import processing.mediatype
 import processing.vips as vips
+from core.clogs import logger
+from processing.common import NonBugError
+from processing.ffmpeg.conversion import videotogif, mediatobmp
+from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
+from processing.mediatype import VIDEO, IMAGE, GIF
+from processing.run_command import run_command
+from utils.tempfiles import reserve_tempfile, TempFile
 
 
 async def forceaudio(video):
@@ -32,11 +38,12 @@ def gif_output(f):
     if the input is a gif, make the output a gif
     """
 
-    async def wrapper(media, *args, **kwargs):
-        mt = await mediatype(media)
+    async def wrapper(media: TempFile, *args, **kwargs):
+        mt = await media.mediatype()
         out = await f(media, *args, **kwargs)
-        if mt == "GIF":
-            out = await videotogif(out)
+        if mt == GIF:
+            out.mt = GIF
+            out.glc = await media.gif_loop_count()
         return out
 
     return wrapper
@@ -48,12 +55,12 @@ def dual_gif_output(f):
     """
 
     async def wrapper(media1, media2, *args, **kwargs):
-        mt1 = await mediatype(media1)
-        mt2 = await mediatype(media2)
+        mt1 = await media1.mediatype()
+        mt2 = await media2.mediatype()
         out = await f(media1, media2, *args, **kwargs)
         # if there are gifs, but no videos, convert to gif
-        if (mt1 == "GIF" or mt2 == "GIF") and not (mt1 == "VIDEO" or mt2 == "VIDEO"):
-            out = await videotogif(out)
+        if (mt1 == GIF or mt2 == GIF) and not (mt1 == VIDEO or mt2 == VIDEO):
+            out.mt = GIF
         return out
 
     return wrapper
@@ -63,10 +70,10 @@ async def naive_vstack(file0, file1):
     """
     stacks media assuming files are same width
     """
-    mts = await asyncio.gather(mediatype(file0), mediatype(file1))
-    if mts[0] == "IMAGE" and mts[1] == "IMAGE":
+    mts = await asyncio.gather(file0.mediatype(), file1.mediatype())
+    if mts[0] == IMAGE and mts[1] == IMAGE:
         # sometimes can be ffv1 mkvs with 1 frame, which vips has no idea what to do with
-        file0, file1 = await asyncio.gather(mediatopng(file0), mediatopng(file1))
+        file0, file1 = await asyncio.gather(mediatobmp(file0), mediatobmp(file1))
         return await processing.common.run_parallel(vips.vipsutils.naive_stack, file0, file1)
     else:
         out = reserve_tempfile("mkv")
@@ -77,55 +84,10 @@ async def naive_vstack(file0, file1):
                           # "-fs", config.max_temp_file_size,
                           "-fps_mode", "vfr", out)
 
-        if "VIDEO" in mts:
-            return out
-        else:  # gif and image only
-            return await videotogif(out)
+        if VIDEO not in mts:  # gif and image only
+            out.mt = GIF
+        return out
         # return await processing.vips.vstack(file0, file1)
-
-
-async def ensuresize(ctx, file, minsize, maxsize):
-    """
-    Ensures valid media is between minsize and maxsize in resolution
-    :param ctx: discord context
-    :param file: media
-    :param minsize: minimum width/height in pixels
-    :param maxsize: maximum height in pixels
-    :return: original or resized media
-    """
-    resized = False
-    if await mediatype(file) not in ["IMAGE", "VIDEO", "GIF"]:
-        return file
-    w, h = await get_resolution(file)
-    owidth = w
-    oheight = h
-    if w < minsize:
-        # the min(-1,maxsize) thing is to prevent a case where someone puts in like a 1x1000 image and it gets resized
-        # to 200x200000 which is very large so even though it wont preserve aspect ratio it's an edge case anyways
-
-        file = await resize(file, minsize, f"min(-1, {maxsize * 2})")
-        w, h = await get_resolution(file)
-        resized = True
-    if h < minsize:
-        file = await resize(file, f"min(-1, {maxsize * 2})", minsize)
-        w, h = await get_resolution(file)
-        resized = True
-    if await ctx.bot.is_owner(ctx.author):
-        logger.debug(f"bot owner is exempt from downsize checks")
-        return file
-    if w > maxsize:
-        file = await resize(file, maxsize, "-1")
-        w, h = await get_resolution(file)
-        resized = True
-    if h > maxsize:
-        file = await resize(file, "-1", maxsize)
-        w, h = await get_resolution(file)
-        resized = True
-    if resized:
-        logger.info(f"Resized from {owidth}x{oheight} to {w}x{h}")
-        await ctx.reply(f"Resized input media from {int(owidth)}x{int(oheight)} to {int(w)}x{int(h)}.", delete_after=5,
-                        mention_author=False)
-    return file
 
 
 def nthroot(num: float, n: float):
@@ -166,12 +128,12 @@ async def trim_top(file, trim_size):
 
 @dual_gif_output
 async def naive_overlay(im1, im2):
-    mts = [await mediatype(im1), await mediatype(im2)]
+    mts = [await im1.mediatype(), await im2.mediatype()]
     outname = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-i", im1, "-i", im2, "-filter_complex", "overlay=format=auto", "-c:v", "ffv1", "-fs",
                       config.max_temp_file_size, "-fps_mode", "vfr", outname)
-    if mts[0] == "IMAGE" and mts[1] == "IMAGE":
-        outname = await mediatopng(outname)
+    if mts[0] == IMAGE and mts[1] == IMAGE:
+        outname = await mediatobmp(outname)
     return outname
 
 
@@ -194,8 +156,8 @@ async def repeat_shorter_video(video1, video2):
     if someone has a better solution https://superuser.com/q/1854904/1001487
     :return: processed media
     """
-    im1 = await mediatype(video1) == "IMAGE"
-    im2 = await mediatype(video2) == "IMAGE"
+    im1 = await video1.mediatype() == IMAGE
+    im2 = await video2.mediatype() == IMAGE
     if im1 and im2:
         return video1, video2
     dur1 = 0 if im1 else await get_duration(video1)
@@ -253,18 +215,64 @@ async def trim(file, length, start=0):
 
 
 @gif_output
-async def resize(image, width, height):
+async def resize(image, width, height, lock_codec=False):
     """
     resizes image
 
     :param image: file
     :param width: new width, thrown directly into ffmpeg so it can be things like -1 or iw/2
     :param height: new height, same as width
+    :param lock_codec: attempt to keep the input codec
     :return: processed media
     """
-    out = reserve_tempfile("mkv")
+    gif = await image.mediatype() == GIF
+    ext = image.split(".")[-1]
+    out = reserve_tempfile(ext if lock_codec and not gif else "mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "ffv1", "-pix_fmt", "rgba", "-c:a",
-                      "copy", "-fps_mode", "vfr", out)
-    return out
+                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v",
+                      "copy" if lock_codec and not gif else "ffv1",
+                      "-pix_fmt", "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
+    if gif and lock_codec:
+        return await videotogif(out)
+    else:
+        return out
+
+
+async def splitaudio(video):
+    """
+    splits audio from a file
+    :param video: file
+    :return: filename of audio (aac) if file has audio, False if it doesn't
+    """
+    ifaudio = await run_command("ffprobe", "-i", video, "-show_streams", "-select_streams", "a", "-loglevel", "panic")
+    if ifaudio:
+        logger.info("Splitting audio...")
+        name = reserve_tempfile("flac")
+        await run_command("ffmpeg", "-hide_banner", "-i", video, "-vn", "-acodec", "flac", name)
+        return name
+    else:
+        logger.info("No audio detected.")
+        return None
+
+
+async def concat_demuxer(files):
+    concatdemuxer = reserve_tempfile("txt")
+    async with aiofiles.open(concatdemuxer, "w+") as f:
+        await f.write("\n".join([f"file '{file}'" for file in files]))
+    return concatdemuxer
+
+
+async def ffmpegsplit(media):
+    """
+    splits the input file into frames
+    :param media: file
+    :return: [list of files, ffmpeg key to find files]
+    """
+    logger.info("Splitting frames...")
+    await run_command("ffmpeg", "-hide_banner", "-i", media, "-vsync", "1", f"{media.split('.')[0]}_%09d.bmp")
+    # fucking glob isnt sorted by default on linux
+    files = sorted(glob.glob(f"{media.split('.')[0]}_*.bmp"))
+    files = [reserve_tempfile(f) for f in files]
+
+    return files

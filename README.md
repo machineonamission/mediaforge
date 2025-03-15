@@ -3,9 +3,9 @@
 
 [![Discord Bots](https://top.gg/api/widget/780570413767983122.svg)](https://top.gg/bot/780570413767983122)
 
-![Total Lines](https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/reticivis-net/mediaforge/badge?filter=.py&style=flat&label=Lines%20of%20Code)
-[![wakatime](https://wakatime.com/badge/github/reticivis-net/mediaforge.svg)](https://wakatime.com/badge/github/reticivis-net/mediaforge)
-[![stars](https://img.shields.io/github/stars/reticivis-net/mediaforge?style=social)](https://github.com/reticivis-net/mediaforge/stargazers)
+![Total Lines](https://img.shields.io/endpoint?url=https://ghloc.vercel.app/api/machineonamission/mediaforge/badge?filter=.py&style=flat&label=Lines%20of%20Code)
+[![wakatime](https://wakatime.com/badge/user/ceaa3b2d-5469-499f-97ed-b23bda26c31a/project/7114917f-f795-4c9f-aadf-0e66528176be.svg)](https://wakatime.com/@machineonamission/projects/ttvriomkzo)
+[![stars](https://img.shields.io/github/stars/machineonamission/mediaforge?style=social)](https://github.com/machineonamission/mediaforge/stargazers)
 [![uptime](https://app.statuscake.com/button/index.php?Track=6022597&Design=6)](https://uptime.statuscake.com/?TestID=JyWrfGfIjT)
 [![MediaForge Discord](https://discordapp.com/api/guilds/803788965215338546/widget.png)](https://discord.gg/xwWjgyVqBz)
 [![built with immense swag](https://img.shields.io/static/v1?label=built+with&message=immense+swag&color=D262BA)](https://knowyourmeme.com/memes/trollface)
@@ -25,24 +25,24 @@
 
 ### to install
 
-All you need to install yourself is [Docker Desktop](https://docs.docker.com/get-docker/)
-
 as of writing, a working docker copy of MediaForge takes up ~3.46GB. if this is a concern and you are using some of the
 apt libraries MediaForge does, see [to self-host natively](#to-self-host-natively)
+
+All you need to install yourself is [Docker Desktop](https://docs.docker.com/get-docker/)
 
 once that's installed, run these commands in your terminal of choice.
 
 ```shell
-docker build -t melodyflorum/mediaforge https://github.com/reticivis-net/mediaforge.git
-docker run -it --cap-add SYS_NICE --shm-size 8G --name mediaforge melodyflorum/mediaforge
+docker build -t machineonamission/mediaforge https://github.com/machineonamission/mediaforge.git
+docker run -it --cap-add SYS_NICE --shm-size 8G --name mediaforge machineonamission/mediaforge
 ```
 
 on linux, you may need to run docker with `sudo`
 
 replace `8G` with how much free RAM your system has that you would like to give MediaForge (in gigabytes). At least `1G`
 is suggested. Making this too small can make commands fail due to not enough space, as the `/dev/shm` in-memory
-filesystem is, by default, MediaForge's sole temporary directory. Override the `override_temp_dir` option in `config.py`
-if you can't allocate enough memory.
+filesystem is, by default, MediaForge's sole temporary directory. If you don't have enough memory to allocate, or expect
+high command volume, remove `--shm-size 8G` from the `docker run` command to use your regular disk as temp storage.
 
 if the installation succeeded, you should be prompted with some options. you'll need to select "Edit Config". this will
 open a text editor within your terminal. the 2 required config settings to change for proper functionality are the
@@ -65,11 +65,19 @@ by default, MediaForge will await user input for 10 seconds before attempting to
 
 killing the terminal window/`CTRL+C` won't kill the bot, because docker runs in the background.
 
-to kill the bot, run
+to stop the bot, run
 
 ```shell
 docker stop mediaforge
 ```
+
+if the bot refuses to stop for some reason, you can run 
+
+```shell
+docker kill mediaforge
+```
+
+to forcibly kill it.
 
 ### to limit resource consumption
 
@@ -168,7 +176,7 @@ the bot uses many external CLI programs for media processing.
     - on windows, [`powershell`](https://aka.ms/powershell) is used to
       access [Windows's native TTS](https://docs.microsoft.com/en-us/uwp/api/windows.media.speechsynthesis.speechsynthesizer)
       . Both are included in modern versions of Windows, but ensure powershell is in the system path.
-  - the "retro" voice uses [sam-cli](https://github.com/reticivis-net/sam-cli). it is included, but it
+  - the "retro" voice uses [sam-cli](https://github.com/machineonamission/sam-cli). it is included, but it
       requires [node.js](https://nodejs.org/) to be installed and added to the system path
         - pretty sure both the windows & linux installers add it to path on installation but cant hurt to check
 

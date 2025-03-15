@@ -15,11 +15,11 @@ class ImageSize:
     height: int
 
 
-async def generic_caption_stack(media: str, capfunc: callable, captions: typing.Sequence[str], *args, reverse=False):
+async def generic_caption_stack(media, capfunc: callable, captions: typing.Sequence[str], *args, reverse=False):
     size = ImageSize(*await processing.ffmpeg.ffprobe.get_resolution(media))
     captext = await run_parallel(capfunc, *args, captions, size)
-    args = (media, captext) if reverse else (captext, media)
-    return await processing.ffmpeg.ffutils.naive_vstack(*args)
+    vargs = (media, captext) if reverse else (captext, media)
+    return await processing.ffmpeg.ffutils.naive_vstack(*vargs)
 
 
 async def generic_caption_overlay(media: str, capfunc: callable, captions: typing.Sequence[str], *args):
@@ -28,18 +28,33 @@ async def generic_caption_overlay(media: str, capfunc: callable, captions: typin
     return await processing.ffmpeg.ffutils.naive_overlay(media, captext)
 
 
+def glib_escape(arg: str) -> str:
+    # https://github.com/bratsche/glib/blob/abfef39da9a11f59051dfa23a50bc374c0b8ad6e/glib/gmarkup.c#L2110-L2128
+    return (
+        arg
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\\", "&apos;")
+        .replace("'", "&quot;")
+    )
+
+
 def escape(arg: str | typing.Sequence[str]):
     if isinstance(arg, str):
-        return html.escape(arg, quote=False)
+        return glib_escape(arg)
     else:
-        return [html.escape(s, quote=False) for s in arg]
+        return [glib_escape(s) for s in arg]
 
 
-def outline(image: pyvips.Image, radius: int | None = None, color: typing.Sequence[int] | None = None) -> pyvips.Image:
+def outline(image: pyvips.Image, radius: int | float | None = None,
+            color: typing.Sequence[int] | None = None) -> pyvips.Image:
     if color is None:
         color = [0, 0, 0]
     if radius is None:
-        radius = image.width // 1000
+        radius = image.width / 1000
+    if radius <= 1:
+        radius = 1
     # dilate the text with a squared-off gaussian mask
     # https://github.com/libvips/libvips/discussions/2123#discussioncomment-3950916
     mask = pyvips.Image.gaussmat(radius / 2, 0.0001, separable=True)
@@ -67,8 +82,8 @@ def naive_stack(file0, file1):
     # stack
     out = im0.join(im1, pyvips.Direction.VERTICAL, expand=True, align=pyvips.Align.CENTRE)
     # save
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
 
     return outfile
 
@@ -86,8 +101,8 @@ def stack(file0, file1, style):
     out = im0.join(im1, pyvips.Direction.VERTICAL if style == "vstack" else pyvips.Direction.HORIZONTAL, expand=True,
                    align=pyvips.Align.CENTRE)
     # save
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
 
     return outfile
 

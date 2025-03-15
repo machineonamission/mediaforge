@@ -1,16 +1,34 @@
 import asyncio
 import contextvars
-import multiprocessing
 import os
 import random
 import shutil
 import string
 import tempfile
+import typing
 
 import aiofiles.os
 
 import config
 from core.clogs import logger
+from processing.ffmpeg.glc import get_gif_loop_count
+from processing.mediatype import MediaType, mediatype
+
+
+class TempFile(str):
+    mt: MediaType = None
+    lock_codec: bool = False
+    glc: int = None
+
+    async def mediatype(self):
+        if self.mt is None:
+            self.mt = await mediatype(self)
+        return self.mt
+
+    async def gif_loop_count(self):
+        if self.glc is None:
+            self.glc = await get_gif_loop_count(self)
+        return self.glc
 
 
 def init():
@@ -59,7 +77,7 @@ def reserve_tempfile(arg):
     tfs.append(arg)
     session.set(tfs)
     logger.debug(f"Reserved new tempfile {arg}")
-    return arg
+    return TempFile(arg)
 
 
 class TempFileSession:
@@ -85,4 +103,17 @@ class TempFileSession:
         logger.debug(f"TempFileSession exited!")
 
 
-session: contextvars.ContextVar[list[str]] = contextvars.ContextVar("session")
+session: contextvars.ContextVar[list[TempFile]] = contextvars.ContextVar("session")
+
+
+def handle_tfs_parallel(func: typing.Callable, *args, **kwargs):
+    try:
+        session.set([])
+        res = func(*args, **kwargs)
+        return True, res, session.get()
+    except Exception as e:
+        return False, e, session.get()
+
+
+class TenorUrl(str):
+    pass

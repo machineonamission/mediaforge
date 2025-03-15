@@ -12,6 +12,7 @@ import config
 from core.clogs import logger
 from processing.vips.vipsutils import outline
 from utils.common import fetch
+from utils.tempfiles import TenorUrl
 from utils.web import contentlength
 
 tenor_url_regex = re.compile(r"https?://tenor\.com/view/([^-]+-)*(\d+)/?")
@@ -39,7 +40,7 @@ async def handlemessagesave(m: discord.Message, ignoreatts: list[discord.Attachm
                     tenor = await fetch(
                         f"https://tenor.googleapis.com/v2/posts?ids={gif_id}&key={config.tenor_key}&limit=1")
                     tenor = json.loads(tenor)
-                    detectedfiles.append(tenor['results'][0]['media_formats']['gif']['url'])
+                    detectedfiles.append(TenorUrl(tenor['results'][0]['media_formats']['mp4']['url']))
             elif embed.type in ["image", "video", "audio"]:
                 if await contentlength(embed.url):  # prevent adding youtube videos and such
                     detectedfiles.append(embed.url)
@@ -118,9 +119,9 @@ async def handletenor(m: discord.Message, ctx: commands.Context, gif=False):
                 return False
             else:
                 if gif:
-                    return tenor['results'][0]['media_formats']['gif']['url']
+                    return TenorUrl(tenor['results'][0]['media_formats']['gif']['url'])
                 else:
-                    return tenor['results'][0]['media_formats']['mp4']['url']
+                    return TenorUrl(tenor['results'][0]['media_formats']['mp4']['url'])
     return None
 
 

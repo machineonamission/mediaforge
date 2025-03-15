@@ -4,8 +4,8 @@ import typing
 import pyvips
 
 from processing.vips.vipsutils import ImageSize, escape, outline, overlay_in_middle
-from utils.tempfiles import reserve_tempfile
 from processing.vips.vipsutils import normalize
+from utils.tempfiles import reserve_tempfile
 
 twemoji = "rendering/fonts/TwemojiCOLR0.otf"
 
@@ -22,11 +22,12 @@ def esmcaption(captions: typing.Sequence[str], size: ImageSize):
     # generate text
     out = pyvips.Image.text(
         captions[0],
-        font=f"Twemoji Color Emoji,FuturaExtraBlackCondensed {fontsize}px",
+        font=f"FuturaExtraBlackCondensed,Twemoji Color Emoji {fontsize}px",
         rgba=True,
         fontfile="rendering/fonts/caption.otf",
         align=pyvips.Align.CENTRE,
-        width=textwidth
+        width=textwidth,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # overlay white background
     out = out.composite((255, 255, 255, 255), mode=pyvips.BlendMode.DEST_OVER)
@@ -34,8 +35,8 @@ def esmcaption(captions: typing.Sequence[str], size: ImageSize):
     out = out.gravity(pyvips.CompassDirection.CENTRE, size.width, out.height + fontsize, extend=pyvips.Extend.WHITE)
     # save and return
     # because it's run in executor, tempfiles
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
     return outfile
 
 
@@ -51,11 +52,12 @@ def mediaforge_caption(captions: typing.Sequence[str], size: ImageSize):
     # generate text
     out = pyvips.Image.text(
         captions[0],
-        font=f"Twemoji Color Emoji,Atkinson Hyperlegible Bold {fontsize}px",
+        font=f"Atkinson Hyperlegible,Twemoji Color Emoji Bold {fontsize}px",
         rgba=True,
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
         align=pyvips.Align.CENTRE,
-        width=textwidth
+        width=textwidth,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # overlay white background
     out = out.composite((255, 255, 255, 255), mode=pyvips.BlendMode.DEST_OVER)
@@ -63,16 +65,29 @@ def mediaforge_caption(captions: typing.Sequence[str], size: ImageSize):
     out = out.gravity(pyvips.CompassDirection.CENTRE, size.width, out.height + fontsize, extend=pyvips.Extend.WHITE)
     # save and return
     # because it's run in executor, tempfiles
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
     return outfile
 
 
 def motivate_text(captions: typing.Sequence[str], size: ImageSize):
     captions = escape(captions)
     textsize = size.width / 5
-    width = math.floor(size.width + (size.width / 60))
-    width = math.floor(width + (width / 30))
+
+    # its verbose but it exactly matches the code in ffmpeg.caption.motivate
+    width, height = size.width, size.height
+
+    pad1_w = width + width // 60
+    pad1_h = height + width // 60
+
+    pad2_w = pad1_w + width // 30
+    pad2_h = pad1_h + width // 30
+
+    pad3_w = pad2_w
+    pad3_h = pad2_h + width // 30
+
+    width, height = pad3_w, pad3_h
+
     toptext = None
     bottomtext = None
     if captions[0]:
@@ -81,13 +96,14 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
         # generate text
         toptext = pyvips.Image.text(
             f"<span foreground=\"white\">{captions[0]}</span>",
-            font=f"Twemoji Color Emoji,Times New Roman Cyr {textsize}px",
+            font=f"Times New Roman Cyr,Twemoji Color Emoji {textsize}px",
             rgba=True,
             fontfile="rendering/fonts/times new roman.ttf",
             align=pyvips.Align.CENTRE,
-            width=width
+            width=width,
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
-        toptext = toptext.gravity(pyvips.CompassDirection.CENTRE, toptext.width, toptext.height + (textsize / 4),
+        toptext = toptext.gravity(pyvips.CompassDirection.CENTRE, width, toptext.height + (textsize / 4),
                                   extend=pyvips.Extend.BLACK)
     if captions[1]:
         # technically redundant but adds twemoji font
@@ -95,13 +111,14 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
         # generate text
         bottomtext = pyvips.Image.text(
             f"<span foreground=\"white\">{captions[1]}</span>",
-            font=f"Twemoji Color Emoji,Times New Roman Cyr {int(textsize * 0.4)}px",
+            font=f"Times New Roman Cyr,Twemoji Color Emoji {int(textsize * 0.4)}px",
             rgba=True,
             fontfile="rendering/fonts/times new roman.ttf",
             align=pyvips.Align.CENTRE,
-            width=width
+            width=width,
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
-        bottomtext = bottomtext.gravity(pyvips.CompassDirection.CENTRE, bottomtext.width,
+        bottomtext = bottomtext.gravity(pyvips.CompassDirection.CENTRE, width,
                                         bottomtext.height + (textsize / 4),
                                         extend=pyvips.Extend.BLACK)
     if toptext and bottomtext:
@@ -120,13 +137,12 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
     # pad text to target width
     out = out.gravity(pyvips.CompassDirection.CENTRE, width, out.height, extend=pyvips.Extend.BACKGROUND,
                       background=[0, 0, 0, 255])
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
     return outfile
 
 
 def meme(captions: typing.Sequence[str], size: ImageSize):
-    captions = escape(captions)
     # blank image
     overlay = pyvips.Image.black(size.width, size.height).new_from_image([0, 0, 0, 0]).copy(
         interpretation=pyvips.enums.Interpretation.SRGB)
@@ -136,13 +152,14 @@ def meme(captions: typing.Sequence[str], size: ImageSize):
         toptext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
         toptext = pyvips.Image.text(
-            f"<span foreground=\"white\">{captions[0].upper()}</span>",
+            f"<span foreground=\"white\">{escape(captions[0].upper())}</span>",
             font=f"Twemoji Color Emoji,ImpactMix",
             rgba=True,
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
-            height=int((size.height * .95) / 3)
+            height=int((size.height * .95) / 3),
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         overlay = overlay.composite2(toptext, pyvips.BlendMode.OVER,
                                      x=((size.width - toptext.width) / 2),
@@ -152,21 +169,22 @@ def meme(captions: typing.Sequence[str], size: ImageSize):
         bottomtext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
         bottomtext = pyvips.Image.text(
-            f"<span foreground=\"white\">{captions[1].upper()}</span>",
+            f"<span foreground=\"white\">{escape(captions[1].upper())}</span>",
             font=f"Twemoji Color Emoji,ImpactMix",
             rgba=True,
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
-            height=int((size.height * .95) / 3)
+            height=int((size.height * .95) / 3),
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         overlay = overlay.composite2(bottomtext, pyvips.BlendMode.OVER,
                                      x=((size.width - bottomtext.width) / 2),
                                      y=int((size.height * .975) - bottomtext.height))
 
-    overlay = outline(overlay, overlay.width // 200)
-    outfile = reserve_tempfile("png")
-    overlay.pngsave(outfile)
+    overlay = outline(overlay, overlay.width / 200)
+    outfile = reserve_tempfile("bmp")
+    overlay.write_to_file(outfile)
     return outfile
 
 
@@ -182,12 +200,13 @@ def tenor(captions: typing.Sequence[str], size: ImageSize):
         # generate text
         toptext = pyvips.Image.text(
             f"<span foreground=\"white\">{captions[0]}</span>",
-            font=f"Twemoji Color Emoji,Ubuntu {textsize}px",
+            font=f"Ubuntu,Twemoji Color Emoji {textsize}px",
             rgba=True,
             fontfile="rendering/fonts/Ubuntu-R.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
-            height=int((size.height * .95) / 3)
+            height=int((size.height * .95) / 3),
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         overlay = overlay.composite2(toptext, pyvips.BlendMode.OVER,
                                      x=((size.width - toptext.width) / 2),
@@ -198,20 +217,21 @@ def tenor(captions: typing.Sequence[str], size: ImageSize):
         # generate text
         bottomtext = pyvips.Image.text(
             f"<span foreground=\"white\">{captions[1]}</span>",
-            font=f"Twemoji Color Emoji,Ubuntu {textsize}px",
+            font=f"Ubuntu,Twemoji Color Emoji {textsize}px",
             rgba=True,
             fontfile="rendering/fonts/Ubuntu-R.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
-            height=int((size.height * .95) / 3)
+            height=int((size.height * .95) / 3),
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         overlay = overlay.composite2(bottomtext, pyvips.BlendMode.OVER,
                                      x=((size.width - bottomtext.width) / 2),
                                      y=int((size.height * .975) - bottomtext.height))
 
-    overlay = outline(overlay, overlay.width // 250)
-    outfile = reserve_tempfile("png")
-    overlay.pngsave(outfile)
+    overlay = outline(overlay, overlay.width / 250)
+    outfile = reserve_tempfile("bmp")
+    overlay.write_to_file(outfile)
     return outfile
 
 
@@ -226,18 +246,19 @@ def whisper(captions: typing.Sequence[str], size: ImageSize):
     # generate text
     text = pyvips.Image.text(
         f"<span foreground=\"white\">{captions[0]}</span>",
-        font=f"Twemoji Color Emoji,Upright {size.width // 6}px",
+        font=f"Upright,Twemoji Color Emoji {size.width // 6}px",
         rgba=True,
         fontfile="rendering/fonts/whisper.otf",
         align=pyvips.Align.CENTRE,
         width=int(size.width * .95),
-        height=int(size.height * .95)
+        height=int(size.height * .95),
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     overlay = overlay_in_middle(overlay, text)
 
-    overlay = outline(overlay, overlay.width // 175)
-    outfile = reserve_tempfile("png")
-    overlay.pngsave(outfile)
+    overlay = outline(overlay, overlay.width / 175)
+    outfile = reserve_tempfile("bmp")
+    overlay.write_to_file(outfile)
     return outfile
 
 
@@ -247,12 +268,13 @@ def snapchat(captions: typing.Sequence[str], size: ImageSize):
     # generate text
     text = pyvips.Image.text(
         f"<span foreground=\"white\">{captions[0]}</span>",
-        font=f"Twemoji Color Emoji,Helvetica Neue {size.width // 20}px",
+        font=f"Helvetica Neue,Twemoji Color Emoji {size.width // 20}px",
         rgba=True,
         fontfile="rendering/fonts/HelveticaNeue.otf",
         align=pyvips.Align.CENTRE,
         width=int(size.width * .98),
-        height=size.height // 3
+        height=size.height // 3,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # background
     bg = pyvips.Image.black(size.width, text.height + size.width // 25).new_from_image([0, 0, 0, 178]).copy(
@@ -265,8 +287,8 @@ def snapchat(captions: typing.Sequence[str], size: ImageSize):
     # overlay
     out = overlay_in_middle(blank_bg, text)
     # save
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
     return outfile
 
 
@@ -279,23 +301,20 @@ def generic_image_caption(image: str, captions: typing.Sequence[str], size: Imag
     # generate text
     out = pyvips.Image.text(
         captions[0],
-        font=f"Twemoji Color Emoji,Atkinson Hyperlegible Bold {fontsize}px",
+        font=f"Atkinson Hyperlegible,Twemoji Color Emoji Bold {fontsize}px",
         rgba=True,
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
         align=pyvips.Align.CENTRE,
-        width=textwidth
+        width=textwidth,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # load stuff
     im = normalize(pyvips.Image.new_from_file(image))
 
-    # the hell is wrong with the stuff png??
-    if im.bands == 2:
-        im = im[0].bandjoin(im[0]).bandjoin(im[0]).bandjoin(im[1]).copy(interpretation=pyvips.Interpretation.SRGB)
-
     # resize
     im = im.resize((size.width / 3) / im.width)
     # pad text to image width
-    padded = out.gravity(pyvips.CompassDirection.CENTRE, size.width * (2 / 3), max(out.height + fontsize, im.height),
+    padded = out.gravity(pyvips.CompassDirection.CENTRE, size.width - im.width, max(out.height + fontsize, im.height),
                          extend=pyvips.Extend.BLACK)
 
     # join
@@ -304,8 +323,8 @@ def generic_image_caption(image: str, captions: typing.Sequence[str], size: Imag
     # overlay white background
     final = final.composite((255, 255, 255, 255), mode=pyvips.BlendMode.DEST_OVER)
     # save
-    outfile = reserve_tempfile("png")
-    final.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    final.write_to_file(outfile)
     return outfile
 
 
@@ -317,11 +336,12 @@ def twitter_text(captions: typing.Sequence[str], size: ImageSize, dark: bool):
     # generate text
     out = pyvips.Image.text(
         f"<span foreground=\"{'white' if dark else 'black'}\">{captions[0]}</span>",
-        font=f"Twemoji Color Emoji,TwitterChirp {fontsize}px",
+        font=f"TwitterChirp,Twemoji Color Emoji {fontsize}px",
         rgba=True,
         fontfile="rendering/fonts/TwitterChirp.otf",
         align=pyvips.Align.LOW,
-        width=size.width
+        width=size.width,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # pad text to image width left aligned
     out = out.gravity(pyvips.CompassDirection.WEST, size.width, out.height + fontsize,
@@ -333,6 +353,6 @@ def twitter_text(captions: typing.Sequence[str], size: ImageSize, dark: bool):
 
     # save and return
     # because it's run in executor, tempfiles
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
     return outfile

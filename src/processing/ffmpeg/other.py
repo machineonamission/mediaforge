@@ -1,18 +1,23 @@
-import math
-
-import discord
 import asyncio
-from core.clogs import logger
+import math
+import random as rand
 import typing
 
+import discord
+
 import processing.common
-from processing.ffmpeg.conversion import mediatopng
+import processing.mediatype
 import processing.vips as vips
-from processing.ffmpeg.ffprobe import mediatype, get_duration, get_frame_rate, count_frames, get_resolution, hasaudio
+from core.clogs import logger
+from processing.common import NonBugError
+from processing.ffmpeg.conversion import mediatobmp
+from processing.ffmpeg.ffprobe import get_duration, get_frame_rate, count_frames, get_resolution, hasaudio, get_vcodec
 from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, dual_gif_output, scale2ref, changefps, \
-    resize
-from utils.tempfiles import reserve_tempfile
-from processing.common import run_command, NonBugError
+    resize, concat_demuxer
+from processing.ffmpeg.handleanimated import animatedmultiplexer
+from processing.mediatype import AUDIO, IMAGE, GIF
+from processing.run_command import run_command
+from utils.tempfiles import reserve_tempfile, TempFile
 
 
 @gif_output
@@ -25,22 +30,28 @@ async def speed(file, sp):
     """
 
     # https://stackoverflow.com/questions/65728616/how-to-get-ffmpeg-to-consistently-apply-speed-effect-to-first-few-frames
-    mt = await mediatype(file)
+    mt = await file.mediatype()
     outname = reserve_tempfile("mkv")
-    if mt == "AUDIO":
-        duration = await get_duration(file)
+    if mt == AUDIO:
+        # duration = await get_duration(file)
         await run_command("ffmpeg", "-hide_banner", "-i", file, "-filter_complex",
-                          f"{expanded_atempo(sp)}", "-t", str(duration / float(sp)), "-c:a", "flac", outname)
+                          f"{expanded_atempo(sp)}",
+                          # "-t", str(duration / float(sp)),
+                          "-c:a", "flac", outname)
     else:
+        # ffv1 is really fucky about having not enough frames, so just pre-emptively check
+        if (await count_frames(file)) / sp <= 2:
+            raise NonBugError(
+                "Aborting speed because output file will have less than 2 frames. Try reducing the speed.")
         fps = await get_frame_rate(file)
-        duration = await get_duration(file)
+        # duration = await get_duration(file)
         await run_command("ffmpeg", "-hide_banner", "-i", await forceaudio(file), "-filter_complex",
                           f"[0:v]setpts=PTS/{sp},fps={fps}[v];[0:a]{expanded_atempo(sp)}[a]",
-                          "-map", "[v]", "-map", "[a]", "-t", str(duration / float(sp)), "-c:v", "ffv1", "-c:a", "flac",
+                          "-map", "[v]", "-map", "[a]",
+                          # "-t", str(duration / float(sp)),
+                          "-c:v", "ffv1", "-c:a", "flac",
                           "-fps_mode",
                           "vfr", outname)
-        if await count_frames(outname) < 2:
-            raise NonBugError("Output file has less than 2 frames. Try reducing the speed.")
 
     return outname
 
@@ -110,11 +121,8 @@ async def pad(file):
     :param file: media
     :return: processed media
     """
-    mt = await mediatype(file)
-    if mt == "IMAGE":
-        outname = reserve_tempfile("png")
-    else:
-        outname = reserve_tempfile("mkv")
+    mt = await file.mediatype()
+    outname = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-hide_banner", "-i", file, "-vf",
                       "pad=width='max(iw,ih)':height='max(iw,ih)':x='(ih-iw)/2':y='(iw-ih)/2':color=white", "-c:v",
                       "ffv1", "-fps_mode", "vfr", outname)
@@ -128,12 +136,19 @@ async def gifloop(file, loop):
     :param loop: # of times to loop
     :return: processed media
     """
-    outname = reserve_tempfile("gif")
-    await run_command("ffmpeg", "-hide_banner", "-i", file, "-loop", str(loop), "-vcodec", "copy", outname)
 
-    return outname
+    if (await get_vcodec(file))["codec_name"] == "gif":
+        out = reserve_tempfile("gif")
+        await run_command("ffmpeg", "-hide_banner", "-i", file, "-loop", str(loop), "-vcodec", "copy", out)
+        out.lock_codec = True
+    else:
+        out = file
+    out.mt = GIF
+    out.glc = loop
+    return out
 
 
+@gif_output
 async def videoloop(file, loop):
     """
     loops a gif
@@ -141,13 +156,9 @@ async def videoloop(file, loop):
     :param loop: # of times to loop
     :return: processed media
     """
-    mt = await mediatype(file)
-    exts = {
-        "VIDEO": "mkv",
-        "GIF": "gif"
-    }
-    outname = reserve_tempfile(exts[mt])
-    await run_command("ffmpeg", "-hide_banner", "-stream_loop", str(loop), "-i", file, "-vcodec", "copy", outname)
+    outname = reserve_tempfile("mkv")
+    await run_command("ffmpeg", "-hide_banner", "-stream_loop", str(loop), "-i", file,
+                      "-c:v", "copy", "-c:a", "copy", outname)
 
     return outname
 
@@ -158,7 +169,7 @@ async def imageaudio(image, audio):
     :param files: [image, audio]
     :return: video
     """
-    image = await mediatopng(image)  # -loop 1 only works with proper images
+    image = await mediatobmp(image)  # -loop 1 only works with proper images
     outname = reserve_tempfile("mkv")
     duration = await get_duration(audio)  # it is a couple seconds too long without it :(
     await run_command("ffmpeg", "-hide_banner", "-i", audio, "-loop", "1", "-i", image, "-pix_fmt", "yuv420p", "-vf",
@@ -177,11 +188,11 @@ async def addaudio(file0, file1, loops=0):
     # TODO: this can trim media short? not sure why...
     audio = file1
     media = file0
-    mt = await mediatype(media)
-    if mt == "IMAGE":
+    mt = await media.mediatype()
+    if mt == IMAGE:
         # no use reinventing the wheel
         return await imageaudio(file0, file1)
-    elif mt == "GIF":
+    elif mt == GIF:
         # GIF case is like imageaudio, but with stream_loop instead of loop.
         outname = reserve_tempfile("mkv")
         if loops >= 0:
@@ -216,7 +227,7 @@ async def concatv(file0, file1):
     """
     video0 = file0  # await forceaudio(file0)
     fixedvideo0 = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", video0, "-c:v", "ffv1", "-c:a", "copy", "-ar",
+    await run_command("ffmpeg", "-hide_banner", "-i", video0, "-c:v", "ffv1", "-c:a", "flac", "-ar",
                       "48000",
                       "-max_muxing_queue_size", "4096", "-fps_mode", "vfr", fixedvideo0)
     video1 = file1  # await forceaudio(file1)
@@ -228,15 +239,13 @@ async def concatv(file0, file1):
     await run_command("ffmpeg", "-hide_banner", "-i", video1, "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp", "-vf",
                       f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:-2:-2:color=black", "-c:v",
-                      "ffv1", "-c:a", "copy", "-ar", "48000", "-fps_mode", "vfr", fixedvideo1)
+                      "ffv1", "-c:a", "flac", "-ar", "48000", "-fps_mode", "vfr", fixedvideo1)
     fixedfixedvideo1 = await changefps(fixedvideo1, fps)
 
-    concatdemuxer = reserve_tempfile("txt")
-    with open(concatdemuxer, "w+") as f:
-        f.write(f"file '{fixedvideo0}'\nfile '{fixedfixedvideo1}'")
+    concatdemuxer = await concat_demuxer([fixedvideo0, fixedfixedvideo1])
     outname = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-hide_banner", "-safe", "0", "-f", "concat", "-i", concatdemuxer, "-c:v", "ffv1",
-                      "-c:a", "copy", outname)
+                      "-c:a", "flac", outname)
     # for file in [video0, video1, fixedvideo1, fixedvideo0, fixedfixedvideo1, concatdemuxer]:
     #     os.remove(file)
     return outname
@@ -250,10 +259,10 @@ async def stack(file0, file1, style):
     :param style: "hstack" or "vstack"
     :return: processed media
     """
-    mts = [await mediatype(file0), await mediatype(file1)]
-    if mts[0] == "IMAGE" and mts[1] == "IMAGE":  # easier to just make this an edge case
+    mts = [await file0.mediatype(), await file1.mediatype()]
+    if mts[0] == IMAGE and mts[1] == IMAGE:  # easier to just make this an edge case
         # sometimes can be ffv1 mkvs with 1 frame, which vips has no idea what to do with
-        file0, file1 = await asyncio.gather(mediatopng(file0), mediatopng(file1))
+        file0, file1 = await asyncio.gather(mediatobmp(file0), mediatobmp(file1))
         return await processing.common.run_parallel(vips.vipsutils.stack, file0, file1, style)
     # file0, file1 = await repeat_shorter_video(file0, file1)  # scale2ref is fucky
     w0, h0 = await get_resolution(file0)
@@ -295,7 +304,7 @@ async def overlay(file0, file1, alpha: float, mode: str = 'overlay'):
     """
     assert mode in ['overlay', 'add']
     assert 0 <= alpha <= 1
-    mts = [await mediatype(file0), await mediatype(file1)]
+    mts = [await file0.mediatype(), await file1.mediatype()]
 
     outname = reserve_tempfile("mkv")
     blendlogic = ""
@@ -320,8 +329,8 @@ async def overlay(file0, file1, alpha: float, mode: str = 'overlay'):
 
     # for file in [video0, video1, fixedvideo1, fixedvideo0, fixedfixedvideo1]:
     #     os.remove(file)
-    if mts[0] == "IMAGE" and mts[1] == "IMAGE":
-        outname = await mediatopng(outname)
+    if mts[0] == IMAGE and mts[1] == IMAGE:
+        outname = await mediatobmp(outname)
     return outname
 
 
@@ -402,11 +411,21 @@ async def tint(file, col: discord.Color):
 
 
 @gif_output
+async def circle(media):
+    # gh copilot spat this out based on https://stackoverflow.com/a/62400465/9044183
+    outfile = reserve_tempfile("mkv")
+    await run_command("ffmpeg", "-i", media, "-filter_complex",
+                      f"geq=lum='p(X,Y)':a='if(lte(hypot(W/2-X,H/2-Y),H/2),255,0)'",
+                      "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
+    return outfile
+
+
+@gif_output
 async def round_corners(media, border_radius=10):
     outfile = reserve_tempfile("mkv")
     # https://stackoverflow.com/a/62400465/9044183
     await run_command("ffmpeg", "-i", media, "-filter_complex",
-                      f"format=rgba,"
+                      # f"format=rgba,"
                       f"geq=lum='p(X,Y)':a='"
                       f"if(gt(abs(W/2-X),W/2-{border_radius})*gt(abs(H/2-Y),"
                       f"H/2-{border_radius}),"
@@ -425,17 +444,17 @@ async def deepfry(media, brightness, contrast, sharpness, saturation, noise):
     await run_command("ffmpeg", "-i", media, "-vf",
                       f"eq=contrast={contrast}:brightness={brightness}:saturation={saturation},"
                       f"unsharp=luma_msize_x=7:luma_msize_y=7:luma_amount={sharpness},"
-                      f"noise=alls={noise}", "-fps_mode", "vfr", outfile)
+                      f"noise=alls={noise}", "-fps_mode", "vfr", "-c:v", "ffv1", outfile)
     return outfile
 
 
 @gif_output
 async def speech_bubble(media, position: typing.Literal["top", "bottom"] = "top",
                         color: typing.Literal["transparent", "white", "black"] = "transparent"):
-    mt = await mediatype(media)
+    mt = await media.mediatype()
     outfile = reserve_tempfile("mkv")
 
-    bubble = await scale2ref("rendering/images/speechbubble.png", media)
+    bubble = await scale2ref(TempFile("rendering/images/speechbubble.png"), media)
 
     if color == "transparent":
         await run_command("ffmpeg", "-i", media, "-i", bubble,
@@ -459,5 +478,18 @@ async def speech_bubble(media, position: typing.Literal["top", "bottom"] = "top"
                           # mask input media
                           f"{mask_filter}"
                           "[0:v][1:v]overlay=format=auto",
-                          "-c:v", "png" if mt == "IMAGE" else "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
+                          "-c:v", "png" if mt == IMAGE else "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
     return outfile
+
+
+def stretch_tuple(strength: int) -> tuple[int, int]:
+    """generates a random stretch for jpeg"""
+    return rand.randint(-strength, strength), rand.randint(-strength, strength)
+
+
+async def handle_jpeg(media: TempFile, strength: int, stretch: int, quality: int):
+    """provides consistent stretch randomness over all jpeg frames"""
+    # resize to anywhere between (original image width ± stretch, original image height ± stretch)
+    # simulates being reposted many times
+    stretch_list = [stretch_tuple(stretch) for _ in range(strength)] if stretch > 0 else None
+    return await animatedmultiplexer(media, processing.vips.other.jpeg, strength, stretch_list, quality)

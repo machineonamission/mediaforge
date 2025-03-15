@@ -4,11 +4,13 @@ from discord.ext import commands
 
 import processing.common
 import processing.ffmpeg.creation
-
+import processing.ffmpeg.heartlocket
+import processing.other
 import processing.vips
 import processing.vips.creation
 from core.process import process
 from processing import sus
+from processing.mediatype import VIDEO, IMAGE, GIF
 
 
 class Image(commands.Cog, name="Creation"):
@@ -55,7 +57,7 @@ class Image(commands.Cog, name="Creation"):
         :param ctx: discord context
         :mediaparam media: A video, gif, or image.
         """
-        await process(ctx, processing.ffmpeg.creation.trollface, [["VIDEO", "GIF", "IMAGE"]])
+        await process(ctx, processing.ffmpeg.creation.trollface, [[VIDEO, GIF, IMAGE]])
 
     @commands.hybrid_command(aliases=["emsay"])
     async def eminemsay(self, ctx, *, text):
@@ -81,7 +83,7 @@ class Image(commands.Cog, name="Creation"):
         :param text: The text to put next to your image.
         :mediaparam media: An image, video, or gif
         """
-        await process(ctx, processing.vips.caption.generic_image_caption, [["IMAGE"]],
+        await process(ctx, processing.vips.caption.generic_image_caption, [[IMAGE]],
                       [text],
                       processing.vips.vipsutils.ImageSize(1000, 1000), run_parallel=True)
 
@@ -94,7 +96,7 @@ class Image(commands.Cog, name="Creation"):
         :param ctx: discord context
         :mediaparam media: The media to be overlayed over his hand.
         """
-        await process(ctx, processing.ffmpeg.creation.give_me_your_phone_now, [["IMAGE", "VIDEO", "GIF"]])
+        await process(ctx, processing.ffmpeg.creation.give_me_your_phone_now, [[IMAGE, VIDEO, GIF]])
 
     @commands.hybrid_command(aliases=["texttospeak", "speak", "talk", "speech", "espeak"])
     async def tts(self, ctx: commands.Context,
@@ -113,7 +115,7 @@ class Image(commands.Cog, name="Creation"):
         # shouldnt happen but sanity check
         if not voice:
             voice = "male"
-        await process(ctx, processing.common.tts, [], text, voice)
+        await process(ctx, processing.other.tts, [], text, voice)
 
     # WIP
     @commands.hybrid_command()
@@ -138,3 +140,37 @@ class Image(commands.Cog, name="Creation"):
         :param text: The text to cut and splice.
         """
         await process(ctx, sus.sus, [], text, run_parallel=True)
+
+    @commands.hybrid_command(aliases=['locket', 'heart', "beloved", "mybeloved"])
+    async def heartlocket(self, ctx, *, text="my beloved"):
+        """
+        Put your image and text into a 3d animated heart locket
+        This command is unique as it can take a varying number of arguments
+        there's 4 configurations
+        "|" = 2 images, one in each side of the locket
+        "text" or "text|" = 1 image on the left side of the locket and text on the right side
+        "|text" = 1 image on the right side of the locket and text on the left side
+        "text1|text2" = 2 texts, one in each side of the locket
+
+        based on https://makesweet.com/big/heart-locket
+        :param ctx: discord context
+        :param text: The input text to be put in the locket.
+        :mediaparam media1: (Optional) The media to be put in the left side of the locket
+        :mediaparam media2: (Optional) The media to be put in the right side of the locket
+        """
+        hlmt = [IMAGE, GIF, VIDEO]
+        split = text.split("|")
+        if len(split) == 1:
+            split.append("")
+        if split[0] == "" and split[1] == "":
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt, hlmt],
+                          processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA)
+        if split[0] == "" and split[1] != "":
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[1],
+                          processing.ffmpeg.heartlocket.ArgType.MEDIA_TEXT)
+        if split[0] != "" and split[1] == "":
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[0],
+                          processing.ffmpeg.heartlocket.ArgType.TEXT_MEDIA)
+        if split[0] != "" and split[1] != "":
+            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [], split[0], split[1],
+                          processing.ffmpeg.heartlocket.ArgType.TEXT_TEXT)

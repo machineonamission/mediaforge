@@ -154,10 +154,10 @@ class ErrorHandlerCog(commands.Cog):
                 desc = "Please report this error with the attached traceback file to the GitHub."
             embed = discord.Embed(color=0xed1c24, description=desc)
             embed.add_field(name=f"{config.emojis['2exclamation']} Report Issue to GitHub",
-                            value=f"[Create New Issue](https://github.com/reticivis-net/mediaforge"
+                            value=f"[Create New Issue](https://github.com/machineonamission/mediaforge"
                                   f"/issues/new?labels=bug&template=bug_report.yaml&title"
-                                  f"={urllib.parse.quote(str(commanderror), safe='')[:(1024-183)]})\n[View Issu"
-                                  f"es](https://github.com/reticivis-net/mediaforge/issues)")
+                                  f"={urllib.parse.quote(str(commanderror), safe='')[:(1024-191)]})\n[View Issu"
+                                  f"es](https://github.com/machineonamission/mediaforge/issues)")
             with io.BytesIO() as buf:
                 if ctx.interaction:
                     command = f"/{ctx.command} {ctx.kwargs}"
@@ -170,7 +170,7 @@ class ErrorHandlerCog(commands.Cog):
                 if is_hosting_issue:
                     errtxt = f"{config.emojis['2exclamation']} Your command encountered an error due to limited " \
                              f"resources on the server. If you would like to support the upkeep of MediaForge and " \
-                             f"getting a better server, support me on Ko-Fi here: <https://ko-fi.com/reticivis>"
+                             f"getting a better server, support me on Ko-Fi here: <https://ko-fi.com/machineonamission>"
                 else:
                     errtxt = (f"{config.emojis['2exclamation']} `{get_full_class_name(commanderror)}: "
                               f"{errorstring}`")[:2000]

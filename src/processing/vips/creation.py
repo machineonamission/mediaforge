@@ -9,7 +9,6 @@ from utils.tempfiles import reserve_tempfile
 
 
 def yskysn(captions: typing.Sequence[str]):
-    captions = escape(captions)
     # load stuff
     im = normalize(pyvips.Image.new_from_file("rendering/images/yskysn.png"))
     # here for my sanity, dimensions of text area
@@ -20,15 +19,16 @@ def yskysn(captions: typing.Sequence[str]):
     # generate text
     text_prerender, autofit_dict = pyvips.Image.text(
         f"<span foreground='white'>"
-        f"{captions[0]}\n<span size='150%'>{captions[1]}</span>"
+        f"{escape(captions[0].upper())}\n<span size='150%'>{escape(captions[1].upper())}</span>"
         f"</span>",
-        font=f"Twemoji Color Emoji,Tahoma Bold 56",
+        font=f"Tahoma,Twemoji Color Emoji Bold 56",
         rgba=True,
         fontfile="rendering/fonts/TAHOMABD.TTF",
         align=pyvips.Align.CENTRE,
         width=w,
         height=h,
-        autofit_dpi=True
+        autofit_dpi=True,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     autofit_dpi = autofit_dict["autofit_dpi"]
     if autofit_dpi <= 72:
@@ -39,15 +39,16 @@ def yskysn(captions: typing.Sequence[str]):
         # generate text
         text = pyvips.Image.text(
             f"<span foreground='white'>"
-            f"{captions[0].upper()}\n<span size='150%'>{captions[1].upper()}</span>"
+            f"{escape(captions[0].upper())}\n<span size='150%'>{escape(captions[1].upper())}</span>"
             f"</span>",
-            font=f"Twemoji Color Emoji,Tahoma Bold 56",
+            font=f"Tahoma,Twemoji Color Emoji Bold 56",
             rgba=True,
             fontfile="rendering/fonts/TAHOMABD.TTF",
             align=pyvips.Align.CENTRE,
             width=w,
             height=h,
-            dpi=72
+            dpi=72,
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
     # pad to expected size, 48 is margin
     text = text.gravity(pyvips.CompassDirection.CENTRE, w + 48, h + 48, extend=pyvips.Extend.BLACK)
@@ -62,13 +63,12 @@ def yskysn(captions: typing.Sequence[str]):
 
     out = im.composite2(text, pyvips.BlendMode.OVER)
     # save and return
-    outfile = reserve_tempfile("png")
-    out.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
     return outfile
 
 
 def f1984(captions: typing.Sequence[str]):
-    captions = escape(captions)
 
     originaldate = captions[1].lower() == "january 1984"
 
@@ -81,13 +81,14 @@ def f1984(captions: typing.Sequence[str]):
     speech_bubble = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
     speech_bubble = pyvips.Image.text(
-        captions[0],
-        font=f"Twemoji Color Emoji,Atkinson Hyperlegible Bold",
+        escape(captions[0]),
+        font=f"Atkinson Hyperlegible,Twemoji Color Emoji Bold",
         rgba=True,
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
         align=pyvips.Align.CENTRE,
         width=290,
-        height=90
+        height=90,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
     # pad to expected size
     speech_bubble = speech_bubble.gravity(pyvips.CompassDirection.CENTRE, 290, 90, extend=pyvips.Extend.BLACK)
@@ -99,13 +100,14 @@ def f1984(captions: typing.Sequence[str]):
         date = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
         date = pyvips.Image.text(
-            captions[1].upper(),
-            font=f"Twemoji Color Emoji,ImpactMix",
+            escape(captions[1].upper()),
+            font=f"ImpactMix,Twemoji Color Emoji",
             rgba=True,
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
             width=124,
-            height=34
+            height=34,
+            wrap=pyvips.TextWrap.WORD_CHAR
         )
         # pad to expected size
         date = date.gravity(pyvips.CompassDirection.CENTRE, 124, 34, extend=pyvips.Extend.BLACK)
@@ -117,25 +119,48 @@ def f1984(captions: typing.Sequence[str]):
         im = im.composite2(normalize(pyvips.Image.new_from_file("rendering/images/1984/1984cover.png")),
                            pyvips.BlendMode.OVER)
 
-    outfile = reserve_tempfile("png")
-    im.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    im.write_to_file(outfile)
     return outfile
 
 
 def epicbirthdaytext(caption: str):
-    caption = escape(caption)
     # technically redundant but adds twemoji font
     text = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
     text = pyvips.Image.text(
-        f"<span foreground=\"white\">{caption.upper()}</span>",
-        font=f"Twemoji Color Emoji,MarkerFeltWide",
+        f"<span foreground=\"white\">{escape(caption.upper())}</span>",
+        font=f"MarkerFeltWide,Twemoji Color Emoji",
         rgba=True,
         fontfile="rendering/fonts/MarkerFeltWide Regular.ttf",
         align=pyvips.Align.CENTRE,
         width=540,
-        height=260
+        height=260,
+        wrap=pyvips.TextWrap.WORD_CHAR
     )
-    outfile = reserve_tempfile("png")
-    text.pngsave(outfile)
+    outfile = reserve_tempfile("bmp")
+    text.write_to_file(outfile)
+    return outfile
+
+def heartlockettext(caption:str):
+    caption = escape(caption)
+    # technically redundant but adds twemoji font
+    out = pyvips.Image.text(".", fontfile=twemoji)
+    # generate text
+    out = pyvips.Image.text(
+        caption,
+        font=f"Arial,Twemoji Color Emoji 0.225",
+        rgba=True,
+        fontfile="rendering/fonts/arial.ttf",
+        align=pyvips.Align.CENTRE,
+        width=384,
+        height=384,
+        wrap=pyvips.TextWrap.WORD_CHAR
+    )
+    # overlay white background
+    out = out.composite((255, 255, 255, 255), mode=pyvips.BlendMode.DEST_OVER)
+    # pad text to image width
+    out = out.gravity(pyvips.CompassDirection.CENTRE, 384, 384, extend=pyvips.Extend.WHITE)
+    outfile = reserve_tempfile("bmp")
+    out.write_to_file(outfile)
     return outfile
