@@ -25,8 +25,6 @@ async def handlemessagesave(m: discord.Message, ignoreatts: list[discord.Attachm
     :param ignoreatts: list of discord attachments to ignore
     :return: list of file URLs detected in the message
     """
-    if ignoreatts is None:
-        ignoreatts = []
     # weird half-message thing that starts threads, get the actual parent message
     if m.type == discord.MessageType.thread_starter_message:
         m = m.reference.resolved
@@ -48,7 +46,7 @@ async def handlemessagesave(m: discord.Message, ignoreatts: list[discord.Attachm
                     detectedfiles.append(embed.thumbnail.url)
     if len(m.attachments):
         for att in m.attachments:
-            if att not in ignoreatts:  # ignore duplicate atts
+            if ignoreatts is not None or att not in ignoreatts:  # ignore duplicate atts
                 if not att.filename.endswith("txt"):  # it was reading traceback attachments >:(
                     detectedfiles.append(att.url)
     if len(m.stickers):

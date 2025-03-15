@@ -66,7 +66,20 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                     slashfiles = [slashfiles]
                 elif slashfiles is None:
                     slashfiles = []
-                urls = await imagesearch(ctx, len(inputs), slashfiles)
+                slashfiles: list[discord.Attachment]
+                # pad a list to the length, given the slashfiles
+                urls = slashfiles + [None] * (len(inputs) - len(slashfiles))
+                missing_file_count = urls.count(None)
+                if missing_file_count > 0:
+                    # search for any missing
+                    # pass the slashfiles so if we get attachments via the param via a text command, we can ignore them
+                    searched_urls = await imagesearch(ctx, missing_file_count, [s for s in slashfiles if s is not None])
+                    # insert into list
+                    index = 0
+                    for i, url in enumerate(urls):
+                        if url is None:
+                            urls[i] = searched_urls[index]
+                            index += 1
                 files = await saveurls(urls)
             else:
                 files = []
