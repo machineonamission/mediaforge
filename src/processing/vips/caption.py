@@ -143,7 +143,6 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
 
 
 def meme(captions: typing.Sequence[str], size: ImageSize):
-    captions = escape(captions)
     # blank image
     overlay = pyvips.Image.black(size.width, size.height).new_from_image([0, 0, 0, 0]).copy(
         interpretation=pyvips.enums.Interpretation.SRGB)
@@ -153,7 +152,7 @@ def meme(captions: typing.Sequence[str], size: ImageSize):
         toptext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
         toptext = pyvips.Image.text(
-            f"<span foreground=\"white\">{captions[0].upper()}</span>",
+            f"<span foreground=\"white\">{escape(captions[0].upper())}</span>",
             font=f"Twemoji Color Emoji,ImpactMix",
             rgba=True,
             fontfile="rendering/fonts/ImpactMix.ttf",
@@ -170,7 +169,7 @@ def meme(captions: typing.Sequence[str], size: ImageSize):
         bottomtext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
         bottomtext = pyvips.Image.text(
-            f"<span foreground=\"white\">{captions[1].upper()}</span>",
+            f"<span foreground=\"white\">{escape(captions[1].upper())}</span>",
             font=f"Twemoji Color Emoji,ImpactMix",
             rgba=True,
             fontfile="rendering/fonts/ImpactMix.ttf",

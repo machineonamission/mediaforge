@@ -9,7 +9,6 @@ from utils.tempfiles import reserve_tempfile
 
 
 def yskysn(captions: typing.Sequence[str]):
-    captions = escape(captions)
     # load stuff
     im = normalize(pyvips.Image.new_from_file("rendering/images/yskysn.png"))
     # here for my sanity, dimensions of text area
@@ -20,7 +19,7 @@ def yskysn(captions: typing.Sequence[str]):
     # generate text
     text_prerender, autofit_dict = pyvips.Image.text(
         f"<span foreground='white'>"
-        f"{captions[0]}\n<span size='150%'>{captions[1]}</span>"
+        f"{escape(captions[0].upper())}\n<span size='150%'>{escape(captions[1].upper())}</span>"
         f"</span>",
         font=f"Tahoma,Twemoji Color Emoji Bold 56",
         rgba=True,
@@ -40,7 +39,7 @@ def yskysn(captions: typing.Sequence[str]):
         # generate text
         text = pyvips.Image.text(
             f"<span foreground='white'>"
-            f"{captions[0].upper()}\n<span size='150%'>{captions[1].upper()}</span>"
+            f"{escape(captions[0].upper())}\n<span size='150%'>{escape(captions[1].upper())}</span>"
             f"</span>",
             font=f"Tahoma,Twemoji Color Emoji Bold 56",
             rgba=True,
@@ -70,7 +69,6 @@ def yskysn(captions: typing.Sequence[str]):
 
 
 def f1984(captions: typing.Sequence[str]):
-    captions = escape(captions)
 
     originaldate = captions[1].lower() == "january 1984"
 
@@ -83,7 +81,7 @@ def f1984(captions: typing.Sequence[str]):
     speech_bubble = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
     speech_bubble = pyvips.Image.text(
-        captions[0],
+        escape(captions[0]),
         font=f"Atkinson Hyperlegible,Twemoji Color Emoji Bold",
         rgba=True,
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
@@ -102,7 +100,7 @@ def f1984(captions: typing.Sequence[str]):
         date = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
         date = pyvips.Image.text(
-            captions[1].upper(),
+            escape(captions[1].upper()),
             font=f"ImpactMix,Twemoji Color Emoji",
             rgba=True,
             fontfile="rendering/fonts/ImpactMix.ttf",
@@ -127,12 +125,11 @@ def f1984(captions: typing.Sequence[str]):
 
 
 def epicbirthdaytext(caption: str):
-    caption = escape(caption)
     # technically redundant but adds twemoji font
     text = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
     text = pyvips.Image.text(
-        f"<span foreground=\"white\">{caption.upper()}</span>",
+        f"<span foreground=\"white\">{escape(caption.upper())}</span>",
         font=f"MarkerFeltWide,Twemoji Color Emoji",
         rgba=True,
         fontfile="rendering/fonts/MarkerFeltWide Regular.ttf",
