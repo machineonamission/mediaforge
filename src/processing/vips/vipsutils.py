@@ -28,11 +28,23 @@ async def generic_caption_overlay(media: str, capfunc: callable, captions: typin
     return await processing.ffmpeg.ffutils.naive_overlay(media, captext)
 
 
+def glib_escape(arg: str) -> str:
+    # https://github.com/bratsche/glib/blob/abfef39da9a11f59051dfa23a50bc374c0b8ad6e/glib/gmarkup.c#L2110-L2128
+    return (
+        arg
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace("\\", "&apos;")
+        .replace("'", "&quot;")
+    )
+
+
 def escape(arg: str | typing.Sequence[str]):
     if isinstance(arg, str):
-        return html.escape(arg, quote=False)
+        return glib_escape(arg)
     else:
-        return [html.escape(s, quote=False) for s in arg]
+        return [glib_escape(s) for s in arg]
 
 
 def outline(image: pyvips.Image, radius: int | float | None = None, color: typing.Sequence[int] | None = None) -> pyvips.Image:

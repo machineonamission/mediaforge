@@ -312,10 +312,6 @@ def generic_image_caption(image: str, captions: typing.Sequence[str], size: Imag
     # load stuff
     im = normalize(pyvips.Image.new_from_file(image))
 
-    # the hell is wrong with the stuff png??
-    if im.bands == 2:
-        im = im[0].bandjoin(im[0]).bandjoin(im[0]).bandjoin(im[1]).copy(interpretation=pyvips.Interpretation.SRGB)
-
     # resize
     im = im.resize((size.width / 3) / im.width)
     # pad text to image width
