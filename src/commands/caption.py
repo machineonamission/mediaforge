@@ -125,7 +125,8 @@ class Caption(commands.Cog, name="Captioning"):
         :mediaparam media: A video, gif, or image.
         """
         await process(ctx, processing.vips.vipsutils.generic_caption_stack, [[VIDEO, GIF, IMAGE]],
-                      processing.vips.caption.generic_image_caption, [caption], "rendering/images/Stuff.PNG", reverse=True)
+                      processing.vips.caption.generic_image_caption, [caption], "rendering/images/Stuff.PNG",
+                      reverse=True)
 
     @commands.hybrid_command(aliases=["eminemcaption", "eminemcap"])
     async def eminem(self, ctx, *, caption):
@@ -137,7 +138,8 @@ class Caption(commands.Cog, name="Captioning"):
         :mediaparam media: A video, gif, or image.
         """
         await process(ctx, processing.vips.vipsutils.generic_caption_stack, [[VIDEO, GIF, IMAGE]],
-                      processing.vips.caption.generic_image_caption, [caption], "rendering/images/eminem.png", reverse=True)
+                      processing.vips.caption.generic_image_caption, [caption], "rendering/images/eminem.png",
+                      reverse=True)
 
     @commands.hybrid_command(aliases=["peter", "peterexplain", "petersay", "petergriffinexplain", "petergriffinsay"])
     async def petergriffin(self, ctx, *, caption):
@@ -149,7 +151,26 @@ class Caption(commands.Cog, name="Captioning"):
         :mediaparam media: A video, gif, or image.
         """
         await process(ctx, processing.vips.vipsutils.generic_caption_stack, [[VIDEO, GIF, IMAGE]],
-                      processing.vips.caption.generic_image_caption, [caption], "rendering/images/Peter_Griffin.png", reverse=True)
+                      processing.vips.caption.generic_image_caption, [caption], "rendering/images/Peter_Griffin.png",
+                      reverse=True)
+
+    @commands.hybrid_command()
+    async def imagecaption(self, ctx, *, caption):
+        """
+        a custom image of your choice says something below your media.
+
+        :param ctx: discord context
+        :param caption: The caption text.
+        :mediaparam media: A video, gif, or image.
+        :mediaparam image: An image that will say something.
+        """
+
+        async def func(media, image, gic, caption):
+            # generic_image_caption takes params in a different order than process can natively provide, so we have to rearrange
+            return await processing.vips.vipsutils.generic_caption_stack(media, gic, caption, image, reverse=True)
+
+        await process(ctx, func, [[VIDEO, GIF, IMAGE], [IMAGE]], processing.vips.caption.generic_image_caption,
+                      [caption])
 
     @commands.hybrid_command(aliases=["bottomcap", "botcap"])
     async def bottomcaption(self, ctx, *, caption):
