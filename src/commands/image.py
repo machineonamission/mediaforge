@@ -1,5 +1,6 @@
 import typing
 
+import discord
 from discord.ext import commands
 
 import processing.common
@@ -50,12 +51,12 @@ class Image(commands.Cog, name="Creation"):
         await process(ctx, processing.vips.creation.yskysn, [], caption, run_parallel=True)
 
     @commands.hybrid_command(aliases=["troll"])
-    async def trollface(self, ctx):
+    async def trollface(self, ctx, media: discord.Attachment | None = None):
         """
         Colors a trollface with an image.
 
         :param ctx: discord context
-        :mediaparam media: A video, gif, or image.
+        :param media: A video, gif, or image.
         """
         await process(ctx, processing.ffmpeg.creation.trollface, [[VIDEO, GIF, IMAGE]])
 
@@ -81,7 +82,7 @@ class Image(commands.Cog, name="Creation"):
 
         :param ctx: discord context
         :param text: The text to put next to your image.
-        :mediaparam media: An image, video, or gif
+        :param media: An image, video, or gif
         """
         await process(ctx, processing.vips.caption.generic_image_caption, [[IMAGE]],
                       [text],
@@ -94,7 +95,7 @@ class Image(commands.Cog, name="Creation"):
         https://knowyourmeme.com/memes/give-me-your-phone
 
         :param ctx: discord context
-        :mediaparam media: The media to be overlayed over his hand.
+        :param media: The media to be overlayed over his hand.
         """
         await process(ctx, processing.ffmpeg.creation.give_me_your_phone_now, [[IMAGE, VIDEO, GIF]])
 
@@ -142,7 +143,8 @@ class Image(commands.Cog, name="Creation"):
         await process(ctx, sus.sus, [], text, run_parallel=True)
 
     @commands.hybrid_command(aliases=['locket', 'heart', "beloved", "mybeloved"])
-    async def heartlocket(self, ctx, *, text="my beloved"):
+    async def heartlocket(self, ctx, *, text="my beloved", leftmedia: discord.Attachment | None = None,
+                          rightmedia: discord.Attachment | None = None):
         """
         Put your image and text into a 3d animated heart locket
         This command is unique as it can take a varying number of arguments
@@ -154,9 +156,9 @@ class Image(commands.Cog, name="Creation"):
 
         based on https://makesweet.com/big/heart-locket
         :param ctx: discord context
-        :param text: The input text to be put in the locket.
-        :mediaparam media1: (Optional) The media to be put in the left side of the locket
-        :mediaparam media2: (Optional) The media to be put in the right side of the locket
+        :param text: The input text to be put in the locket. See $help locket for the syntax
+        :param leftmedia: (Optional) The media to be put in the left side of the locket
+        :param rightmedia: (Optional) The media to be put in the right side of the locket
         """
         hlmt = [IMAGE, GIF, VIDEO]
         split = text.split("|")
@@ -164,13 +166,13 @@ class Image(commands.Cog, name="Creation"):
             split.append("")
         if split[0] == "" and split[1] == "":
             await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt, hlmt],
-                          processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA)
+                          processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA, slashfiles=[leftmedia, rightmedia])
         if split[0] == "" and split[1] != "":
             await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[1],
-                          processing.ffmpeg.heartlocket.ArgType.MEDIA_TEXT)
+                          processing.ffmpeg.heartlocket.ArgType.MEDIA_TEXT, slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
         if split[0] != "" and split[1] == "":
             await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[0],
-                          processing.ffmpeg.heartlocket.ArgType.TEXT_MEDIA)
+                          processing.ffmpeg.heartlocket.ArgType.TEXT_MEDIA, slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
         if split[0] != "" and split[1] != "":
             await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [], split[0], split[1],
                           processing.ffmpeg.heartlocket.ArgType.TEXT_TEXT)

@@ -72,7 +72,7 @@ class Other(commands.Cog, name="Other"):
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.bot_has_guild_permissions(manage_emojis=True)
     @commands.hybrid_command(aliases=["createemoji"])
-    async def addemoji(self, ctx, name):
+    async def addemoji(self, ctx, name, media: discord.Attachment | None = None):
         """
         Adds a file as an emoji to a server.
 
@@ -80,17 +80,17 @@ class Other(commands.Cog, name="Other"):
 
         :param ctx: discord context
         :param name: The emoji name. Must be at least 2 characters.
-        :mediaparam media: A gif or image.
+        :param media: A gif or image.
         """
         await process(ctx, utils.discordmisc.add_emoji, [[GIF, IMAGE]], ctx.guild, name, expectimage=False,
-                      resize=False)
+                      resize=False, slashfiles=media)
 
     # TODO: fix?
     @commands.guild_only()
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.bot_has_guild_permissions(manage_emojis=True)
     @commands.hybrid_command(aliases=["createsticker"])
-    async def addsticker(self, ctx, stickeremoji: UnicodeEmojiConverter, *, name: str):
+    async def addsticker(self, ctx, stickeremoji: UnicodeEmojiConverter, *, name: str, media: discord.Attachment | None = None):
         """
         Adds a file as a sticker to a server.
 
@@ -99,43 +99,43 @@ class Other(commands.Cog, name="Other"):
         :param ctx: discord context
         :param stickeremoji: The related emoji. Must be a single default emoji.
         :param name: The sticker name. Must be at least 2 characters.
-        :mediaparam media: A gif or image.
+        :param media: A gif or image.
         """
         await process(ctx, utils.discordmisc.add_sticker, [[GIF, IMAGE]], ctx.guild, stickeremoji, name,
-                      expectimage=False, resize=False)
+                      expectimage=False, resize=False, slashfiles=media)
 
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_guild_permissions(manage_guild=True)
     @commands.hybrid_command(aliases=["guildbanner", "serverbanner", "banner"])
-    async def setbanner(self, ctx):
+    async def setbanner(self, ctx, media: discord.Attachment | None = None):
         """
         Sets a file as the server banner.
         Server must support banners.
 
         :param ctx: discord context
-        :mediaparam media: An image.
+        :param media: An image.
         """
         if "BANNER" not in ctx.guild.features:
             await ctx.reply(f"{config.emojis['x']} This guild does not support banners.")
             return
         await process(ctx, utils.discordmisc.set_banner, [[IMAGE]], ctx.guild, expectimage=False,
-                      resize=False)
+                      resize=False, slashfiles=media)
 
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.bot_has_guild_permissions(manage_guild=True)
     @commands.hybrid_command(aliases=["setguildicon", "guildicon", "servericon", "seticon"])
-    async def setservericon(self, ctx):
+    async def setservericon(self, ctx, media: discord.Attachment | None = None):
         """
         Sets a file as the server icon.
         If setting a gif, server must support animated icons.
 
         :param ctx: discord context
-        :mediaparam media: An image or gif.
+        :param media: An image or gif.
         """
         await process(ctx, utils.discordmisc.set_icon, [[IMAGE, GIF]], ctx.guild, expectimage=False,
-                      resize=False)
+                      resize=False, slashfiles=media)
 
     @commands.hybrid_command(aliases=["statistics"])
     async def stats(self, ctx):
@@ -379,7 +379,7 @@ class Other(commands.Cog, name="Other"):
         Info provided is from ffprobe and libmagic.
 
         :param ctx: discord context
-        :mediaparam media: Any media file.
+        :param media: Any media file.
         """
         async with utils.tempfiles.TempFileSession():
             file = await imagesearch(ctx, 1)

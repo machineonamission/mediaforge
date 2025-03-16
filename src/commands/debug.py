@@ -207,5 +207,5 @@ class Debug(commands.Cog, name="Owner Only", command_attrs=dict(hidden=True)):
 
     @commands.hybrid_command()
     @commands.is_owner()
-    async def argtesting(self, ctx: commands.Context, file: discord.Attachment | None = None):
+    async def argtesting(self, ctx: commands.Context, media: discord.Attachment | None = None):
         await ctx.reply(f"file: {file}")

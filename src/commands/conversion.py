@@ -33,7 +33,7 @@ class Conversion(commands.Cog, name="Conversion"):
         self.bot = bot
 
     @commands.hybrid_command(aliases=["filename", "name", "setname"])
-    async def rename(self, ctx, filename: str):
+    async def rename(self, ctx, filename: str, media: discord.Attachment | None = None):
         """
         Renames media.
         Note: Discord's spoiler feature is dependent on filenames starting with "SPOILER_". renaming files may
@@ -41,25 +41,19 @@ class Conversion(commands.Cog, name="Conversion"):
 
         :param ctx: discord context
         :param filename: the new name of the file
-        :mediaparam media: Any valid media.
+        :param media: Any valid media.
         """
-        async with utils.tempfiles.TempFileSession():
-            urls = await utils.scandiscord.imagesearch(ctx, 1)
-            file = await utils.web.saveurl(urls[0])
-            await ctx.reply(file=discord.File(file, filename=filename))
+        await process(ctx, lambda x: x, [[VIDEO, IMAGE, GIF, AUDIO]], slashfiles=media, name=filename)
 
     @commands.hybrid_command(aliases=["spoil", "censor", "cw", "tw"])
-    async def spoiler(self, ctx):
+    async def spoiler(self, ctx, media: discord.Attachment | None = None):
         """
         Spoilers media.
 
         :param ctx: discord context
-        :mediaparam media: Any valid media.
+        :param media: Any valid media.
         """
-        async with utils.tempfiles.TempFileSession():
-            urls = await utils.scandiscord.imagesearch(ctx, 1)
-            file = await utils.web.saveurl(urls[0])
-            await ctx.reply(file=discord.File(file, spoiler=True))
+        await process(ctx, lambda x: x, [[VIDEO, IMAGE, GIF, AUDIO]], slashfiles=media, spoiler=True)
 
     @commands.hybrid_command(aliases=["avatar", "pfp", "profilepicture", "profilepic", "ayowhothismf", "av"])
     async def icon(self, ctx, *, body=None):
@@ -141,14 +135,14 @@ class Conversion(commands.Cog, name="Conversion"):
             await ctx.reply(f"{config.emojis['2exclamation']} {e}")
 
     @commands.hybrid_command(aliases=["gif", "videotogif"])
-    async def togif(self, ctx):
+    async def togif(self, ctx, video: discord.Attachment | None = None):
         """
         Converts a video to a GIF.
 
         :param ctx: discord context
-        :mediaparam video: A video.
+        :param video: A video.
         """
-        await process(ctx, processing.ffmpeg.conversion.videotogif, [[VIDEO]])
+        await process(ctx, processing.ffmpeg.conversion.videotogif, [[VIDEO]], slashfiles=video)
 
     # discord fucks apng uploads, not much i can do about that
     # @commands.hybrid_command(aliases=["apng", "videotoapng", "giftoapng"])
@@ -157,19 +151,19 @@ class Conversion(commands.Cog, name="Conversion"):
     #     Converts a video or gif to an animated png.
     #
     #     :param ctx: discord context
-    #     :mediaparam video: A video or gif.
+    #     :param video: A video or gif.
     #     """
     #     await process(ctx, processing.ffmpeg.conversion.toapng, [[VIDEO, GIF]], resize=False)
 
     @commands.hybrid_command(aliases=["audio", "mp3", "tomp3", "aac", "toaac"])
-    async def toaudio(self, ctx):
+    async def toaudio(self, ctx, video: discord.Attachment | None = None):
         """
         Converts a video to only audio.
 
         :param ctx: discord context
-        :mediaparam video: A video.
+        :param video: A video.
         """
-        await process(ctx, processing.ffmpeg.conversion.toaudio, [[VIDEO, AUDIO]])
+        await process(ctx, processing.ffmpeg.conversion.toaudio, [[VIDEO, AUDIO]], slashfiles=video)
 
     @commands.hybrid_command(aliases=["tenorgif", "tenormp4", "rawtenor"])
     async def tenorurl(self, ctx, gif: bool = True):
@@ -179,7 +173,7 @@ class Conversion(commands.Cog, name="Conversion"):
 
         :param gif: if true, sends GIF url. if false, sends mp4 url.
         :param ctx: discord context
-        :mediaparam gif: any gif sent from tenor.
+        :param gif: any gif sent from tenor.
         """
         file = await tenorsearch(ctx, gif)
         if file:
@@ -188,24 +182,24 @@ class Conversion(commands.Cog, name="Conversion"):
             await ctx.send(f"{config.emojis['x']} No tenor gif found.")
 
     @commands.hybrid_command(aliases=["video", "giftovideo", "tomp4", "mp4"])
-    async def tovideo(self, ctx):
+    async def tovideo(self, ctx, gif: discord.Attachment | None = None):
         """
         Converts a GIF to a video.
 
         :param ctx: discord context
-        :mediaparam gif: A gif.
+        :param gif: A gif.
         """
-        await process(ctx, processing.ffmpeg.conversion.giftomp4, [[GIF]])
+        await process(ctx, processing.ffmpeg.conversion.giftomp4, [[GIF]], slashfiles=gif)
 
     @commands.hybrid_command(aliases=["png", "mediatopng"])
-    async def topng(self, ctx):
+    async def topng(self, ctx, media: discord.Attachment | None = None):
         """
         Converts media to PNG
 
         :param ctx: discord context
-        :mediaparam media: A video, gif, or image.
+        :param media: A video, gif, or image.
         """
-        await process(ctx, processing.ffmpeg.conversion.mediatopng, [[VIDEO, GIF, IMAGE]])
+        await process(ctx, processing.ffmpeg.conversion.mediatopng, [[VIDEO, GIF, IMAGE]], slashfiles=media)
 
     @commands.command(aliases=["emoji", "emojiimage", "emote", "emoteurl"])  # TODO: hybrid
     async def emojiurl(self, ctx, *custom_emojis: discord.PartialEmoji):

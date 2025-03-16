@@ -1,6 +1,8 @@
 import asyncio
 import inspect
+import re
 import typing
+from urllib.parse import urlparse
 
 import discord
 from discord.ext import commands
@@ -20,7 +22,8 @@ from utils.web import saveurls
 
 async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                   slashfiles: list[discord.Attachment] | None = None,
-                  resize=True, expectimage=True, uploadresult=True, run_parallel=False, **kwargs):
+                  resize=True, expectimage=True, uploadresult=True, run_parallel=False, spoiler=False,
+                  name: str | None = None, **kwargs):
     """
     The core function of the bot. Gathers media and sends it to the proper function.
 
@@ -68,7 +71,9 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                     slashfiles = []
                 slashfiles: list[discord.Attachment]
                 # pad a list to the length, given the slashfiles
-                urls = slashfiles + [None] * (len(inputs) - len(slashfiles))
+                urls = [s.url for s in slashfiles] + [None] * (len(inputs) - len(slashfiles))
+                # trim excess
+                urls = urls[:len(inputs)]
                 missing_file_count = urls.count(None)
                 if missing_file_count > 0:
                     # search for any missing
@@ -80,6 +85,8 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                         if url is None:
                             urls[i] = searched_urls[index]
                             index += 1
+                # spoiler if needed
+                spoiler = spoiler or any([urlparse(u).path.split("/")[-1].startswith("SPOILER_") for u in urls])
                 files = await saveurls(urls)
             else:
                 files = []
@@ -117,7 +124,8 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                         # remove too long videossss
                         for i in range(len(files)):
                             if resize:
-                                files[i] = await processing.ffmpeg.ensuresize.ensuresize(ctx, files[i], config.min_size, config.max_size)
+                                files[i] = await processing.ffmpeg.ensuresize.ensuresize(ctx, files[i], config.min_size,
+                                                                                         config.max_size)
                             files[i] = await processing.ffmpeg.ensuresize.ensureduration(files[i], ctx)
                         # prepare args
                         if inputs:
@@ -153,9 +161,9 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                         await updatestatus("Uploading...")
                         if uploadresult:
                             if ctx.interaction:
-                                await msg.edit(content="", attachments=[discord.File(result)])
+                                await msg.edit(content="", attachments=[discord.File(result, spoiler=spoiler, filename=name)])
                             else:
-                                await ctx.reply(file=discord.File(result))
+                                await ctx.reply(file=discord.File(result, spoiler=spoiler, filename=name))
 
             else:  # no media found but media expected
                 logger.info("No media found.")

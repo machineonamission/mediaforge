@@ -46,7 +46,7 @@ async def handlemessagesave(m: discord.Message, ignoreatts: list[discord.Attachm
                     detectedfiles.append(embed.thumbnail.url)
     if len(m.attachments):
         for att in m.attachments:
-            if ignoreatts is not None or att not in ignoreatts:  # ignore duplicate atts
+            if ignoreatts is None or att not in ignoreatts:  # ignore duplicate atts
                 if not att.filename.endswith("txt"):  # it was reading traceback attachments >:(
                     detectedfiles.append(att.url)
     if len(m.stickers):
