@@ -50,4 +50,4 @@ async def animatedmultiplexer(media: TempFile, function: callable, *args, **kwar
         if inspect.iscoroutinefunction(function):
             return await function(media, *args, **kwargs)
         else:
-            return await run_parallel(function, *args, **kwargs)
+            return await run_parallel(function, media, *args, **kwargs)
