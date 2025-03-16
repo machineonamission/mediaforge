@@ -37,7 +37,7 @@ class Other(commands.Cog, name="Other"):
     @commands.guild_only()
     @commands.has_guild_permissions(manage_guild=True)
     @commands.hybrid_command(aliases=["pfx", "setprefix", "changeprefix", "botprefix", "commandprefix"])
-    async def prefix(self, ctx, prefix=None):
+    async def prefix(self, ctx, prefix: str = None):
         """
         Changes the bot's prefix for this guild.
 
@@ -72,7 +72,7 @@ class Other(commands.Cog, name="Other"):
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.bot_has_guild_permissions(manage_emojis=True)
     @commands.hybrid_command(aliases=["createemoji"])
-    async def addemoji(self, ctx, name, media: discord.Attachment | None = None):
+    async def addemoji(self, ctx, name: str, media: discord.Attachment | None = None):
         """
         Adds a file as an emoji to a server.
 
@@ -90,7 +90,8 @@ class Other(commands.Cog, name="Other"):
     @commands.has_guild_permissions(manage_emojis=True)
     @commands.bot_has_guild_permissions(manage_emojis=True)
     @commands.hybrid_command(aliases=["createsticker"])
-    async def addsticker(self, ctx, stickeremoji: UnicodeEmojiConverter, *, name: str, media: discord.Attachment | None = None):
+    async def addsticker(self, ctx, stickeremoji: UnicodeEmojiConverter, *, name: str,
+                         media: discord.Attachment | None = None):
         """
         Adds a file as a sticker to a server.
 
@@ -328,8 +329,11 @@ class Other(commands.Cog, name="Other"):
                 embed = add_long_field(embed, "Command Information", command_information)
 
                 paramtext = []
+                mediaparamtext = []
                 # for every "clean paramater" (no self or ctx)
                 for param in list(cmd.clean_params.values()):
+                    # due to slash commands, media params are normal args now
+                    mediaparam = param.annotation == typing.Optional[discord.Attachment]
                     # get command description from docstring
                     paramhelp = discord.utils.get(docstring.params, arg_name=param.name)
                     # not found in docstring
@@ -337,26 +341,23 @@ class Other(commands.Cog, name="Other"):
                         paramtext.append(f"**{param.name}** - No description")
                         continue
                     # optional argument (param has a default value)
-                    if param.default != param.empty:  # param.empty != None
+                    if param.default != param.empty and not mediaparam:  # param.empty != None
                         pend = f" (optional, defaults to `{param.default}`)"
                     else:
                         pend = ""
                     # format and add to paramtext list
                     paramhelp.description = paramhelp.description.replace('\n', ' ')
-                    paramtext.append(f"**{param.name}** - "
-                                     f"{paramhelp.description if paramhelp.description else 'No description'}"
-                                     f"{pend}")
-                mediaparamtext = []
-                for mediaparam in re.finditer(re.compile(":mediaparam ([^ :]+): ([^\n]+)"), cmd.help):
-                    argname = mediaparam[1]
-                    argdesc = mediaparam[2]
-                    mediaparamtext.append(f"**{argname}** - {argdesc}")
+                    (mediaparamtext if mediaparam else paramtext).append(
+                        f"**{param.name}** - "
+                        f"{paramhelp.description if paramhelp.description else 'No description'}"
+                        f"{pend}"
+                    )
                 # if there are params found
                 if len(paramtext):
                     # join list and add to help
                     embed = add_long_field(embed, "Parameters", "\n".join(paramtext))
                 if len(mediaparamtext):
-                    mval = "*Media parameters are automatically collected from the channel.*\n" + \
+                    mval = "*Media parameters are automatically collected from the channel or provided in slash commands.*\n" + \
                            "\n".join(mediaparamtext)
                     embed = add_long_field(embed, "Media Parameters", mval)
                 if docstring.returns:
