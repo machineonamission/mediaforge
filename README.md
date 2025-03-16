@@ -42,7 +42,8 @@ on linux, you may need to run docker with `sudo`
 replace `8G` with how much free RAM your system has that you would like to give MediaForge (in gigabytes). At least `1G`
 is suggested. Making this too small can make commands fail due to not enough space, as the `/dev/shm` in-memory
 filesystem is, by default, MediaForge's sole temporary directory. If you don't have enough memory to allocate, or expect
-high command volume, remove `--shm-size 8G` from the `docker run` command to use your regular disk as temp storage.
+high command volume, replace `--shm-size 8G` with `--ipc=none` in the `docker run` command to use your regular disk as
+temp storage.
 
 if the installation succeeded, you should be prompted with some options. you'll need to select "Edit Config". this will
 open a text editor within your terminal. the 2 required config settings to change for proper functionality are the

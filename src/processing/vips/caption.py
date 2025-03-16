@@ -3,7 +3,7 @@ import typing
 
 import pyvips
 
-from processing.vips.vipsutils import ImageSize, escape, outline, overlay_in_middle
+from processing.vips.vipsutils import ImageSize, escape, outline, overlay_in_middle, vips_text
 from processing.vips.vipsutils import normalize
 from utils.tempfiles import reserve_tempfile
 
@@ -16,14 +16,11 @@ def esmcaption(captions: typing.Sequence[str], size: ImageSize):
     # constants used by esmbot
     fontsize = size.width / 10
     textwidth = size.width * .92
-    # technically redundant but adds twemoji font
-    # DOESNT WORK ON WINDOWS IDK WHY
-    out = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
-    out = pyvips.Image.text(
+    out = vips_text(
         captions[0],
-        font=f"FuturaExtraBlackCondensed,Twemoji Color Emoji {fontsize}px",
-        rgba=True,
+        font=f"FuturaExtraBlackCondensed",
+        style=f"Black {fontsize}px",
         fontfile="rendering/fonts/caption.otf",
         align=pyvips.Align.CENTRE,
         width=textwidth,
@@ -46,14 +43,11 @@ def mediaforge_caption(captions: typing.Sequence[str], size: ImageSize):
     # constants used by esmbot
     fontsize = size.width / 10
     textwidth = size.width * .92
-    # technically redundant but adds twemoji font
-    # DOESNT WORK ON WINDOWS IDK WHY
-    out = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
-    out = pyvips.Image.text(
+    out = vips_text(
         captions[0],
-        font=f"Atkinson Hyperlegible,Twemoji Color Emoji Bold {fontsize}px",
-        rgba=True,
+        font=f"Atkinson Hyperlegible",
+        style=f"Bold {fontsize}px",
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
         align=pyvips.Align.CENTRE,
         width=textwidth,
@@ -91,13 +85,11 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
     toptext = None
     bottomtext = None
     if captions[0]:
-        # technically redundant but adds twemoji font
-        toptext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
-        toptext = pyvips.Image.text(
+        toptext = vips_text(
             f"<span foreground=\"white\">{captions[0]}</span>",
-            font=f"Times New Roman Cyr,Twemoji Color Emoji {textsize}px",
-            rgba=True,
+            font=f"Times New Roman Cyr",
+            style=f"{textsize}px",
             fontfile="rendering/fonts/times new roman.ttf",
             align=pyvips.Align.CENTRE,
             width=width,
@@ -106,13 +98,11 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
         toptext = toptext.gravity(pyvips.CompassDirection.CENTRE, width, toptext.height + (textsize / 4),
                                   extend=pyvips.Extend.BLACK)
     if captions[1]:
-        # technically redundant but adds twemoji font
-        bottomtext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
-        bottomtext = pyvips.Image.text(
+        bottomtext = vips_text(
             f"<span foreground=\"white\">{captions[1]}</span>",
-            font=f"Times New Roman Cyr,Twemoji Color Emoji {int(textsize * 0.4)}px",
-            rgba=True,
+            font=f"Times New Roman Cyr",
+            style=f"{int(textsize * 0.4)}px",
             fontfile="rendering/fonts/times new roman.ttf",
             align=pyvips.Align.CENTRE,
             width=width,
@@ -148,13 +138,10 @@ def meme(captions: typing.Sequence[str], size: ImageSize):
         interpretation=pyvips.enums.Interpretation.SRGB)
 
     if captions[0]:
-        # technically redundant but adds twemoji font
-        toptext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
-        toptext = pyvips.Image.text(
+        toptext = vips_text(
             f"<span foreground=\"white\">{escape(captions[0].upper())}</span>",
-            font=f"Twemoji Color Emoji,ImpactMix",
-            rgba=True,
+            font=f"ImpactMix",
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
@@ -165,13 +152,10 @@ def meme(captions: typing.Sequence[str], size: ImageSize):
                                      x=((size.width - toptext.width) / 2),
                                      y=int(size.height * .025))
     if captions[1]:
-        # technically redundant but adds twemoji font
-        bottomtext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
-        bottomtext = pyvips.Image.text(
+        bottomtext = vips_text(
             f"<span foreground=\"white\">{escape(captions[1].upper())}</span>",
-            font=f"Twemoji Color Emoji,ImpactMix",
-            rgba=True,
+            font=f"ImpactMix",
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
@@ -195,13 +179,11 @@ def tenor(captions: typing.Sequence[str], size: ImageSize):
         interpretation=pyvips.enums.Interpretation.SRGB)
     textsize = size.width // 10
     if captions[0]:
-        # technically redundant but adds twemoji font
-        toptext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
-        toptext = pyvips.Image.text(
+        toptext = vips_text(
             f"<span foreground=\"white\">{captions[0]}</span>",
-            font=f"Ubuntu,Twemoji Color Emoji {textsize}px",
-            rgba=True,
+            font=f"Ubuntu",
+            style=f"{textsize}px",
             fontfile="rendering/fonts/Ubuntu-R.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
@@ -212,13 +194,11 @@ def tenor(captions: typing.Sequence[str], size: ImageSize):
                                      x=((size.width - toptext.width) / 2),
                                      y=int(size.height * .025))
     if captions[1]:
-        # technically redundant but adds twemoji font
-        bottomtext = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
-        bottomtext = pyvips.Image.text(
+        bottomtext = vips_text(
             f"<span foreground=\"white\">{captions[1]}</span>",
-            font=f"Ubuntu,Twemoji Color Emoji {textsize}px",
-            rgba=True,
+            font=f"Ubuntu",
+            style=f"{textsize}px",
             fontfile="rendering/fonts/Ubuntu-R.ttf",
             align=pyvips.Align.CENTRE,
             width=int(size.width * .95),
@@ -241,13 +221,11 @@ def whisper(captions: typing.Sequence[str], size: ImageSize):
     overlay = pyvips.Image.black(size.width, size.height).new_from_image([0, 0, 0, 0]).copy(
         interpretation=pyvips.enums.Interpretation.SRGB)
 
-    # technically redundant but adds twemoji font
-    text = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
-    text = pyvips.Image.text(
+    text = vips_text(
         f"<span foreground=\"white\">{captions[0]}</span>",
-        font=f"Upright,Twemoji Color Emoji {size.width // 6}px",
-        rgba=True,
+        font=f"Upright",
+        style=f"{size.width // 6}px",
         fontfile="rendering/fonts/whisper.otf",
         align=pyvips.Align.CENTRE,
         width=int(size.width * .95),
@@ -263,13 +241,11 @@ def whisper(captions: typing.Sequence[str], size: ImageSize):
 
 
 def snapchat(captions: typing.Sequence[str], size: ImageSize):
-    # technically redundant but adds twemoji font
-    text = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
-    text = pyvips.Image.text(
+    text = vips_text(
         f"<span foreground=\"white\">{captions[0]}</span>",
-        font=f"Helvetica Neue,Twemoji Color Emoji {size.width // 20}px",
-        rgba=True,
+        font=f"Helvetica Neue",
+        style=f"{size.width // 20}px",
         fontfile="rendering/fonts/HelveticaNeue.otf",
         align=pyvips.Align.CENTRE,
         width=int(size.width * .98),
@@ -296,13 +272,12 @@ def generic_image_caption(image: str, captions: typing.Sequence[str], size: Imag
     # constants used by esmbot
     fontsize = size.width / 10
     textwidth = size.width * (2 / 3) * .92
-    # technically redundant but adds twemoji font
-    out = pyvips.Image.text(".", fontfile=twemoji)
+
     # generate text
-    out = pyvips.Image.text(
+    out = vips_text(
         captions[0],
-        font=f"Atkinson Hyperlegible,Twemoji Color Emoji Bold {fontsize}px",
-        rgba=True,
+        font=f"Atkinson Hyperlegible",
+        style=f"Bold {fontsize}px",
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
         align=pyvips.Align.CENTRE,
         width=textwidth,
@@ -331,13 +306,12 @@ def generic_image_caption(image: str, captions: typing.Sequence[str], size: Imag
 def twitter_text(captions: typing.Sequence[str], size: ImageSize, dark: bool):
     captions = escape(captions)
     fontsize = size.width / 20
-    # technically redundant but adds twemoji font
-    out = pyvips.Image.text(".", fontfile=twemoji)
+
     # generate text
-    out = pyvips.Image.text(
+    out = vips_text(
         f"<span foreground=\"{'white' if dark else 'black'}\">{captions[0]}</span>",
-        font=f"TwitterChirp,Twemoji Color Emoji {fontsize}px",
-        rgba=True,
+        font=f"TwitterChirp",
+        style=f"{fontsize}px",
         fontfile="rendering/fonts/TwitterChirp.otf",
         align=pyvips.Align.LOW,
         width=size.width,

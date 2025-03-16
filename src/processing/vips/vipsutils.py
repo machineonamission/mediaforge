@@ -119,3 +119,20 @@ def normalize(img: pyvips.Image) -> pyvips.Image:
         img = img.bandjoin(255)
 
     return img
+
+
+def vips_text(intext: str, *args, font: str, style: str = "", **kwargs):
+    # weird syntax for adding extra font files
+    # adds noto for multi script support font
+    out = pyvips.Image.text(".", fontfile="rendering/fonts/NotoSans.ttf")
+    # adds twemoji font for emojis
+    out = pyvips.Image.text(".", fontfile="rendering/fonts/TwemojiCOLR0.otf")
+    # generate text
+    out = pyvips.Image.text(
+        intext,
+        font=f"{font},Twemoji Color Emoji,Noto Sans{f' {style}' if style else ''}",
+        rgba=True,
+        *args,
+        **kwargs
+    )
+    return out

@@ -2,9 +2,8 @@ import typing
 
 import pyvips
 
-from processing.vips.caption import twemoji
 from processing.vips.vipsutils import escape
-from processing.vips.vipsutils import normalize
+from processing.vips.vipsutils import normalize, vips_text
 from utils.tempfiles import reserve_tempfile
 
 
@@ -14,15 +13,13 @@ def yskysn(captions: typing.Sequence[str]):
     # here for my sanity, dimensions of text area
     w = 500
     h = 582
-    # technically redundant but adds twemoji font
-    text_prerender = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
-    text_prerender, autofit_dict = pyvips.Image.text(
+    text_prerender, autofit_dict = vips_text(
         f"<span foreground='white'>"
         f"{escape(captions[0].upper())}\n<span size='150%'>{escape(captions[1].upper())}</span>"
         f"</span>",
-        font=f"Tahoma,Twemoji Color Emoji Bold 56",
-        rgba=True,
+        font=f"Tahoma",
+        style="Bold 56",
         fontfile="rendering/fonts/TAHOMABD.TTF",
         align=pyvips.Align.CENTRE,
         width=w,
@@ -34,15 +31,13 @@ def yskysn(captions: typing.Sequence[str]):
     if autofit_dpi <= 72:
         text = text_prerender
     else:
-        # technically redundant but adds twemoji font
-        text = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
-        text = pyvips.Image.text(
+        text = vips_text(
             f"<span foreground='white'>"
             f"{escape(captions[0].upper())}\n<span size='150%'>{escape(captions[1].upper())}</span>"
             f"</span>",
-            font=f"Tahoma,Twemoji Color Emoji Bold 56",
-            rgba=True,
+            font=f"Tahoma",
+            style="Bold 56",
             fontfile="rendering/fonts/TAHOMABD.TTF",
             align=pyvips.Align.CENTRE,
             width=w,
@@ -76,13 +71,11 @@ def f1984(captions: typing.Sequence[str]):
     else:
         im = normalize(pyvips.Image.new_from_file("rendering/images/1984/1984.png"))
 
-    # technically redundant but adds twemoji font
-    speech_bubble = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
-    speech_bubble = pyvips.Image.text(
+    speech_bubble = vips_text(
         escape(captions[0]),
-        font=f"Atkinson Hyperlegible,Twemoji Color Emoji Bold",
-        rgba=True,
+        font=f"Atkinson Hyperlegible",
+        style="Bold",
         fontfile="rendering/fonts/AtkinsonHyperlegible-Bold.ttf",
         align=pyvips.Align.CENTRE,
         width=290,
@@ -95,10 +88,8 @@ def f1984(captions: typing.Sequence[str]):
     im = im.composite2(speech_bubble, pyvips.BlendMode.OVER, x=60, y=20)
 
     if not originaldate:
-        # technically redundant but adds twemoji font
-        date = pyvips.Image.text(".", fontfile=twemoji)
         # generate text
-        date = pyvips.Image.text(
+        date = vips_text(
             escape(captions[1].upper()),
             font=f"ImpactMix,Twemoji Color Emoji",
             rgba=True,
@@ -124,13 +115,10 @@ def f1984(captions: typing.Sequence[str]):
 
 
 def epicbirthdaytext(caption: str):
-    # technically redundant but adds twemoji font
-    text = pyvips.Image.text(".", fontfile=twemoji)
     # generate text
-    text = pyvips.Image.text(
+    text = vips_text(
         f"<span foreground=\"white\">{escape(caption.upper())}</span>",
-        font=f"MarkerFeltWide,Twemoji Color Emoji",
-        rgba=True,
+        font=f"MarkerFeltWide",
         fontfile="rendering/fonts/MarkerFeltWide Regular.ttf",
         align=pyvips.Align.CENTRE,
         width=540,
@@ -144,13 +132,12 @@ def epicbirthdaytext(caption: str):
 
 def heartlockettext(caption: str):
     caption = escape(caption)
-    # technically redundant but adds twemoji font
-    out = pyvips.Image.text(".", fontfile=twemoji)
+
     # generate text
-    out = pyvips.Image.text(
+    out = vips_text(
         caption,
-        font=f"Arial,Twemoji Color Emoji 0.225",
-        rgba=True,
+        font=f"Arial",
+        style="0.225",
         fontfile="rendering/fonts/arial.ttf",
         align=pyvips.Align.CENTRE,
         width=384,
