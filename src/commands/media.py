@@ -8,7 +8,6 @@ import processing.ffmpeg.conversion
 import processing.ffmpeg.handleanimated
 import processing.other
 import processing.vips.other
-import utils
 from core.process import process
 from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 
@@ -70,7 +69,8 @@ class Media(commands.Cog, name="Editing"):
         :param quality: quality of JPEG compression. must be between 1 and 95.
         :param media: An image, video, or GIF.
         """
-        await process(ctx, processing.ffmpeg.other.handle_jpeg, [[IMAGE, VIDEO, GIF]], strength, stretch, quality, slashfiles=media)
+        await process(ctx, processing.ffmpeg.other.handle_jpeg, [[IMAGE, VIDEO, GIF]], strength, stretch, quality,
+                      slashfiles=media)
 
     @commands.hybrid_command()
     async def deepfry(self, ctx, brightness: commands.Range[float, -1, 1] = 0.5,
@@ -120,7 +120,8 @@ class Media(commands.Cog, name="Editing"):
         if not (1 <= height <= config.max_size or height == -1):
             raise commands.BadArgument(f"Height must be between 1 and "
                                        f"{config.max_size} or be -1.")
-        await process(ctx, processing.ffmpeg.ffutils.resize, [[VIDEO, GIF, IMAGE]], width, height, resize=False, slashfiles=media)
+        await process(ctx, processing.ffmpeg.ffutils.resize, [[VIDEO, GIF, IMAGE]], width, height, resize=False,
+                      slashfiles=media)
 
     @commands.hybrid_command(aliases=["short", "kyle"])
     async def wide(self, ctx, media: discord.Attachment | None = None):
@@ -331,7 +332,7 @@ class Media(commands.Cog, name="Editing"):
                       "hstack", slashfiles=[media1, media2])
 
     @commands.hybrid_command()
-    async def vstack(self, ctx,media1: discord.Attachment | None = None, media2: discord.Attachment | None = None):
+    async def vstack(self, ctx, media1: discord.Attachment | None = None, media2: discord.Attachment | None = None):
         """
         Stacks 2 videos horizontally
 
@@ -343,7 +344,8 @@ class Media(commands.Cog, name="Editing"):
                       "vstack", slashfiles=[media1, media2])
 
     @commands.hybrid_command(aliases=["blend"])
-    async def overlay(self, ctx, alpha: commands.Range[float, 0, 1] = 0.5, media1: discord.Attachment | None = None, media2: discord.Attachment | None = None):
+    async def overlay(self, ctx, alpha: commands.Range[float, 0, 1] = 0.5, media1: discord.Attachment | None = None,
+                      media2: discord.Attachment | None = None):
         """
         Overlays the second input over the first
 
@@ -472,7 +474,8 @@ class Media(commands.Cog, name="Editing"):
         :param threshold: a number 0-255 how similar the caption background must be to white
         :param media: A video, image, or gif
         """
-        await process(ctx, processing.vips.other.uncaption, [[VIDEO, IMAGE, GIF]], frame_to_try, threshold, slashfiles=media)
+        await process(ctx, processing.vips.other.uncaption, [[VIDEO, IMAGE, GIF]], frame_to_try, threshold,
+                      slashfiles=media)
 
     @commands.hybrid_command()
     async def speechbubble(self, ctx, position: typing.Literal["top", "bottom"] = "top",
@@ -486,4 +489,5 @@ class Media(commands.Cog, name="Editing"):
         :param color: what color to make the speech bubble. must be "transparent", "white", or "black".
         :param media: A video, image, or GIF file
         """
-        await process(ctx, processing.ffmpeg.other.speech_bubble, [[VIDEO, IMAGE, GIF]], position, color, slashfiles=media)
+        await process(ctx, processing.ffmpeg.other.speech_bubble, [[VIDEO, IMAGE, GIF]], position, color,
+                      slashfiles=media)

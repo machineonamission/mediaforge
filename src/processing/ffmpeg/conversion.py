@@ -149,6 +149,7 @@ async def mediatopng(media):
 
     return outname
 
+
 async def mediatobmp(media):
     outname = reserve_tempfile("bmp")
     await run_command("ffmpeg", "-hide_banner", "-i", media, "-frames:v", "1", "-c:v",

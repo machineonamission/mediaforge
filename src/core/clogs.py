@@ -25,7 +25,7 @@ if hasattr(config, "dpy_log_level"):
 else:
     dpyloglevel = 25
 coloredlogs.install(level=dpyloglevel, fmt='[%(asctime)s] [DPY %(filename)s:%(funcName)s:%(lineno)d] '
-                                        '%(levelname)s %(message)s',
+                                           '%(levelname)s %(message)s',
                     datefmt='%m/%d/%Y %I:%M:%S %p', field_styles=field_styles, level_styles=level_styles,
                     logger=logging.getLogger('discord'))
 if hasattr(config, "logdiscordpytofile") and config.logdiscordpytofile:

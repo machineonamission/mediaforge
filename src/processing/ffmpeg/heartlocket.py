@@ -48,8 +48,7 @@ async def heart_locket(arg1, arg2, type: ArgType):
             await run_command("ffmpeg", "-r", str(fps), "-i", media, "-c:v", "ffv1", "-c:a", "flac", out)
         else:
             await run_command("ffmpeg", "-i", media, "-filter:v", f"fps={fps}", "-c:v", "ffv1", "-c:a", "flac", out)
-    # input is RTL, but filter is LTR
-    media1, media2 = ffv1m2, ffv1m1
+    media1, media2 = ffv1m1, ffv1m2
 
     out = reserve_tempfile("mkv")
     match (await asyncio.gather(hasaudio(media1), hasaudio(media2))):
@@ -73,7 +72,6 @@ async def heart_locket(arg1, arg2, type: ArgType):
     ymap = f"({green} + 256*floor({blue}/16)) * ({virtualres} / 4096)"
     # 39 frames
     length = 39 / fps
-
 
     await run_command(
         "ffmpeg",

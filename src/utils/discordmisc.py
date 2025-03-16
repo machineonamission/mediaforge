@@ -138,5 +138,3 @@ async def iconfromsnowflakeid(snowflake: int, bot, ctx):
     except (discord.NotFound, discord.Forbidden):
         pass
     return None
-
-

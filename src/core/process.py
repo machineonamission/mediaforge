@@ -1,6 +1,5 @@
 import asyncio
 import inspect
-import re
 import typing
 from urllib.parse import urlparse
 
@@ -71,7 +70,7 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                     slashfiles = []
                 slashfiles: list[discord.Attachment]
                 # pad a list to the length, given the slashfiles
-                urls = [s.url for s in slashfiles] + [None] * (len(inputs) - len(slashfiles))
+                urls = [s.url if s is not None else None for s in slashfiles] + [None] * (len(inputs) - len(slashfiles))
                 # trim excess
                 urls = urls[:len(inputs)]
                 missing_file_count = urls.count(None)
@@ -161,7 +160,8 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                         await updatestatus("Uploading...")
                         if uploadresult:
                             if ctx.interaction:
-                                await msg.edit(content="", attachments=[discord.File(result, spoiler=spoiler, filename=name)])
+                                await msg.edit(content="",
+                                               attachments=[discord.File(result, spoiler=spoiler, filename=name)])
                             else:
                                 await ctx.reply(file=discord.File(result, spoiler=spoiler, filename=name))
 

@@ -61,7 +61,7 @@ class Image(commands.Cog, name="Creation"):
         await process(ctx, processing.ffmpeg.creation.trollface, [[VIDEO, GIF, IMAGE]])
 
     @commands.hybrid_command(aliases=["emsay"])
-    async def eminemsay(self, ctx, *, text):
+    async def eminemsay(self, ctx, *, text: str):
         """
         Eminem says something.
 
@@ -75,7 +75,7 @@ class Image(commands.Cog, name="Creation"):
                       run_parallel=True)
 
     @commands.hybrid_command(aliases=["customsay"])
-    async def imagesay(self, ctx, *, text):
+    async def imagesay(self, ctx, *, text: str):
         """
         An image of your choice says something.
         Like `$eminemsay` but for a custom image.
@@ -101,7 +101,7 @@ class Image(commands.Cog, name="Creation"):
 
     @commands.hybrid_command(aliases=["texttospeak", "speak", "talk", "speech", "espeak"])
     async def tts(self, ctx: commands.Context,
-                  voice: typing.Optional[typing.Literal["male", "female", "retro"]] = "male", *, text):
+                  voice: typing.Optional[typing.Literal["male", "female", "retro"]] = "male", *, text: str):
         """
         make an mp3 text-to-speech of a given input
         for modern voices: uses espeak+mbrola on linux, or native tts on windows (OS of the host server)
@@ -120,7 +120,7 @@ class Image(commands.Cog, name="Creation"):
 
     # WIP
     @commands.hybrid_command()
-    async def epicbirthday(self, ctx: commands.Context, *, text):
+    async def epicbirthday(self, ctx: commands.Context, *, text: str):
         """
         let mediaforge wish someone a very epic birthday!!!
         all credit for song goes to https://epichappybirthdaysongs.com/
@@ -132,7 +132,7 @@ class Image(commands.Cog, name="Creation"):
         await process(ctx, processing.ffmpeg.creation.epicbirthday, [], text)
 
     @commands.hybrid_command(aliases=['sus', 'imposter'])
-    async def jermatext(self, ctx, *, text="when the imposter is sus!😳"):
+    async def jermatext(self, ctx, *, text: str = "when the imposter is sus!😳"):
         """
         Cut and slice the popular Jerma sus meme to any message
         For any letter not in the original meme, a random slice of the face is selected.
@@ -143,15 +143,15 @@ class Image(commands.Cog, name="Creation"):
         await process(ctx, sus.sus, [], text, run_parallel=True)
 
     @commands.hybrid_command(aliases=['locket', 'heart', "beloved", "mybeloved"])
-    async def heartlocket(self, ctx, *, text="my beloved", leftmedia: discord.Attachment | None = None,
+    async def heartlocket(self, ctx, *, text: str = "|my beloved", leftmedia: discord.Attachment | None = None,
                           rightmedia: discord.Attachment | None = None):
         """
         Put your image and text into a 3d animated heart locket
         This command is unique as it can take a varying number of arguments
         there's 4 configurations
         "|" = 2 images, one in each side of the locket
-        "text" or "text|" = 1 image on the left side of the locket and text on the right side
-        "|text" = 1 image on the right side of the locket and text on the left side
+        "text" or "text|" = 1 image on the right side of the locket and text on the left side
+        "|text" = 1 image on the left side of the locket and text on the right side
         "text1|text2" = 2 texts, one in each side of the locket
 
         based on https://makesweet.com/big/heart-locket
@@ -169,10 +169,12 @@ class Image(commands.Cog, name="Creation"):
                           processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA, slashfiles=[leftmedia, rightmedia])
         if split[0] == "" and split[1] != "":
             await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[1],
-                          processing.ffmpeg.heartlocket.ArgType.MEDIA_TEXT, slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
+                          processing.ffmpeg.heartlocket.ArgType.MEDIA_TEXT,
+                          slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
         if split[0] != "" and split[1] == "":
             await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[0],
-                          processing.ffmpeg.heartlocket.ArgType.TEXT_MEDIA, slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
+                          processing.ffmpeg.heartlocket.ArgType.TEXT_MEDIA,
+                          slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
         if split[0] != "" and split[1] != "":
             await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [], split[0], split[1],
                           processing.ffmpeg.heartlocket.ArgType.TEXT_TEXT)

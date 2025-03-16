@@ -6,7 +6,6 @@ import yt_dlp as youtube_dl
 
 import config
 import utils.tempfiles
-from core.clogs import logger
 from processing.ffmpeg.ffprobe import *
 from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile
@@ -68,7 +67,6 @@ def ytdownload(vid, form):
         cleaned_error = ansi_escape.sub('', str(e))
         # yt-dlp includes detailed HTTP errors that can't be pickled, quick and dirty workaround
         raise youtube_dl.DownloadError(cleaned_error) from Exception(traceback.format_exception(e))
-
 
 
 async def magickone(media, strength):

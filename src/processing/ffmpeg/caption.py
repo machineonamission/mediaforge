@@ -31,7 +31,7 @@ async def motivate(media, captions: typing.Sequence[str]):
 
     pad3_w = pad2_w
     pad3_h = pad2_h + width // 30
-    
+
     pad4_w = pad3_w + width // 5
     pad4_h = pad3_h + htext + width // 10 + width // 30
     pad4_x = width // 10
@@ -44,7 +44,7 @@ async def motivate(media, captions: typing.Sequence[str]):
                       f"pad=w={pad3_w}:h={pad3_h}:x=0:y=0[i];"
                       f"[i][1]vstack=inputs=2,"
                       f"pad=w={pad4_w}:h={pad4_h}:x={pad4_x}:y={pad4_y}:color=black",
-    "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr",
+                      "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr",
                       outfile)
     return outfile
 

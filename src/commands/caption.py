@@ -31,7 +31,7 @@ class Caption(commands.Cog, name="Captioning"):
         await process(ctx, processing.ffmpeg.caption.motivate, [[VIDEO, GIF, IMAGE]], caption, slashfiles=media)
 
     @commands.hybrid_command(aliases=["toptextbottomtext", "impact", "adviceanimal"])
-    async def meme(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def meme(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions media in the style of top text + bottom text memes.
 
@@ -46,7 +46,7 @@ class Caption(commands.Cog, name="Captioning"):
                       processing.vips.caption.meme, caption, slashfiles=media)
 
     @commands.hybrid_command(aliases=["snapchat", "snap", "snapcap", "snapcaption", "snapchatcap", "classiccaption"])
-    async def snapchatcaption(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def snapchatcaption(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions media in the style of the classic Snapchat caption.
 
@@ -58,7 +58,7 @@ class Caption(commands.Cog, name="Captioning"):
                       processing.vips.caption.snapchat, [caption], slashfiles=media)
 
     @commands.hybrid_command(aliases=["whisper", "wcap", "wcaption"])
-    async def whispercaption(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def whispercaption(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions media in the style of the confession website Whisper.
 
@@ -70,7 +70,7 @@ class Caption(commands.Cog, name="Captioning"):
                       processing.vips.caption.whisper, [caption], slashfiles=media)
 
     @commands.hybrid_command(aliases=["tenor"])
-    async def tenorcap(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def tenorcap(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions media in the style of tenor.
 
@@ -85,7 +85,7 @@ class Caption(commands.Cog, name="Captioning"):
                       processing.vips.caption.tenor, caption, slashfiles=media)
 
     @commands.hybrid_command(name="caption", aliases=["cap"])
-    async def captioncommand(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def captioncommand(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions media.
 
@@ -97,7 +97,7 @@ class Caption(commands.Cog, name="Captioning"):
                       processing.vips.caption.mediaforge_caption, [caption], slashfiles=media)
 
     @commands.hybrid_command(aliases=["imstuff"])
-    async def stuff(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def stuff(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions media in the style of the "i'm stuff" meme
 
@@ -110,7 +110,7 @@ class Caption(commands.Cog, name="Captioning"):
                       reverse=True, slashfiles=media)
 
     @commands.hybrid_command(aliases=["eminemcaption", "eminemcap"])
-    async def eminem(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def eminem(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Eminem says something below your media.
 
@@ -123,7 +123,7 @@ class Caption(commands.Cog, name="Captioning"):
                       reverse=True, slashfiles=media)
 
     @commands.hybrid_command(aliases=["peter", "peterexplain", "petersay", "petergriffinexplain", "petergriffinsay"])
-    async def petergriffin(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def petergriffin(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Peter Griffin says something below your media.
 
@@ -136,7 +136,7 @@ class Caption(commands.Cog, name="Captioning"):
                       reverse=True, slashfiles=media)
 
     @commands.hybrid_command()
-    async def imagecaption(self, ctx, *, caption, media: discord.Attachment | None = None,
+    async def imagecaption(self, ctx, *, caption: str, media: discord.Attachment | None = None,
                            image: discord.Attachment | None = None):
         """
         a custom image of your choice says something below your media.
@@ -155,7 +155,7 @@ class Caption(commands.Cog, name="Captioning"):
                       [caption], slashfiles=[media, image])
 
     @commands.hybrid_command(aliases=["bottomcap", "botcap"])
-    async def bottomcaption(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def bottomcaption(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions underneath media.
 
@@ -167,7 +167,7 @@ class Caption(commands.Cog, name="Captioning"):
                       processing.vips.caption.mediaforge_caption, [caption], reverse=True, slashfiles=media)
 
     @commands.hybrid_command(aliases=["esm", "&caption", "essemcaption", "esmbotcaption", "esmcap"])
-    async def esmcaption(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def esmcaption(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions media in the style of Essem's esmBot.
 
@@ -179,7 +179,7 @@ class Caption(commands.Cog, name="Captioning"):
                       processing.vips.caption.esmcaption, [caption], slashfiles=media)
 
     @commands.hybrid_command(aliases=["twitter", "twitcap", "twittercap"])
-    async def twittercaption(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def twittercaption(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions media in the style of a Twitter screenshot.
 
@@ -191,7 +191,7 @@ class Caption(commands.Cog, name="Captioning"):
                       slashfiles=media)
 
     @commands.hybrid_command(aliases=["twitterdark", "twitcapdark", "twittercapdark"])
-    async def twittercaptiondark(self, ctx, *, caption, media: discord.Attachment | None = None):
+    async def twittercaptiondark(self, ctx, *, caption: str, media: discord.Attachment | None = None):
         """
         Captions media in the style of a dark mode Twitter screenshot.
 
@@ -203,7 +203,7 @@ class Caption(commands.Cog, name="Captioning"):
                       slashfiles=media)
 
     @commands.hybrid_command()
-    async def freezemotivate(self, ctx, *, caption, video: discord.Attachment | None = None):
+    async def freezemotivate(self, ctx, *, caption: str, video: discord.Attachment | None = None):
         """
         Ends video with a freeze frame from $motivate.
 
@@ -217,7 +217,7 @@ class Caption(commands.Cog, name="Captioning"):
         await process(ctx, processing.ffmpeg.caption.freezemotivate, [[VIDEO, GIF]], *caption, slashfiles=video)
 
     @commands.hybrid_command()
-    async def freezemotivateaudio(self, ctx, *, caption, video: discord.Attachment | None = None,
+    async def freezemotivateaudio(self, ctx, *, caption: str, video: discord.Attachment | None = None,
                                   audio: discord.Attachment | None = None):
         # TODO: merge this into freezemotivate
         """

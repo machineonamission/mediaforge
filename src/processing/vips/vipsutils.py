@@ -1,5 +1,4 @@
 import dataclasses
-import html
 import typing
 
 import pyvips

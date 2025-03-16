@@ -69,7 +69,6 @@ def yskysn(captions: typing.Sequence[str]):
 
 
 def f1984(captions: typing.Sequence[str]):
-
     originaldate = captions[1].lower() == "january 1984"
 
     if originaldate:
@@ -142,7 +141,8 @@ def epicbirthdaytext(caption: str):
     text.write_to_file(outfile)
     return outfile
 
-def heartlockettext(caption:str):
+
+def heartlockettext(caption: str):
     caption = escape(caption)
     # technically redundant but adds twemoji font
     out = pyvips.Image.text(".", fontfile=twemoji)

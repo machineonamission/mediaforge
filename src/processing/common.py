@@ -39,5 +39,3 @@ async def run_parallel(syncfunc: typing.Callable, *args, **kwargs):
         return res
     else:
         raise res
-
-

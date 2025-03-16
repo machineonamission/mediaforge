@@ -10,7 +10,6 @@ from discord.ext import commands
 
 import config
 from core.clogs import logger
-from processing.vips.vipsutils import outline
 from utils.common import fetch
 from utils.tempfiles import TenorUrl
 from utils.web import contentlength

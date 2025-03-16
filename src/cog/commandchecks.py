@@ -15,7 +15,6 @@ class CommandChecksCog(commands.Cog):
         self.bot.add_check(self.block_filter)
         self.bot.add_check(self.cooldown_check)
 
-
     # @commands.check
     async def banned_users(self, ctx: commands.Context):
         if await self.bot.is_owner(ctx.author):

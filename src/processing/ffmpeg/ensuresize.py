@@ -78,7 +78,9 @@ async def ensureduration(media, ctx: commands.Context):
             logger.debug(e)
         return media
 
+
 TOLERANCES = [.98, .95, .90, .75, .5, .25, .1]
+
 
 async def twopasscapvideo(video, maxsize: int, audio_bitrate=128000):
     """
