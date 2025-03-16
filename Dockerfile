@@ -34,7 +34,11 @@ RUN apt-get --no-install-recommends install -y  \
     # other deps
     libcgif-dev libfftw3-dev libopenexr-dev libgsf-1-dev libglib2.0-dev liborc-dev libopenslide-dev libmatio-dev libwebp-dev libjpeg-dev libexpat1-dev libexif-dev libtiff5-dev libcfitsio-dev libpoppler-glib-dev librsvg2-dev libpango1.0-dev libopenjp2-7-dev libimagequant-dev \
 # imagemagick
-     fuse libfuse2
+     fuse libfuse2 \
+# fonts
+    fonts-noto \
+
+RUN apt-get remove fonts-noto-color-emoji
 # python packages
 RUN python -m pip install --user --upgrade --no-warn-script-location --root-user-action=ignore  \
     pip poetry \
