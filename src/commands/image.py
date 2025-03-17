@@ -164,17 +164,19 @@ class Image(commands.Cog, name="Creation"):
         split = text.split("|")
         if len(split) == 1:
             split.insert(0, "")
-        if split[0] == "" and split[1] == "":
-            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt, hlmt],
-                          processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA, slashfiles=[leftmedia, rightmedia])
-        if split[0] == "" and split[1] != "":
-            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[1],
-                          processing.ffmpeg.heartlocket.ArgType.MEDIA_TEXT,
-                          slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
-        if split[0] != "" and split[1] == "":
-            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], split[0],
-                          processing.ffmpeg.heartlocket.ArgType.TEXT_MEDIA,
-                          slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
-        if split[0] != "" and split[1] != "":
-            await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [], split[0], split[1],
-                          processing.ffmpeg.heartlocket.ArgType.TEXT_TEXT)
+        match (split[0], split[1]):
+            case ("", ""):
+                await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt, hlmt],
+                              processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA,
+                              slashfiles=[leftmedia, rightmedia])
+            case ("", text):
+                await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], text,
+                              processing.ffmpeg.heartlocket.ArgType.MEDIA_TEXT,
+                              slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
+            case (text, ""):
+                await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt], text,
+                              processing.ffmpeg.heartlocket.ArgType.TEXT_MEDIA,
+                              slashfiles=[m for m in [leftmedia, rightmedia] if m is not None])
+            case (ltext, rtext):
+                await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [], ltext, rtext,
+                              processing.ffmpeg.heartlocket.ArgType.TEXT_TEXT)
