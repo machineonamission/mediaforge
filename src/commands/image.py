@@ -143,15 +143,15 @@ class Image(commands.Cog, name="Creation"):
         await process(ctx, sus.sus, [], text, run_parallel=True)
 
     @commands.hybrid_command(aliases=['locket', 'heart', "beloved", "mybeloved"])
-    async def heartlocket(self, ctx, *, text: str = "|my beloved", leftmedia: discord.Attachment | None = None,
+    async def heartlocket(self, ctx, *, text: str = "my beloved", leftmedia: discord.Attachment | None = None,
                           rightmedia: discord.Attachment | None = None):
         """
         Put your image and text into a 3d animated heart locket
         This command is unique as it can take a varying number of arguments
         there's 4 configurations
         "|" = 2 images, one in each side of the locket
-        "text" or "text|" = 1 image on the right side of the locket and text on the left side
-        "|text" = 1 image on the left side of the locket and text on the right side
+        "text|" = 1 image on the right side of the locket and text on the left side
+        "text" or "|text" = 1 image on the left side of the locket and text on the right side
         "text1|text2" = 2 texts, one in each side of the locket
 
         based on https://makesweet.com/big/heart-locket
@@ -163,7 +163,7 @@ class Image(commands.Cog, name="Creation"):
         hlmt = [IMAGE, GIF, VIDEO]
         split = text.split("|")
         if len(split) == 1:
-            split.append("")
+            split.insert(0, "")
         if split[0] == "" and split[1] == "":
             await process(ctx, processing.ffmpeg.heartlocket.heart_locket, [hlmt, hlmt],
                           processing.ffmpeg.heartlocket.ArgType.MEDIA_MEDIA, slashfiles=[leftmedia, rightmedia])
