@@ -58,7 +58,7 @@ class Image(commands.Cog, name="Creation"):
         :param ctx: discord context
         :param media: A video, gif, or image.
         """
-        await process(ctx, processing.ffmpeg.creation.trollface, [[VIDEO, GIF, IMAGE]])
+        await process(ctx, processing.ffmpeg.creation.trollface, [[VIDEO, GIF, IMAGE]], slashfiles=media)
 
     @commands.hybrid_command(aliases=["emsay"])
     async def eminemsay(self, ctx, *, text: str):
@@ -75,7 +75,7 @@ class Image(commands.Cog, name="Creation"):
                       run_parallel=True)
 
     @commands.hybrid_command(aliases=["customsay"])
-    async def imagesay(self, ctx, *, text: str):
+    async def imagesay(self, ctx, *, text: str, media: discord.Attachment | None = None):
         """
         An image of your choice says something.
         Like `$eminemsay` but for a custom image.
@@ -86,10 +86,10 @@ class Image(commands.Cog, name="Creation"):
         """
         await process(ctx, processing.vips.caption.generic_image_caption, [[IMAGE]],
                       [text],
-                      processing.vips.vipsutils.ImageSize(1000, 1000), run_parallel=True)
+                      processing.vips.vipsutils.ImageSize(1000, 1000), run_parallel=True, slashfiles=media)
 
     @commands.hybrid_command(aliases=["handitover", "takeit", "giveme", "gmyp"])
-    async def givemeyourphone(self, ctx):
+    async def givemeyourphone(self, ctx, media: discord.Attachment | None = None):
         """
         Overlays an image over the hand of the boy in the "give me your phone" meme.
         https://knowyourmeme.com/memes/give-me-your-phone
@@ -97,7 +97,8 @@ class Image(commands.Cog, name="Creation"):
         :param ctx: discord context
         :param media: The media to be overlayed over his hand.
         """
-        await process(ctx, processing.ffmpeg.creation.give_me_your_phone_now, [[IMAGE, VIDEO, GIF]])
+        await process(ctx, processing.ffmpeg.creation.give_me_your_phone_now, [[IMAGE, VIDEO, GIF]],
+                      slashfiles=media)
 
     @commands.hybrid_command(aliases=["texttospeak", "speak", "talk", "speech", "espeak"])
     async def tts(self, ctx: commands.Context,
@@ -127,7 +128,6 @@ class Image(commands.Cog, name="Creation"):
 
         :param ctx:
         :param text: who you want to wish an epic birthday to
-        :return: a custom made song just for you!
         """
         await process(ctx, processing.ffmpeg.creation.epicbirthday, [], text)
 
