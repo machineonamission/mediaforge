@@ -62,7 +62,7 @@ async def heart_locket(arg1, arg2, type: ArgType):
             mixer = ""
 
     fixedres = 384
-    virtualres = fixedres * 2
+    virtualres = fixedres * 4
     # you would not FUCKING believe how painful these equations were to derive.
     # hours of trying random things and chatgpt
     red = "floor(r(X,Y)/255)"
@@ -87,15 +87,12 @@ async def heart_locket(arg1, arg2, type: ArgType):
         "-filter_complex",
         (
             # pre-process
-            "[2:v]format=rgba64,split=4[colormapx1][colormapy1][colormapx2][colormapy2];"
+            "[2:v]format=rgba64,split=2[colormapx][colormapy];"
+            # i probably could precompute these but i dont want to
             # convert from weird proprietary color thing to x map
-            f"[colormapx1]geq=r='{xmap}':g='{xmap}':b='{xmap}',format=gray16le[xmap1];"
+            f"[colormapx]geq=r='{xmap}':g='{xmap}':b='{xmap}',format=gray16le,split=2[xmap1][xmap2];"
             # convert from weird proprietary color thing to y map
-            f"[colormapy1]geq=r='{ymap}':g='{ymap}':b='{ymap}',format=gray16le[ymap1];"
-            # convert from weird proprietary color thing to x map
-            f"[colormapx2]geq=r='{xmap}':g='{xmap}':b='{xmap}',format=gray16le[xmap2];"
-            # convert from weird proprietary color thing to y map
-            f"[colormapy2]geq=r='{ymap}':g='{ymap}':b='{ymap}',format=gray16le[ymap2];"
+            f"[colormapy]geq=r='{ymap}':g='{ymap}':b='{ymap}',format=gray16le,split=2[ymap1][ymap2];"
             # resize input to right size for aliasing, then make bigger to avoid weird distortion
             # also fix fps
             f"[0:v]scale={fixedres}:{fixedres},scale={virtualres}:{virtualres},setsar=1:1[media0];"
