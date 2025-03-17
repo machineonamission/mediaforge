@@ -1,3 +1,4 @@
+from processing.common import image_format
 from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate
 from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 from processing.run_command import run_command
@@ -136,27 +137,26 @@ async def toaudio(media):
     return name
 
 
+async def mediatoimage(media, imagetype):
+    outname = reserve_tempfile(imagetype)
+    await run_command("ffmpeg", "-hide_banner", "-i", media, "-frames:v", "1", "-c:v",
+                      "copy" if (await get_vcodec(media))["codec_name"] == imagetype else imagetype, "-pix_fmt", "rgba",
+                      outname)
+
+    return outname
+
+
 async def mediatopng(media):
     """
     converts media to png
     :param media: media
     :return: png
     """
-    outname = reserve_tempfile("png")
-    await run_command("ffmpeg", "-hide_banner", "-i", media, "-frames:v", "1", "-c:v",
-                      "copy" if (await get_vcodec(media))["codec_name"] == "png" else "png", "-pix_fmt", "rgba",
-                      outname)
-
-    return outname
+    return await mediatoimage(media, "png")
 
 
-async def mediatobmp(media):
-    outname = reserve_tempfile("bmp")
-    await run_command("ffmpeg", "-hide_banner", "-i", media, "-frames:v", "1", "-c:v",
-                      "copy" if (await get_vcodec(media))["codec_name"] == "bmp" else "bmp", "-pix_fmt", "rgba",
-                      outname)
-
-    return outname
+async def mediatotempimage(media):
+    return await mediatoimage(media, image_format)
 
 
 # this shit brokey, discord fucks apngs

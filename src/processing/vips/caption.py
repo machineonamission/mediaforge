@@ -3,6 +3,7 @@ import typing
 
 import pyvips
 
+from processing.common import image_format
 from processing.vips.vipsutils import ImageSize, escape, outline, overlay_in_middle, vips_text
 from processing.vips.vipsutils import normalize
 from utils.tempfiles import reserve_tempfile
@@ -32,7 +33,7 @@ def esmcaption(captions: typing.Sequence[str], size: ImageSize):
     out = out.gravity(pyvips.CompassDirection.CENTRE, size.width, out.height + fontsize, extend=pyvips.Extend.WHITE)
     # save and return
     # because it's run in executor, tempfiles
-    outfile = reserve_tempfile("bmp")
+    outfile = reserve_tempfile(image_format)
     out.write_to_file(outfile)
     return outfile
 
@@ -59,7 +60,7 @@ def mediaforge_caption(captions: typing.Sequence[str], size: ImageSize):
     out = out.gravity(pyvips.CompassDirection.CENTRE, size.width, out.height + fontsize, extend=pyvips.Extend.WHITE)
     # save and return
     # because it's run in executor, tempfiles
-    outfile = reserve_tempfile("bmp")
+    outfile = reserve_tempfile(image_format)
     out.write_to_file(outfile)
     return outfile
 
@@ -127,7 +128,7 @@ def motivate_text(captions: typing.Sequence[str], size: ImageSize):
     # pad text to target width
     out = out.gravity(pyvips.CompassDirection.CENTRE, width, out.height, extend=pyvips.Extend.BACKGROUND,
                       background=[0, 0, 0, 255])
-    outfile = reserve_tempfile("bmp")
+    outfile = reserve_tempfile(image_format)
     out.write_to_file(outfile)
     return outfile
 
@@ -167,7 +168,7 @@ def meme(captions: typing.Sequence[str], size: ImageSize):
                                      y=int((size.height * .975) - bottomtext.height))
 
     overlay = outline(overlay, overlay.width / 200)
-    outfile = reserve_tempfile("bmp")
+    outfile = reserve_tempfile(image_format)
     overlay.write_to_file(outfile)
     return outfile
 
@@ -210,7 +211,7 @@ def tenor(captions: typing.Sequence[str], size: ImageSize):
                                      y=int((size.height * .975) - bottomtext.height))
 
     overlay = outline(overlay, overlay.width / 250)
-    outfile = reserve_tempfile("bmp")
+    outfile = reserve_tempfile(image_format)
     overlay.write_to_file(outfile)
     return outfile
 
@@ -235,7 +236,7 @@ def whisper(captions: typing.Sequence[str], size: ImageSize):
     overlay = overlay_in_middle(overlay, text)
 
     overlay = outline(overlay, overlay.width / 175)
-    outfile = reserve_tempfile("bmp")
+    outfile = reserve_tempfile(image_format)
     overlay.write_to_file(outfile)
     return outfile
 
@@ -263,7 +264,7 @@ def snapchat(captions: typing.Sequence[str], size: ImageSize):
     # overlay
     out = overlay_in_middle(blank_bg, text)
     # save
-    outfile = reserve_tempfile("bmp")
+    outfile = reserve_tempfile(image_format)
     out.write_to_file(outfile)
     return outfile
 
@@ -298,7 +299,7 @@ def generic_image_caption(image: str, captions: typing.Sequence[str], size: Imag
     # overlay white background
     final = final.composite((255, 255, 255, 255), mode=pyvips.BlendMode.DEST_OVER)
     # save
-    outfile = reserve_tempfile("bmp")
+    outfile = reserve_tempfile(image_format)
     final.write_to_file(outfile)
     return outfile
 
@@ -327,6 +328,6 @@ def twitter_text(captions: typing.Sequence[str], size: ImageSize, dark: bool):
 
     # save and return
     # because it's run in executor, tempfiles
-    outfile = reserve_tempfile("bmp")
+    outfile = reserve_tempfile(image_format)
     out.write_to_file(outfile)
     return outfile

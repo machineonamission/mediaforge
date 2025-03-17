@@ -9,6 +9,7 @@ import utils.tempfiles
 from processing.ffmpeg.ffprobe import *
 from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile
+from processing.common import image_format
 
 
 class MyLogger(object):
@@ -70,7 +71,7 @@ def ytdownload(vid, form):
 
 
 async def magickone(media, strength):
-    tosave = reserve_tempfile("bmp")
+    tosave = reserve_tempfile(image_format)
     # media = await mediatopng(media)
     await run_command("magick", media, "-liquid-rescale", f"{strength}%x{strength}%", tosave)
 

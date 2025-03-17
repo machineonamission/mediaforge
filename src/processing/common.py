@@ -39,3 +39,7 @@ async def run_parallel(syncfunc: typing.Callable, *args, **kwargs):
         return res
     else:
         raise res
+
+# tiff is uncompressed by default so its fast, and libvips relies on libmagick for bmp, which has resolution limitations
+# so tiff it is
+image_format = "tiff"

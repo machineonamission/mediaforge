@@ -10,7 +10,7 @@ import processing.mediatype
 import processing.vips as vips
 from core.clogs import logger
 from processing.common import NonBugError
-from processing.ffmpeg.conversion import videotogif, mediatobmp
+from processing.ffmpeg.conversion import videotogif, mediatotempimage
 from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
 from processing.mediatype import VIDEO, IMAGE, GIF
 from processing.run_command import run_command
@@ -73,7 +73,7 @@ async def naive_vstack(file0, file1):
     mts = await asyncio.gather(file0.mediatype(), file1.mediatype())
     if mts[0] == IMAGE and mts[1] == IMAGE:
         # sometimes can be ffv1 mkvs with 1 frame, which vips has no idea what to do with
-        file0, file1 = await asyncio.gather(mediatobmp(file0), mediatobmp(file1))
+        file0, file1 = await asyncio.gather(mediatotempimage(file0), mediatotempimage(file1))
         return await processing.common.run_parallel(vips.vipsutils.naive_stack, file0, file1)
     else:
         out = reserve_tempfile("mkv")
@@ -133,7 +133,7 @@ async def naive_overlay(im1, im2):
     await run_command("ffmpeg", "-i", im1, "-i", im2, "-filter_complex", "overlay=format=auto", "-c:v", "ffv1", "-fs",
                       config.max_temp_file_size, "-fps_mode", "vfr", outname)
     if mts[0] == IMAGE and mts[1] == IMAGE:
-        outname = await mediatobmp(outname)
+        outname = await mediatotempimage(outname)
     return outname
 
 

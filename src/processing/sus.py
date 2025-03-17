@@ -2,6 +2,7 @@ import random
 
 from PIL import Image, ImageDraw, ImageFont
 
+from processing.common import image_format
 from utils.tempfiles import reserve_tempfile
 
 # the y coordinate for where the text and the face split
@@ -134,6 +135,6 @@ def sus(input_string: str):
         total_width += scan_line.width
     final_image = final_image.crop((0, 0, total_width, final_image.height))
     # final_image.show()
-    filename = reserve_tempfile("bmp")
+    filename = reserve_tempfile(image_format)
     final_image.save(filename)
     return filename
