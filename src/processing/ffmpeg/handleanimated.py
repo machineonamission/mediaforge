@@ -1,6 +1,7 @@
 import inspect
 
 from processing.common import run_parallel
+from processing.ffmpeg.conversion import mediatotempimage
 from processing.ffmpeg.ffprobe import get_frame_rate
 from processing.ffmpeg.ffutils import splitaudio, concat_demuxer, ffmpegsplit
 from processing.mediatype import VIDEO, GIF
@@ -47,6 +48,8 @@ async def animatedmultiplexer(media: TempFile, function: callable, *args, **kwar
     if mt in [VIDEO, GIF]:
         return await handleanimated(media, function, *args, **kwargs)
     else:
+        # if we have to handle animated, then its probably not ffmpeg, so ffv1 wont work
+        media = await mediatotempimage(media)
         if inspect.iscoroutinefunction(function):
             return await function(media, *args, **kwargs)
         else:
