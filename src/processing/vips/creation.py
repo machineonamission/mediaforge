@@ -92,8 +92,7 @@ def f1984(captions: typing.Sequence[str]):
         # generate text
         date = vips_text(
             escape(captions[1].upper()),
-            font=f"ImpactMix,Twemoji Color Emoji",
-            rgba=True,
+            font=f"ImpactMix",
             fontfile="rendering/fonts/ImpactMix.ttf",
             align=pyvips.Align.CENTRE,
             width=124,
