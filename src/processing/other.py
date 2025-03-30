@@ -9,7 +9,6 @@ import utils.tempfiles
 from processing.ffmpeg.ffprobe import *
 from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile
-from processing.common import image_format
 
 
 class MyLogger(object):
@@ -92,7 +91,4 @@ async def tts(text: str, model: typing.Literal["male", "female", "retro"] = "mal
             await run_command("./tts/mimic", "-voice",
                               "tts/mycroft_voice_4.0.flitevox" if model == "male" else "tts/cmu_us_slt.flitevox",
                               "-o", ttswav, "-t", text)
-    outname = reserve_tempfile("mp3")
-    await run_command("ffmpeg", "-hide_banner", "-i", ttswav, "-c:a", "libmp3lame", outname)
-
-    return outname
+    return ttswav
