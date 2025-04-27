@@ -4,6 +4,7 @@ import functools
 import typing
 
 import utils.tempfiles
+from processing.run_command import run_command
 from utils.tempfiles import handle_tfs_parallel
 
 
@@ -40,6 +41,8 @@ async def run_parallel(syncfunc: typing.Callable, *args, **kwargs):
     else:
         raise res
 
+async def ffmpeg(*args):
+    return await run_command("ffmpeg", "-hide_banner", "-hwaccel", *args)
 
 # tiff is uncompressed by default so its fast, and libvips relies on libmagick for bmp, which has resolution limitations
 # so tiff it is

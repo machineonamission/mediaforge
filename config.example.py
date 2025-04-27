@@ -78,3 +78,5 @@ max_frames = 1024
 max_temp_file_size = "1G"
 # cap FPS for sanity
 max_fps = 100
+
+av1 = True

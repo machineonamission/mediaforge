@@ -3,7 +3,6 @@ import sys
 
 import apng
 
-from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile
 
 if sys.platform == "win32":  # this hopefully wont cause any problems :>
@@ -13,6 +12,7 @@ else:
 
 from processing.common import *
 from core.clogs import logger
+from processing.common import ffmpeg
 
 
 async def is_apng(filename):
@@ -167,8 +167,8 @@ async def frame_n(video, n: int):
     if n == -1:
         n = framecount - 1
     frame = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", video, "-vf", f"select='eq(n,{n})'", "-vframes", "1",
-                      "-c:v", "ffv1", frame)
+    await ffmpeg("-i", video, "-vf", f"select='eq(n,{n})'", "-vframes", "1",
+                 "-c:v", "ffv1", frame)
     return frame
 
 

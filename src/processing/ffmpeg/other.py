@@ -18,7 +18,7 @@ from processing.ffmpeg.handleanimated import animatedmultiplexer
 from processing.mediatype import AUDIO, IMAGE, GIF
 from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile, TempFile
-
+from processing.common import ffmpeg
 
 @gif_output
 async def speed(file, sp):
@@ -34,10 +34,10 @@ async def speed(file, sp):
     outname = reserve_tempfile("mkv")
     if mt == AUDIO:
         # duration = await get_duration(file)
-        await run_command("ffmpeg", "-hide_banner", "-i", file, "-filter_complex",
-                          f"{expanded_atempo(sp)}",
-                          # "-t", str(duration / float(sp)),
-                          "-c:a", "flac", outname)
+        await ffmpeg("-i", file, "-filter_complex",
+                     f"{expanded_atempo(sp)}",
+                     # "-t", str(duration / float(sp)),
+                     "-c:a", "flac", outname)
     else:
         # ffv1 is really fucky about having not enough frames, so just pre-emptively check
         if (await count_frames(file)) / sp <= 2:
@@ -45,13 +45,13 @@ async def speed(file, sp):
                 "Aborting speed because output file will have less than 2 frames. Try reducing the speed.")
         fps = await get_frame_rate(file)
         # duration = await get_duration(file)
-        await run_command("ffmpeg", "-hide_banner", "-i", await forceaudio(file), "-filter_complex",
-                          f"[0:v]setpts=PTS/{sp},fps={fps}[v];[0:a]{expanded_atempo(sp)}[a]",
-                          "-map", "[v]", "-map", "[a]",
-                          # "-t", str(duration / float(sp)),
-                          "-c:v", "ffv1", "-c:a", "flac",
-                          "-fps_mode",
-                          "vfr", outname)
+        await ffmpeg("-i", await forceaudio(file), "-filter_complex",
+                     f"[0:v]setpts=PTS/{sp},fps={fps}[v];[0:a]{expanded_atempo(sp)}[a]",
+                     "-map", "[v]", "-map", "[a]",
+                     # "-t", str(duration / float(sp)),
+                     "-c:v", "ffv1", "-c:a", "flac",
+                     "-fps_mode",
+                     "vfr", outname)
 
     return outname
 
@@ -64,8 +64,8 @@ async def reverse(file):
     :return: procesed media
     """
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", await forceaudio(file), "-vf", "reverse", "-af", "areverse",
-                      "-c:v", "ffv1", "-fps_mode", "vfr", outname)
+    await ffmpeg("-i", await forceaudio(file), "-vf", "reverse", "-af", "areverse",
+                 "-c:v", "ffv1", "-fps_mode", "vfr", outname)
     return outname
 
 
@@ -79,8 +79,8 @@ async def random(file, frames: int):
     """
     outname = reserve_tempfile("mkv")
     #
-    await run_command("ffmpeg", "-hide_banner", "-i", file, "-filter:v", f"random=frames={frames}",
-                      "-c:v", "ffv1", "-fps_mode", "vfr", outname)
+    await ffmpeg("-i", file, "-filter:v", f"random=frames={frames}",
+                 "-c:v", "ffv1", "-fps_mode", "vfr", outname)
     return outname
 
 
@@ -94,8 +94,8 @@ async def quality(file, crf, qa):
     :return: processed media
     """
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", await forceaudio(file), "-crf", str(crf), "-c:a", "aac", "-b:a",
-                      f"{qa}k", "-fps_mode", "vfr", outname)
+    await ffmpeg("-i", await forceaudio(file), "-crf", str(crf), "-c:a", "aac", "-b:a",
+                 f"{qa}k", "-fps_mode", "vfr", outname)
 
     # png cannot be supported here because crf and qa are libx264 params lmao
     return outname
@@ -109,8 +109,8 @@ async def invert(file):
     :return: processed media
     """
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", file, "-vf", f"negate", "-c:v", "ffv1", "-fps_mode", "vfr",
-                      outname)
+    await ffmpeg("-i", file, "-vf", f"negate", "-c:v", "ffv1", "-fps_mode", "vfr",
+                 outname)
     return outname
 
 
@@ -123,9 +123,9 @@ async def pad(file):
     """
     mt = await file.mediatype()
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", file, "-vf",
-                      "pad=width='max(iw,ih)':height='max(iw,ih)':x='(ih-iw)/2':y='(iw-ih)/2':color=white", "-c:v",
-                      "ffv1", "-fps_mode", "vfr", outname)
+    await ffmpeg("-i", file, "-vf",
+                 "pad=width='max(iw,ih)':height='max(iw,ih)':x='(ih-iw)/2':y='(iw-ih)/2':color=white", "-c:v",
+                 "ffv1", "-fps_mode", "vfr", outname)
     return outname
 
 
@@ -139,7 +139,7 @@ async def gifloop(file, loop):
 
     if (await get_vcodec(file))["codec_name"] == "gif":
         out = reserve_tempfile("gif")
-        await run_command("ffmpeg", "-hide_banner", "-i", file, "-loop", str(loop), "-vcodec", "copy", out)
+        await ffmpeg("-i", file, "-loop", str(loop), "-vcodec", "copy", out)
         out.lock_codec = True
     else:
         out = file
@@ -157,8 +157,8 @@ async def videoloop(file, loop):
     :return: processed media
     """
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-stream_loop", str(loop), "-i", file,
-                      "-c:v", "copy", "-c:a", "copy", outname)
+    await ffmpeg("-stream_loop", str(loop), "-i", file,
+                 "-c:v", "copy", "-c:a", "copy", outname)
 
     return outname
 
@@ -172,9 +172,9 @@ async def imageaudio(image, audio):
     image = await mediatotempimage(image)  # -loop 1 only works with proper images
     outname = reserve_tempfile("mkv")
     duration = await get_duration(audio)  # it is a couple seconds too long without it :(
-    await run_command("ffmpeg", "-hide_banner", "-i", audio, "-loop", "1", "-i", image, "-pix_fmt", "yuv420p", "-vf",
-                      "crop=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "ffv1", "-c:a", "flac", "-shortest", "-t",
-                      str(duration), outname)
+    await ffmpeg("-i", audio, "-loop", "1", "-i", image, "-pix_fmt", "yuv420p", "-vf",
+                 "crop=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "ffv1", "-c:a", "flac", "-shortest", "-t",
+                 str(duration), outname)
 
     return outname
 
@@ -197,23 +197,23 @@ async def addaudio(file0, file1, loops=0):
         outname = reserve_tempfile("mkv")
         if loops >= 0:
             # if the gif is set to loop a fixed amount of times, cut out at the longest stream.
-            await run_command("ffmpeg", "-hide_banner", "-i", audio, "-stream_loop", str(loops), "-i", media,
-                              "-c:v", "ffv1", "-c:a", "flac",
-                              "-fps_mode", "vfr",
-                              outname)
+            await ffmpeg("-i", audio, "-stream_loop", str(loops), "-i", media,
+                         "-c:v", "ffv1", "-c:a", "flac",
+                         "-fps_mode", "vfr",
+                         outname)
         else:
             # if it's set to loop infinitely, cut out when the audio ends.
             duration = await get_duration(audio)  # it is a couple seconds too long without it :(
-            await run_command("ffmpeg", "-hide_banner", "-i", audio, "-stream_loop", str(loops), "-i", media,
-                              "-c:v", "ffv1", "-c:a", "flac",
-                              "-fps_mode", "vfr",
-                              "-shortest", "-t", str(duration), outname)
+            await ffmpeg("-i", audio, "-stream_loop", str(loops), "-i", media,
+                         "-c:v", "ffv1", "-c:a", "flac",
+                         "-fps_mode", "vfr",
+                         "-shortest", "-t", str(duration), outname)
     else:
         media = await forceaudio(media)
         outname = reserve_tempfile("mkv")
-        await run_command("ffmpeg", "-i", media, "-i", audio, "-max_muxing_queue_size", "4096", "-filter_complex",
-                          "[0:a][1:a]amix=inputs=2:dropout_transition=100000:duration=longest[a];[a]volume=2[a]",
-                          "-map", "0:v?", "-map", "[a]", "-c:v", "copy", "-c:a", "flac", outname)
+        await ffmpeg("-i", media, "-i", audio, "-max_muxing_queue_size", "4096", "-filter_complex",
+                     "[0:a][1:a]amix=inputs=2:dropout_transition=100000:duration=longest[a];[a]volume=2[a]",
+                     "-map", "0:v?", "-map", "[a]", "-c:v", "copy", "-c:a", "flac", outname)
 
     return outname
 
@@ -227,25 +227,25 @@ async def concatv(file0, file1):
     """
     video0 = file0  # await forceaudio(file0)
     fixedvideo0 = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", video0, "-c:v", "ffv1", "-c:a", "flac", "-ar",
-                      "48000",
-                      "-max_muxing_queue_size", "4096", "-fps_mode", "vfr", fixedvideo0)
+    await ffmpeg("-i", video0, "-c:v", "ffv1", "-c:a", "flac", "-ar",
+                 "48000",
+                 "-max_muxing_queue_size", "4096", "-fps_mode", "vfr", fixedvideo0)
     video1 = file1  # await forceaudio(file1)
     w, h = await get_resolution(video0)
     fps = await get_frame_rate(video0)
     fixedvideo1 = reserve_tempfile("mkv")
 
     # https://superuser.com/a/1136305/1001487
-    await run_command("ffmpeg", "-hide_banner", "-i", video1, "-sws_flags",
-                      "spline+accurate_rnd+full_chroma_int+full_chroma_inp", "-vf",
-                      f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:-2:-2:color=black", "-c:v",
-                      "ffv1", "-c:a", "flac", "-ar", "48000", "-fps_mode", "vfr", fixedvideo1)
+    await ffmpeg("-i", video1, "-sws_flags",
+                 "spline+accurate_rnd+full_chroma_int+full_chroma_inp", "-vf",
+                 f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:-2:-2:color=black", "-c:v",
+                 "ffv1", "-c:a", "flac", "-ar", "48000", "-fps_mode", "vfr", fixedvideo1)
     fixedfixedvideo1 = await changefps(fixedvideo1, fps)
 
     concatdemuxer = await concat_demuxer([fixedvideo0, fixedfixedvideo1])
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-safe", "0", "-f", "concat", "-i", concatdemuxer, "-c:v", "ffv1",
-                      "-c:a", "flac", outname)
+    await ffmpeg("-safe", "0", "-f", "concat", "-i", concatdemuxer, "-c:v", "ffv1",
+                 "-c:a", "flac", outname)
     # for file in [video0, video1, fixedvideo1, fixedvideo0, fixedfixedvideo1, concatdemuxer]:
     #     os.remove(file)
     return outname
@@ -277,15 +277,15 @@ async def stack(file0, file1, style):
 
     mixaudio = all(await asyncio.gather(hasaudio(file0), hasaudio(file1)))
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", file0, "-i", file1,
-                      "-filter_complex",
-                      f"[0]setpts=PTS-STARTPTS,format=rgba[0v];"
-                      f"[1]setpts=PTS-STARTPTS,format=rgba[1v];"
-                      # stack
-                      f"[0v][1v]{'h' if style == 'hstack' else 'v'}stack=inputs=2" + \
-                      # mix audio
-                      (f";amix=inputs=2:dropout_transition=0" if mixaudio else ""),
-                      "-c:v", "ffv1", "-c:a", "flac", "-fps_mode", "vfr", outname)
+    await ffmpeg("-i", file0, "-i", file1,
+                 "-filter_complex",
+                 f"[0]setpts=PTS-STARTPTS,format=rgba[0v];"
+                 f"[1]setpts=PTS-STARTPTS,format=rgba[1v];"
+                 # stack
+                 f"[0v][1v]{'h' if style == 'hstack' else 'v'}stack=inputs=2" + \
+                 # mix audio
+                 (f";amix=inputs=2:dropout_transition=0" if mixaudio else ""),
+                 "-c:v", "ffv1", "-c:a", "flac", "-fps_mode", "vfr", outname)
 
     # for file in [video0, video1, fixedvideo1, fixedvideo0, fixedfixedvideo1]:
     #     os.remove(file)
@@ -315,17 +315,17 @@ async def overlay(file0, file1, alpha: float, mode: str = 'overlay'):
 
     mixaudio = all(await asyncio.gather(hasaudio(file0), hasaudio(file1)))
     file0 = await scale2ref(file0, file1)  # scale2ref is fucky
-    await run_command("ffmpeg", "-hide_banner", "-i", file0, "-i", file1, "-filter_complex",
-                      # clean inputs
-                      f"[0]setpts=PTS-STARTPTS,format=rgba[0v];"
-                      f"[1]setpts=PTS-STARTPTS,format=rgba,"
-                      # set alpha
-                      f"colorchannelmixer=aa={alpha}[1v];"
-                      # blend
-                      f"[0v][1v]{blendlogic}" + \
-                      # mix audio
-                      (f";amix=inputs=2:dropout_transition=0" if mixaudio else ""),
-                      "-c:v", "ffv1", "-c:a", "flac", "-fps_mode", "vfr", outname)
+    await ffmpeg("-i", file0, "-i", file1, "-filter_complex",
+                 # clean inputs
+                 f"[0]setpts=PTS-STARTPTS,format=rgba[0v];"
+                 f"[1]setpts=PTS-STARTPTS,format=rgba,"
+                 # set alpha
+                 f"colorchannelmixer=aa={alpha}[1v];"
+                 # blend
+                 f"[0v][1v]{blendlogic}" + \
+                 # mix audio
+                 (f";amix=inputs=2:dropout_transition=0" if mixaudio else ""),
+                 "-c:v", "ffv1", "-c:a", "flac", "-fps_mode", "vfr", outname)
 
     # for file in [video0, video1, fixedvideo1, fixedvideo0, fixedfixedvideo1]:
     #     os.remove(file)
@@ -344,8 +344,8 @@ async def rotate(file, rottype):
         "hflip": "hflip"
     }
     out = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-i", file, "-vf", types[rottype] + ",format=rgba", "-c:v", "ffv1", "-fps_mode",
-                      "vfr", out)
+    await ffmpeg("-i", file, "-vf", types[rottype] + ",format=rgba", "-c:v", "ffv1", "-fps_mode",
+                 "vfr", out)
     return out
 
 
@@ -357,9 +357,9 @@ async def volume(file, vol):
     if vol > 0:
         vol = 10 * math.log(vol, 2)
         # for some reason aac has audio caps but libmp3lame works fine lol
-        await run_command("ffmpeg", "-i", file, "-af", f"volume={vol}dB", "-strict", "-1", "-c:a", "flac", out)
+        await ffmpeg("-i", file, "-af", f"volume={vol}dB", "-strict", "-1", "-c:a", "flac", out)
     else:
-        await run_command("ffmpeg", "-i", file, "-af", f"volume=0", "-strict", "-1", "-c:a", "flac", out)
+        await ffmpeg("-i", file, "-af", f"volume=0", "-strict", "-1", "-c:a", "flac", out)
 
     return out
 
@@ -367,8 +367,8 @@ async def volume(file, vol):
 async def vibrato(file, frequency=5, depth=0.5):  # https://ffmpeg.org/ffmpeg-filters.html#tremolo
     out = reserve_tempfile("mkv")
 
-    await run_command("ffmpeg", "-i", file, "-af", f"vibrato=f={frequency}:d={depth}", "-strict", "-1",
-                      "-c:v", "copy", "-c:a", "flac", out)
+    await ffmpeg("-i", file, "-af", f"vibrato=f={frequency}:d={depth}", "-strict", "-1",
+                 "-c:v", "copy", "-c:a", "flac", out)
 
     return out
 
@@ -384,8 +384,8 @@ async def pitch(file, p=12):
     atempo = 2 ** (-p / 12)
     logger.debug((p, asetrate, atempo))
     af = f"asetrate=r={asetrate},{expanded_atempo(atempo)},aresample={samplerate}"
-    await run_command("ffmpeg", "-i", file, "-af", af, "-strict", "-1", "-c:v", "copy",
-                      "-c:a", "flac", out)
+    await ffmpeg("-i", file, "-af", af, "-strict", "-1", "-c:v", "copy",
+                 "-c:a", "flac", out)
 
     return out
 
@@ -393,8 +393,8 @@ async def pitch(file, p=12):
 @gif_output
 async def hue(file, h: float):
     out = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-i", file, "-vf", f"hue=h={h},format=rgba", "-c:v", "ffv1", "-fps_mode", "vfr",
-                      out)
+    await ffmpeg("-i", file, "-vf", f"hue=h={h},format=rgba", "-c:v", "ffv1", "-fps_mode", "vfr",
+                 out)
     return out
 
 
@@ -403,10 +403,10 @@ async def tint(file, col: discord.Color):
     out = reserve_tempfile("mkv")
     # https://stackoverflow.com/a/3380739/9044183
     r, g, b = map(lambda x: x / 255, col.to_rgb())
-    await run_command("ffmpeg", "-i", file, "-vf",
-                      f"hue=s=0,"  # make grayscale
-                      f"lutrgb=r=val*{r}:g=val*{g}:b=val*{b}:a=val,"  # basically set white to our color 
-                      f"format=rgba", "-c:v", "ffv1", "-fps_mode", "vfr", out)
+    await ffmpeg("-i", file, "-vf",
+                 f"hue=s=0,"  # make grayscale
+                 f"lutrgb=r=val*{r}:g=val*{g}:b=val*{b}:a=val,"  # basically set white to our color 
+                 f"format=rgba", "-c:v", "ffv1", "-fps_mode", "vfr", out)
     return out
 
 
@@ -414,9 +414,9 @@ async def tint(file, col: discord.Color):
 async def circle(media):
     # gh copilot spat this out based on https://stackoverflow.com/a/62400465/9044183
     outfile = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-i", media, "-filter_complex",
-                      f"geq=lum='p(X,Y)':a='if(lte(hypot(W/2-X,H/2-Y),H/2),255,0)'",
-                      "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
+    await ffmpeg("-i", media, "-filter_complex",
+                 f"geq=lum='p(X,Y)':a='if(lte(hypot(W/2-X,H/2-Y),H/2),255,0)'",
+                 "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
     return outfile
 
 
@@ -424,16 +424,16 @@ async def circle(media):
 async def round_corners(media, border_radius=10):
     outfile = reserve_tempfile("mkv")
     # https://stackoverflow.com/a/62400465/9044183
-    await run_command("ffmpeg", "-i", media, "-filter_complex",
-                      # f"format=rgba,"
-                      f"geq=lum='p(X,Y)':a='"
-                      f"if(gt(abs(W/2-X),W/2-{border_radius})*gt(abs(H/2-Y),"
-                      f"H/2-{border_radius}),"
-                      f"if(lte(hypot({border_radius}-(W/2-abs(W/2-X)),"
-                      f"{border_radius}-(H/2-abs(H/2-Y))),"
-                      f"{border_radius}),255,0),255)'",
-                      "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr",
-                      outfile)
+    await ffmpeg("-i", media, "-filter_complex",
+                 # f"format=rgba,"
+                 f"geq=lum='p(X,Y)':a='"
+                 f"if(gt(abs(W/2-X),W/2-{border_radius})*gt(abs(H/2-Y),"
+                 f"H/2-{border_radius}),"
+                 f"if(lte(hypot({border_radius}-(W/2-abs(W/2-X)),"
+                 f"{border_radius}-(H/2-abs(H/2-Y))),"
+                 f"{border_radius}),255,0),255)'",
+                 "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr",
+                 outfile)
     return outfile
 
 
@@ -441,10 +441,10 @@ async def round_corners(media, border_radius=10):
 async def deepfry(media, brightness, contrast, sharpness, saturation, noise):
     outfile = reserve_tempfile("mkv")
 
-    await run_command("ffmpeg", "-i", media, "-vf",
-                      f"eq=contrast={contrast}:brightness={brightness}:saturation={saturation},"
-                      f"unsharp=luma_msize_x=7:luma_msize_y=7:luma_amount={sharpness},"
-                      f"noise=alls={noise}", "-fps_mode", "vfr", "-c:v", "ffv1", outfile)
+    await ffmpeg("-i", media, "-vf",
+                 f"eq=contrast={contrast}:brightness={brightness}:saturation={saturation},"
+                 f"unsharp=luma_msize_x=7:luma_msize_y=7:luma_amount={sharpness},"
+                 f"noise=alls={noise}", "-fps_mode", "vfr", "-c:v", "ffv1", outfile)
     return outfile
 
 
@@ -457,11 +457,11 @@ async def speech_bubble(media, position: typing.Literal["top", "bottom"] = "top"
     bubble = await scale2ref(TempFile("rendering/images/speechbubble.png"), media)
 
     if color == "transparent":
-        await run_command("ffmpeg", "-i", media, "-i", bubble,
-                          "-filter_complex",
-                          f"[1:v]format=rgba,{'vflip,' if position == 'bottom' else ''}alphaextract,negate[mask];"
-                          "[0:v][mask]alphamerge",
-                          "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
+        await ffmpeg("-i", media, "-i", bubble,
+                     "-filter_complex",
+                     f"[1:v]format=rgba,{'vflip,' if position == 'bottom' else ''}alphaextract,negate[mask];"
+                     "[0:v][mask]alphamerge",
+                     "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
     else:
         mask_filters = []
         if position == "bottom":
@@ -473,12 +473,12 @@ async def speech_bubble(media, position: typing.Literal["top", "bottom"] = "top"
         else:
             mask_filter = ""
 
-        await run_command("ffmpeg", "-i", media, "-i", bubble,
-                          "-filter_complex",
-                          # mask input media
-                          f"{mask_filter}"
-                          "[0:v][1:v]overlay=format=auto",
-                          "-c:v", "png" if mt == IMAGE else "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
+        await ffmpeg("-i", media, "-i", bubble,
+                     "-filter_complex",
+                     # mask input media
+                     f"{mask_filter}"
+                     "[0:v][1:v]overlay=format=auto",
+                     "-c:v", "png" if mt == IMAGE else "ffv1", "-c:a", "copy", "-fps_mode", "vfr", outfile)
     return outfile
 
 

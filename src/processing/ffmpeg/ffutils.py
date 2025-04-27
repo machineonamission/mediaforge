@@ -10,6 +10,7 @@ import processing.mediatype
 import processing.vips as vips
 from core.clogs import logger
 from processing.common import NonBugError
+from processing.common import ffmpeg
 from processing.ffmpeg.conversion import videotogif, mediatotempimage
 from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
 from processing.mediatype import VIDEO, IMAGE, GIF
@@ -27,8 +28,8 @@ async def forceaudio(video):
         return video
     else:
         outname = reserve_tempfile("mkv")
-        await run_command("ffmpeg", "-hide_banner", "-i", video, "-f", "lavfi", "-i", "anullsrc", "-c:v", "ffv1",
-                          "-c:a", "flac", "-map", "0:v", "-map", "1:a", "-shortest", "-fps_mode", "vfr", outname)
+        await ffmpeg("-i", video, "-f", "lavfi", "-i", "anullsrc", "-c:v", "ffv1",
+                     "-c:a", "flac", "-map", "0:v", "-map", "1:a", "-shortest", "-fps_mode", "vfr", outname)
 
         return outname
 
@@ -77,12 +78,12 @@ async def naive_vstack(file0, file1):
         return await processing.common.run_parallel(vips.vipsutils.naive_stack, file0, file1)
     else:
         out = reserve_tempfile("mkv")
-        await run_command("ffmpeg", "-i", file0, "-i", file1, "-filter_complex",
-                          "[0]format=pix_fmts=rgba[0f];"
-                          "[1]format=pix_fmts=rgba[1f];"
-                          "[0f][1f]vstack=inputs=2", "-c:v", "ffv1",
-                          # "-fs", config.max_temp_file_size,
-                          "-fps_mode", "vfr", out)
+        await ffmpeg("-i", file0, "-i", file1, "-filter_complex",
+                     "[0]format=pix_fmts=rgba[0f];"
+                     "[1]format=pix_fmts=rgba[1f];"
+                     "[0f][1f]vstack=inputs=2", "-c:v", "ffv1",
+                     # "-fs", config.max_temp_file_size,
+                     "-fps_mode", "vfr", out)
 
         if VIDEO not in mts:  # gif and image only
             out.mt = GIF
@@ -130,8 +131,8 @@ async def trim_top(file, trim_size):
 async def naive_overlay(im1, im2):
     mts = [await im1.mediatype(), await im2.mediatype()]
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-i", im1, "-i", im2, "-filter_complex", "overlay=format=auto", "-c:v", "ffv1", "-fs",
-                      config.max_temp_file_size, "-fps_mode", "vfr", outname)
+    await ffmpeg("-i", im1, "-i", im2, "-filter_complex", "overlay=format=auto", "-c:v", "ffv1", "-fs",
+                 config.max_temp_file_size, "-fps_mode", "vfr", outname)
     if mts[0] == IMAGE and mts[1] == IMAGE:
         outname = await mediatotempimage(outname)
     return outname
@@ -165,13 +166,13 @@ async def repeat_shorter_video(video1, video2):
     if dur1 > dur2:
         new_vid2 = reserve_tempfile("mkv")
         # the +0.001 is a jank way to force it to round up and it WORKS
-        await run_command("ffmpeg", "-i", video2, "-vf", f"tpad=stop_mode=clone:stop_duration={dur1}",
-                          "-c:v", "ffv1", "-c:a", "flac", new_vid2)
+        await ffmpeg("-i", video2, "-vf", f"tpad=stop_mode=clone:stop_duration={dur1}",
+                     "-c:v", "ffv1", "-c:a", "flac", new_vid2)
         return video1, new_vid2
     elif dur2 > dur1:
         new_vid1 = reserve_tempfile("mkv")
-        await run_command("ffmpeg", "-i", video1, "-vf", f"tpad=stop_mode=clone:stop_duration={dur2}",
-                          "-c:v", "ffv1", "-c:a", "flac", new_vid1)
+        await ffmpeg("-i", video1, "-vf", f"tpad=stop_mode=clone:stop_duration={dur2}",
+                     "-c:v", "ffv1", "-c:a", "flac", new_vid1)
         return new_vid1, video2
     else:  # == case
         return video1, video2
@@ -191,8 +192,8 @@ async def changefps(file, fps):
     :return: processed media
     """
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", file, "-r", str(fps), "-c:a", "copy", "-c:v", "ffv1",
-                      outname)
+    await ffmpeg("-i", file, "-r", str(fps), "-c:a", "copy", "-c:v", "ffv1",
+                 outname)
     return outname
 
 
@@ -209,8 +210,8 @@ async def trim(file, length, start=0):
     dur = await get_duration(file)
     if start > dur:
         raise NonBugError(f"Trim start ({start}s) is outside the range of the file ({dur}s)")
-    await run_command("ffmpeg", "-hide_banner", "-i", file, "-t", str(length), "-ss", str(start), "-c:v", "ffv1",
-                      "-c:a", "flac", "-fps_mode", "vfr", out)
+    await ffmpeg("-i", file, "-t", str(length), "-ss", str(start), "-c:v", "ffv1",
+                 "-c:a", "flac", "-fps_mode", "vfr", out)
     return out
 
 
@@ -228,11 +229,11 @@ async def resize(image, width, height, lock_codec=False):
     gif = await image.mediatype() == GIF
     ext = image.split(".")[-1]
     out = reserve_tempfile(ext if lock_codec and not gif else "mkv")
-    await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
-                      "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v",
-                      "copy" if lock_codec and not gif else "ffv1",
-                      "-pix_fmt", "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
+    await ffmpeg("-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
+                 "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
+                 "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v",
+                 "copy" if lock_codec and not gif else "ffv1",
+                 "-pix_fmt", "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
     if gif and lock_codec:
         return await videotogif(out)
     else:
@@ -249,7 +250,7 @@ async def splitaudio(video):
     if ifaudio:
         logger.info("Splitting audio...")
         name = reserve_tempfile("flac")
-        await run_command("ffmpeg", "-hide_banner", "-i", video, "-vn", "-acodec", "flac", name)
+        await ffmpeg("-i", video, "-vn", "-acodec", "flac", name)
         return name
     else:
         logger.info("No audio detected.")
@@ -270,7 +271,7 @@ async def ffmpegsplit(media):
     :return: [list of files, ffmpeg key to find files]
     """
     logger.info("Splitting frames...")
-    await run_command("ffmpeg", "-hide_banner", "-i", media, "-vsync", "1", f"{media.split('.')[0]}_%09d.bmp")
+    await ffmpeg("-i", media, "-vsync", "1", f"{media.split('.')[0]}_%09d.bmp")
     # fucking glob isnt sorted by default on linux
     files = sorted(glob.glob(f"{media.split('.')[0]}_*.bmp"))
     files = [reserve_tempfile(f) for f in files]

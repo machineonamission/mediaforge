@@ -3,6 +3,7 @@ from enum import Enum
 
 import processing.mediatype
 import processing.vips.creation
+from processing.common import ffmpeg
 from processing.common import run_parallel
 from processing.ffmpeg.ffprobe import hasaudio
 from processing.mediatype import VIDEO, IMAGE, GIF
@@ -45,9 +46,9 @@ async def heart_locket(arg1, arg2, type: ArgType):
     mt1, mt2 = await asyncio.gather(media1.mediatype(), media2.mediatype())
     for media, out, mt in ((media1, ffv1m1, mt1), (media2, ffv1m2, mt2)):
         if mt == IMAGE:
-            await run_command("ffmpeg", "-r", str(fps), "-i", media, "-c:v", "ffv1", "-c:a", "flac", out)
+            await ffmpeg("-r", str(fps), "-i", media, "-c:v", "ffv1", "-c:a", "flac", out)
         else:
-            await run_command("ffmpeg", "-i", media, "-filter:v", f"fps={fps}", "-c:v", "ffv1", "-c:a", "flac", out)
+            await ffmpeg("-i", media, "-filter:v", f"fps={fps}", "-c:v", "ffv1", "-c:a", "flac", out)
     media1, media2 = ffv1m1, ffv1m2
 
     out = reserve_tempfile("mkv")
