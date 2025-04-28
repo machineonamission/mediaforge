@@ -57,7 +57,7 @@ async def mediatype(image) -> MediaType:
                 elif mb == "avif":
                     # technically broken encoders mean this could be animated, but meh
                     return IMAGE
-    # TODO: webp, jxl, etc
+    # TODO: webp, jxl, apng, etc
     for stream in probe["streams"]:
         if stream["codec_type"] == "audio":  # only can be pure audio
             props["audio"] = True
