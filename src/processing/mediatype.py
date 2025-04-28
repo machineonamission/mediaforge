@@ -47,23 +47,26 @@ async def mediatype(image) -> MediaType:
         "image": False
     }
     probe = json.loads(probe)
+    animated_image = False
+    # detect AVIF
     if "format_tags" in probe:
         if "tags" in probe["format_tags"]:
             if "major_brand" in probe["format_tags"]["tags"]:
                 mb = probe["format_tags"]["tags"]["major_brand"]
                 # animated AVIF
-                if mb == "avis":
-                    return GIF
-                elif mb == "avif":
-                    # technically broken encoders mean this could be animated, but meh
-                    return IMAGE
-    # TODO: webp, jxl, apng, etc
+                if mb in ["avif", "avis"]:
+                    animated_image = True
+    # i shit you not, ffmepg does not support decoding animated webps.
+    # there's patches in the work but none have been merged. cool
+    # TODO: jxl, apng, gif, etc
     for stream in probe["streams"]:
         if stream["codec_type"] == "audio":  # only can be pure audio
             props["audio"] = True
+            # if its audio, it cannot be a gif
+            props["gif"] = False
         elif stream["codec_type"] == "video":  # could be video or image or gif sadly
             if "nb_read_packets" in stream and int(stream["nb_read_packets"]) != 1:  # if there are multiple frames
-                if stream["codec_name"] == "gif":  # if gif
+                if animated_image and not props["audio"]:  # animated image
                     props["gif"] = True  # gif
                 else:  # multiple frames, not gif
                     props["video"] = True  # video!!
