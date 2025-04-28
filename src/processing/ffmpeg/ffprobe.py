@@ -25,10 +25,24 @@ async def is_apng(filename):
         return False
 
 
+async def is_avif(file):
+    probe = await run_command('ffprobe', '-v', 'panic', '-show_entries',
+                              'format_tags=major_brand',
+                              '-print_format', 'json', file)
+    probe = json.loads(probe)
+    if "format_tags" in probe:
+        if "tags" in probe["format_tags"]:
+            if "major_brand" in probe["format_tags"]["tags"]:
+                mb = probe["format_tags"]["tags"]["major_brand"]
+                if mb in ["avif", "avis"]:
+                    return True
+    return False
+
+
 async def has_alpha(file):
     # https://stackoverflow.com/a/69030041/9044183
     vfmt = await run_command("ffprobe", "-v", "panic", "-select_streams", "v:0", "-show_entries", "stream=pix_fmt",
-                            "-of", "compact=p=0:nk=1", file)
+                             "-of", "compact=p=0:nk=1", file)
     alpha_fmts = await run_command("ffprobe", "-v", "panic", "-show_entries", "pixel_format=name:flags=alpha",
                                    "-print_format", "json")
     alpha_fmts = json.loads(alpha_fmts)

@@ -1,11 +1,11 @@
 from processing.common import image_format
-from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate, has_alpha
+from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate, has_alpha, is_avif
 from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 from processing.run_command import ffmpeg
 from utils.tempfiles import reserve_tempfile
 
 
-async def videotogif(video):
+async def video_to_gif(video):
     if (await get_vcodec(video))["codec_name"] == "gif":
         return video
     outname = reserve_tempfile("gif")
@@ -41,7 +41,7 @@ async def videotogif(video):
     return outname
 
 
-async def videotoavif(video):
+async def video_to_animated_avif(video):
     if video.endswith("avif"):
         return video
     out = reserve_tempfile("avif")
@@ -61,6 +61,8 @@ async def videotoavif(video):
                      # shouldnt be too slow hopefully
                      "-c:v:1", "libaom-av1",
                      "-cpu-used", "8",
+                     "-max_muxing_queue_size", "9999",
+                     "-movflags", "+faststart",
                      out)
     else:
         # most of the manual avif shit is for handling transparency. if there is none, its rather shrimple!
@@ -69,13 +71,15 @@ async def videotoavif(video):
                      "-c:v", "libsvtav1",
                      "-map", "0:v",
                      "-preset", "8",
+                     "-max_muxing_queue_size", "9999",
+                     "-movflags", "+faststart",
                      out)
 
     out.mt = GIF
     return out
 
 
-async def imagetoavif(image):
+async def image_to_avif(image):
     if image.endswith("avif"):
         return image
     out = reserve_tempfile("avif")
@@ -108,28 +112,25 @@ async def imagetoavif(image):
     return out
 
 
-async def video_reencode(
-        video):  # reencodes mp4 as libx264 since the png format used cant be played by like literally anything
-    assert (mt := await video.mediatype()) in [VIDEO, GIF], f"file {video} with type {mt} passed to reencode()"
-    # only reencode if need to ;)
-    vcodec, acodec = await va_codecs(video)
-    vcode = ["copy"] if vcodec == "h264" else ["libx264", "-pix_fmt", "yuv420p", "-vf",
-                                               "scale=ceil(iw/2)*2:ceil(ih/2)*2,"
-                                               # turns transparency into blackness
-                                               "premultiply=inplace=1"]
-    acode = ["copy"] if acodec == "aac" else ["aac", "-q:a", "2"]
+async def video_to_av1(video):
     outname = reserve_tempfile("mp4")
-    await ffmpeg("-i", video, "-c:v", *vcode, "-c:a", *acode,
-                 "-max_muxing_queue_size", "9999", "-movflags", "+faststart", outname)
+    await ffmpeg("-i", video,
+                 "-c:v", "libsvtav1",
+                 "-preset", "8",
+                 "-pix_fmt", "yuv420p",
+                 # turns transparency into blackness
+                 "premultiply=inplace=1",
+                 "-c:a", "aac", "-q:a", "2",
+                 "-max_muxing_queue_size", "9999",
+                 "-movflags", "+faststart",
+                 outname)
 
     return outname
 
 
-async def audio_reencode(audio):
-    acodec = await get_acodec(audio)
-    acode = ["copy"] if acodec == "aac" else ["aac", "-q:a", "2"]
+async def audio_to_aac(audio):
     outname = reserve_tempfile("m4a")
-    await ffmpeg("-i", audio, "-c:a", *acode, outname)
+    await ffmpeg("-i", audio, "-c:a", "aac", "-q:a", "2", outname)
     return outname
 
 
@@ -138,42 +139,13 @@ async def allreencode(file):
         return file
     mt = await file.mediatype()
     if mt == IMAGE:
-        return await mediatopng(file)
+        return await image_to_avif(file)
     elif mt == VIDEO:
-        return await video_reencode(file)
+        return await video_to_av1(file)
     elif mt == AUDIO:
-        return await audio_reencode(file)
+        return await audio_to_aac(file)
     elif mt == GIF:
-        return await videotoavif(file)
-    else:
-        raise Exception(f"{file} of type {mt} cannot be re-encoded")
-
-
-async def forcereencode(file):
-    # this function always forces a reencode, allreencode doesnt reencode if codec is already good
-    mt = await file.mediatype()
-    if mt == IMAGE:
-        outname = reserve_tempfile("png")
-        await ffmpeg("-i", file, "-frames:v", "1", "-c:v",
-                     "png", "-pix_fmt", "rgba",
-                     outname)
-
-        return outname
-    elif mt == VIDEO:
-        outname = reserve_tempfile("mp4")
-        await ffmpeg("-i", file, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-vf",
-                     "scale=ceil(iw/2)*2:ceil(ih/2)*2,"
-                     # turns transparency into blackness
-                     "premultiply=inplace=1", "-c:a", "aac", "-q:a", "2",
-                     "-max_muxing_queue_size", "9999", "-movflags", "+faststart", outname)
-
-        return outname
-    elif mt == AUDIO:
-        outname = reserve_tempfile("m4a")
-        await ffmpeg("-i", file, "-c:a", "aac", "-q:a", "2", outname)
-        return outname
-    elif mt == GIF:
-        return await videotoavif(file)
+        return await video_to_animated_avif(file)
     else:
         raise Exception(f"{file} of type {mt} cannot be re-encoded")
 
@@ -239,3 +211,12 @@ async def toapng(video):
     # ffmpeg method, removes dependence on apngasm but bigger and worse quality
     # outname = reserve_tempfile("png")
     # await ffmpeg( "-i", video, "-f", "apng", "-plays", "0", outname)
+
+async def normalize(file):
+    # normalize bad behaving codecs/containers
+    if await is_avif(file):
+        out = reserve_tempfile("mkv")
+
+    else:
+        # this is extensible
+        return file

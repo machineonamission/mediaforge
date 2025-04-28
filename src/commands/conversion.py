@@ -142,7 +142,7 @@ class Conversion(commands.Cog, name="Conversion"):
         :param ctx: discord context
         :param video: A video.
         """
-        await process(ctx, processing.ffmpeg.conversion.videotogif, [[VIDEO]], slashfiles=video)
+        await process(ctx, processing.ffmpeg.conversion.video_to_gif, [[VIDEO]], slashfiles=video)
 
     @commands.hybrid_command(aliases=["avif", "videotoavif"])
     async def toavif(self, ctx, video: discord.Attachment | None = None):
@@ -152,7 +152,7 @@ class Conversion(commands.Cog, name="Conversion"):
         :param ctx: discord context
         :param video: A video.
         """
-        await process(ctx, processing.ffmpeg.conversion.videotoavif, [[VIDEO, GIF]], slashfiles=video)
+        await process(ctx, processing.ffmpeg.conversion.video_to_animated_avif, [[VIDEO, GIF]], slashfiles=video)
 
     # discord fucks apng uploads, not much i can do about that
     # @commands.hybrid_command(aliases=["apng", "videotoapng", "giftoapng"])
