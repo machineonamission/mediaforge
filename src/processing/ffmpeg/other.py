@@ -16,9 +16,9 @@ from processing.ffmpeg.ffutils import gif_output, expanded_atempo, forceaudio, d
     resize, concat_demuxer
 from processing.ffmpeg.handleanimated import animatedmultiplexer
 from processing.mediatype import AUDIO, IMAGE, GIF
-from processing.run_command import run_command
+from processing.run_command import run_command, ffmpeg
 from utils.tempfiles import reserve_tempfile, TempFile
-from processing.common import ffmpeg
+
 
 @gif_output
 async def speed(file, sp):

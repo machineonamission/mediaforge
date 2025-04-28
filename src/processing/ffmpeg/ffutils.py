@@ -10,11 +10,10 @@ import processing.mediatype
 import processing.vips as vips
 from core.clogs import logger
 from processing.common import NonBugError
-from processing.common import ffmpeg
-from processing.ffmpeg.conversion import videotogif, mediatotempimage
+from processing.ffmpeg.conversion import videotoavif, mediatotempimage
 from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
 from processing.mediatype import VIDEO, IMAGE, GIF
-from processing.run_command import run_command
+from processing.run_command import run_command, ffmpeg
 from utils.tempfiles import reserve_tempfile, TempFile
 
 
@@ -235,7 +234,7 @@ async def resize(image, width, height, lock_codec=False):
                  "copy" if lock_codec and not gif else "ffv1",
                  "-pix_fmt", "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
     if gif and lock_codec:
-        return await videotogif(out)
+        return await videotoavif(out)
     else:
         return out
 

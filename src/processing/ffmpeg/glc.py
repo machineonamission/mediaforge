@@ -2,8 +2,7 @@ import json
 import re
 
 from core.clogs import logger
-from processing.common import ffmpeg
-from processing.run_command import run_command
+from processing.run_command import run_command, ffmpeg
 
 
 async def get_gif_loop_count(gif):

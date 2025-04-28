@@ -2,7 +2,7 @@ import typing
 
 import processing.common
 from processing import vips as vips
-from processing.common import ffmpeg
+from processing.run_command import ffmpeg
 from processing.ffmpeg.ffprobe import get_resolution, frame_n
 from processing.ffmpeg.ffutils import gif_output
 from processing.ffmpeg.other import imageaudio, concatv

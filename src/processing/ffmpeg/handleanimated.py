@@ -1,6 +1,6 @@
 import inspect
 
-from processing.common import ffmpeg
+from processing.run_command import ffmpeg
 from processing.common import run_parallel
 from processing.ffmpeg.conversion import mediatotempimage
 from processing.ffmpeg.ffprobe import get_frame_rate

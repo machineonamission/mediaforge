@@ -3,11 +3,10 @@ from enum import Enum
 
 import processing.mediatype
 import processing.vips.creation
-from processing.common import ffmpeg
 from processing.common import run_parallel
 from processing.ffmpeg.ffprobe import hasaudio
 from processing.mediatype import VIDEO, IMAGE, GIF
-from processing.run_command import run_command
+from processing.run_command import run_command, ffmpeg
 from utils.tempfiles import TempFile, reserve_tempfile
 
 

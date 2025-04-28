@@ -1,7 +1,7 @@
-from processing.common import ffmpeg
 from processing.common import image_format
-from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate
+from processing.ffmpeg.ffprobe import va_codecs, get_acodec, get_vcodec, get_frame_rate, has_alpha
 from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
+from processing.run_command import ffmpeg
 from utils.tempfiles import reserve_tempfile
 
 
@@ -41,6 +41,73 @@ async def videotogif(video):
     return outname
 
 
+async def videotoavif(video):
+    if video.endswith("avif"):
+        return video
+    out = reserve_tempfile("avif")
+    # simplified from https://jakearchibald.com/2024/video-with-transparency/#encoding-animated-avif
+    if await has_alpha(video):
+        await ffmpeg("-i", video, "-filter_complex",
+                     "-pix_fmt:0", "yuv420p",
+                     "-pix_fmt:1", "gray8",
+                     # the website i got this from forces a yuva format, but we already know it has alpha, so we can skip that
+                     "[0:v]split[main][alpha];"
+                     "[alpha]alphaextract[alpha];",
+                     "-map", "[main]:v",
+                     "-map", "[alpha]:v",
+                     "-c:v:0", "libsvtav1",
+                     "-preset", "8",
+                     # the nicer av1 encoders dont support grayscale for transparency, so we have to use a shit one.
+                     # shouldnt be too slow hopefully
+                     "-c:v:1", "libaom-av1",
+                     "-cpu-used", "8",
+                     out)
+    else:
+        # most of the manual avif shit is for handling transparency. if there is none, its rather shrimple!
+        await ffmpeg("-i", video,
+                     "-pix_fmt", "yuv420p",
+                     "-c:v", "libsvtav1",
+                     "-map", "0:v",
+                     "-preset", "8",
+                     out)
+
+    out.mt = GIF
+    return out
+
+
+async def imagetoavif(image):
+    if image.endswith("avif"):
+        return image
+    out = reserve_tempfile("avif")
+    # simplified from https://jakearchibald.com/2024/video-with-transparency/#encoding-animated-avif
+    if await has_alpha(image):
+        await ffmpeg("-i", image, "-filter_complex",
+                     "-pix_fmt:0", "yuv420p",
+                     "-pix_fmt:1", "gray8",
+                     # the website i got this from forces a yuva format, but we already know it has alpha, so we can skip that
+                     "[0:v]split[main][alpha];"
+                     "[alpha]alphaextract[alpha];",
+                     "-map", "[main]:v",
+                     "-map", "[alpha]:v",
+                     # i read that libsvt isnt great for images
+                     "-c:v", "libaom-av1",
+                     "-cpu-used", "8",
+                     "-frames:v", "1", "-still-picture", "1",
+                     out)
+    else:
+        # most of the manual avif shit is for handling transparency. if there is none, its rather shrimple!
+        await ffmpeg("-i", image,
+                     "-pix_fmt", "yuv420p",
+                     "-c:v", "libaom-av1",
+                     "-map", "0:v",
+                     "-cpu_used", "8",
+                     "-frames:v", "1", "-still-picture", "1",
+                     out)
+
+    out.mt = IMAGE
+    return out
+
+
 async def video_reencode(
         video):  # reencodes mp4 as libx264 since the png format used cant be played by like literally anything
     assert (mt := await video.mediatype()) in [VIDEO, GIF], f"file {video} with type {mt} passed to reencode()"
@@ -77,7 +144,7 @@ async def allreencode(file):
     elif mt == AUDIO:
         return await audio_reencode(file)
     elif mt == GIF:
-        return await videotogif(file)
+        return await videotoavif(file)
     else:
         raise Exception(f"{file} of type {mt} cannot be re-encoded")
 
@@ -106,7 +173,7 @@ async def forcereencode(file):
         await ffmpeg("-i", file, "-c:a", "aac", "-q:a", "2", outname)
         return outname
     elif mt == GIF:
-        return await videotogif(file)
+        return await videotoavif(file)
     else:
         raise Exception(f"{file} of type {mt} cannot be re-encoded")
 

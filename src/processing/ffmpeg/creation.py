@@ -1,6 +1,6 @@
 import processing.common
 from processing import vips as vips
-from processing.common import ffmpeg
+from processing.run_command import ffmpeg
 from processing.ffmpeg.ffutils import gif_output
 from processing.other import tts
 from utils.tempfiles import reserve_tempfile

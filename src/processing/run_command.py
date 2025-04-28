@@ -63,3 +63,7 @@ async def run_command(*args: str):
 class CMDError(Exception):
     """raised by run_command"""
     pass
+
+
+async def ffmpeg(*args):
+    return await run_command("ffmpeg", *args)

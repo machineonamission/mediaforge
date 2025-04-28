@@ -55,3 +55,4 @@ def jpeg(file: TempFile, strength: int, stretch: list[tuple[int, int]] | None, q
     outfile = reserve_tempfile(image_format)
     im.write_to_file(outfile)
     return outfile
+

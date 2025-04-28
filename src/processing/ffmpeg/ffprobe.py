@@ -12,7 +12,7 @@ else:
 
 from processing.common import *
 from core.clogs import logger
-from processing.common import ffmpeg
+from processing.run_command import ffmpeg, run_command
 
 
 async def is_apng(filename):
@@ -23,6 +23,20 @@ async def is_apng(filename):
         return data["streams"][0]["codec_name"] == "apng"
     else:
         return False
+
+
+async def has_alpha(file):
+    # https://stackoverflow.com/a/69030041/9044183
+    vfmt = await run_command("ffprobe", "-v", "panic", "-select_streams", "v:0", "-show_entries", "stream=pix_fmt",
+                            "-of", "compact=p=0:nk=1", file)
+    alpha_fmts = await run_command("ffprobe", "-v", "panic", "-show_entries", "pixel_format=name:flags=alpha",
+                                   "-print_format", "json")
+    alpha_fmts = json.loads(alpha_fmts)
+    for fmt in alpha_fmts["pixel_formats"]:
+        if fmt["name"] == vfmt:
+            return bool(fmt["flags"]["alpha"])
+    # failsafe
+    return True
 
 
 # https://askubuntu.com/questions/110264/how-to-find-frames-per-second-of-any-video-file
