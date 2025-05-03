@@ -36,7 +36,7 @@ RUN apt-get --no-install-recommends install -y  \
 # imagemagick
      fuse libfuse2 \
 # fonts
-    fonts-noto \
+    fonts-noto
 
 RUN apt-get remove fonts-noto-color-emoji
 # python packages
