@@ -18,8 +18,8 @@ humanize = "^4.8.0"
 coloredlogs = "^15.0.1"
 Pillow = "^10.0.1"
 regex = "^2024.9.11"
-aiosqlite = "^0.20.0"
-psutil = "^6.0.0"
+aiosqlite = "^0.21.0"
+psutil = "^7.0.0"
 apng = "^0.3.4"
 docstring-parser = "^0.16"
 yt-dlp = "^2025.1.26"
@@ -28,7 +28,7 @@ python-magic = { version = "^0.4.13", markers = "sys_platform != 'win32'" }
 python-magic-win64 = { version = "^0.4.13", markers = "sys_platform == 'win32'" }
 requests = "^2.31.0"
 "discordlists.py" = "^1.1.1"
-pyvips = "^2.2.1"
+pyvips = "^3.0.0"
 tblib = "^3.0.0"
 audioop-lts = {version = "^0.2.1", python = ">=3.13"}
 
