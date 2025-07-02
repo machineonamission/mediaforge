@@ -34,8 +34,8 @@ def glib_escape(arg: str) -> str:
         .replace("&", "&amp;")
         .replace("<", "&lt;")
         .replace(">", "&gt;")
-        .replace("\\", "&apos;")
-        .replace("'", "&quot;")
+        .replace("'", "&apos;")
+        .replace("\"", "&quot;")
     )
 
 
