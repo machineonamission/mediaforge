@@ -31,6 +31,7 @@ requests = "^2.31.0"
 pyvips = "^3.0.0"
 tblib = "^3.0.0"
 audioop-lts = {version = "^0.2.1", python = ">=3.13"}
+bgutil-ytdlp-pot-provider = "^1.1.0"
 
 
 [build-system]

@@ -50,6 +50,7 @@ from cog.botlist import DiscordListsPost
 from cog.commandchecks import CommandChecksCog
 from cog.errorhandler import ErrorHandlerCog
 from cog.status import StatusCog
+from cog.bgpot import BgPot
 
 from commands.caption import Caption
 from commands.conversion import Conversion
@@ -161,7 +162,7 @@ class MyBot(commands.AutoShardedBot):
             bot.add_cog(ErrorHandlerCog(bot)),
             bot.add_cog(CommandChecksCog(bot)),
             bot.add_cog(BotEventsCog(bot)),
-
+            bot.add_cog(BgPot(bot)),
         )
 
 

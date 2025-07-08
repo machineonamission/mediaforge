@@ -16,7 +16,7 @@ RUN apt-get -y upgrade
 
 RUN apt-get --no-install-recommends install -y  \
 # most packages
-    nano nodejs libgif-dev lsb-release software-properties-common \
+    nano nodejs npm libgif-dev lsb-release software-properties-common \
 # ffmpeg
 # https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu#FFmpeg
     # build deps
@@ -51,6 +51,7 @@ RUN apt-get -y autoremove
 COPY . mediaforge
 RUN chmod +x /mediaforge/docker/*
 
+RUN bash -c /mediaforge/docker/installbgpot.sh
 RUN bash -c /mediaforge/docker/buildffmpeg.sh
 RUN bash -c /mediaforge/docker/buildvips.sh
 RUN bash -c /mediaforge/docker/installimagemagick.sh
