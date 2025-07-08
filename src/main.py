@@ -39,7 +39,6 @@ except ModuleNotFoundError as e:
 
 # project files
 import core.database
-from core import heartbeat
 from utils.common import *
 from core.clogs import logger
 import config
@@ -51,6 +50,7 @@ from cog.commandchecks import CommandChecksCog
 from cog.errorhandler import ErrorHandlerCog
 from cog.status import StatusCog
 from cog.bgpot import BgPot
+from cog.heartbeat import Heartbeat
 
 from commands.caption import Caption
 from commands.conversion import Conversion
@@ -138,7 +138,6 @@ def initdbsync():
 def init():
     initdbsync()
     downloadttsvoices()
-    heartbeat.init()
     tempfiles.init()
 
 
@@ -163,6 +162,7 @@ class MyBot(commands.AutoShardedBot):
             bot.add_cog(CommandChecksCog(bot)),
             bot.add_cog(BotEventsCog(bot)),
             bot.add_cog(BgPot(bot)),
+            bot.add_cog(Heartbeat(bot))
         )
 
 
