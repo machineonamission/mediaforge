@@ -3,7 +3,7 @@ name = "mediaforge"
 version = "2.0.0"
 description = "A Discord bot for editing and creating videos, images, GIFs, and more!"
 authors = ["machineonamission"]
-license = "GPL-3.0"
+license = "AGPL-3.0-or-later + Commons Clause"
 package-mode = false
 
 [tool.poetry.dependencies]

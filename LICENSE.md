@@ -1,5 +1,6 @@
-# AGPL3 + Commons Clause License
+# AGPL3 License + Commons Clause
 This project is licensed under a combination of GNU AGPL-3.0-or-later and the Commons Clause.
+
 ## ✅ Permissions
  - **Modification**:
 The licensed material may be modified.
