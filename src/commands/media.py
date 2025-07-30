@@ -487,7 +487,17 @@ class Media(commands.Cog, name="Editing"):
         :param ctx:
         :param position: where to put the speech bubble. must be "top" or "bottom".
         :param color: what color to make the speech bubble. must be "transparent", "white", or "black".
-        :param media: A video, image, or GIF file
+        :param media: A video, image, or GIF
         """
         await process(ctx, processing.ffmpeg.other.speech_bubble, [[VIDEO, IMAGE, GIF]], position, color,
                       slashfiles=media)
+
+    @commands.hybrid_command()
+    async def boomerang(self, ctx, media: discord.Attachment | None = None):
+        """
+        Makes a video or GIF play forwards and then backwards.
+
+        :param ctx: discord context
+        :param media: A video or GIF.
+        """
+        await process(ctx, processing.ffmpeg.other.boomerang, [[VIDEO, GIF]], slashfiles=media)
