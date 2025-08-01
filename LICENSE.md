@@ -1,47 +1,56 @@
 # AGPL3 License + Commons Clause
-This project is licensed under a combination of GNU AGPL-3.0-or-later and the Commons Clause.
+
+This project is licensed under a combination of the GNU Affero General Public License Version 3 or later and the
+“Commons Clause” License Condition v1.0.
 
 ## ✅ Permissions
- - **Modification**:
-The licensed material may be modified.
 
- - **Distribution**:
-The licensed material may be distributed.
+- **Modification**:
+  The licensed material may be modified.
 
- - **Patent use**:
-This license provides an express grant of patent rights from contributors.
+- **Distribution**:
+  The licensed material may be distributed.
 
- - **Private use**:
-The licensed material may be used and modified in private.
+- **Patent use**:
+  This license provides an express grant of patent rights from contributors.
+
+- **Private use**:
+  The licensed material may be used and modified in private.
 
 ## ❌ Limitations
- - **Liability**:
-This license includes a limitation of liability.
 
- - **Warranty**:
-This license explicitly states that it does NOT provide any warranty.
+- **Liability**:
+  This license includes a limitation of liability.
 
- - **Commercial use**:
-The licensed material and derivatives may **NOT** be used for commercial purposes without adding substantial new functionality.
+- **Warranty**:
+  This license explicitly states that it does NOT provide any warranty.
+
+- **Commercial use**:
+  The licensed material and derivatives may **NOT** be used for commercial purposes without adding substantial new
+  functionality.
 
 ## ℹ️ Conditions
- - **License and copyright notice**:
-A copy of the license and copyright notice must be included with the licensed material.
 
- - **State changes**:
-Changes made to the licensed material must be documented.
+- **License and copyright notice**:
+  A copy of the license and copyright notice must be included with the licensed material.
 
- - **Disclose source**:
-Source code must be made available when the licensed material is distributed.
+- **State changes**:
+  Changes made to the licensed material must be documented.
 
- - **Network use is distribution**:
-Users who interact with the licensed material via network are given the right to receive a copy of the source code.
+- **Disclose source**:
+  Source code must be made available when the licensed material is distributed.
 
- - **Same license**:
-Modifications must be released under the same license when distributing the licensed material. In some cases a similar or related license may be used.
+- **Network use is distribution**:
+  Users who interact with the licensed material via network are given the right to receive a copy of the source code.
+
+- **Same license**:
+  Modifications must be released under the same license when distributing the licensed material. In some cases a similar
+  or related license may be used.
+
 # License Text
 
 ## Commons Clause
+
 ```
 “Commons Clause” License Condition v1.0
 
@@ -57,7 +66,9 @@ License: GNU Affero General Public License v3.0 or later
 
 Licensor: Machine on a Mission
 ```
+
 ## AGPL-3.0-or-later
+
 ```
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
