@@ -16,7 +16,7 @@ RUN apt-get -y upgrade
 
 RUN apt-get --no-install-recommends install -y  \
 # most packages
-    nano nodejs npm libgif-dev lsb-release software-properties-common \
+    nano nodejs npm libgif-dev lsb-release \
 # ffmpeg
 # https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu#FFmpeg
     # build deps
