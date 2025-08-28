@@ -1,4 +1,4 @@
-FROM python:latest AS builder
+FROM python:3.13-bookworm AS builder
 
 # automode
 ARG AUTOMODE="OFF"
@@ -13,6 +13,9 @@ RUN printf "\ndeb https://deb.debian.org/debian bookworm contrib non-free" >> "/
 # install packages before copying mediaforge so docker can save the state and make debugging this quicker
 RUN apt-get -y update
 RUN apt-get -y upgrade
+
+# prep for new node
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 
 RUN apt-get --no-install-recommends install -y  \
 # most packages
