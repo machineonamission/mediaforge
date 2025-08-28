@@ -32,10 +32,10 @@ to correct the issue, though no guarantee is made.
 I reserve the right to ban any user or server from the public instance of MediaForge for any reason for any duration,
 though typical reasons include spam, bigotry, or other misuses of the bot.
 
-## GPL-3.0 license
+## AGPL3 + Commons Clause license
 
-The MediaForge source code is licensed under the GNU General Public License
-v3.0. [Read more here](https://github.com/machineonamission/mediaforge/blob/master/LICENSE).
+The MediaForge source code is licensed under a combination of GNU AGPL-3.0-or-later and the Commons Clause.
+[Read more here](/LICENSE.md).
 
 ## Self-hosting
 

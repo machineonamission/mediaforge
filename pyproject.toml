@@ -3,7 +3,7 @@ name = "mediaforge"
 version = "2.0.0"
 description = "A Discord bot for editing and creating videos, images, GIFs, and more!"
 authors = ["machineonamission"]
-license = "GPL-3.0"
+license = "AGPL-3.0-or-later + Commons Clause"
 package-mode = false
 
 [tool.poetry.dependencies]
@@ -31,6 +31,7 @@ requests = "^2.31.0"
 pyvips = "^3.0.0"
 tblib = "^3.0.0"
 audioop-lts = {version = "^0.2.1", python = ">=3.13"}
+bgutil-ytdlp-pot-provider = "^1.1.0"
 
 
 [build-system]

@@ -13,7 +13,7 @@ import processing.common
 import processing.other
 import processing.run_command
 import utils.tempfiles
-from core import database, heartbeat
+from core import database
 from core.clogs import logger
 # from main import renderpool, bot, database.db, quote
 from utils.common import fetch, quote
@@ -119,8 +119,6 @@ class Debug(commands.Cog, name="Owner Only", command_attrs=dict(hidden=True)):
         """
         await ctx.send(f"{config.emojis['check']} Shutting Down...")
         logger.critical("Shutting Down...")
-        if heartbeat.heartbeat_active:
-            heartbeat.heartbeatprocess.terminate()
         await self.bot.close()
         await self.bot.loop.shutdown_asyncgens()
         await self.bot.loop.shutdown_default_executor()

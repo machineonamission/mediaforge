@@ -38,10 +38,16 @@ updateimagemagick(){
   chmod +x /mediaforge/docker/*
   /mediaforge/docker/installimagemagick.sh
 }
+updatebgpot(){
+  # for backwards compatability
+  chmod +x /mediaforge/docker/*
+  /mediaforge/docker/installbgpot.sh
+}
 
 run() {
   # remote isnt set up by default when container is set up
   echo "Running..."
+  cd /mediaforge
   python -m poetry run python src/main.py
 }
 
@@ -57,6 +63,7 @@ if [ "$AUTOMODE" == "ON" ] && [ "$CONFIG" != "" ]; then
     updatepip
     updateffmpeg
     updatevips
+    updatebgpot
   fi
   echo "$CONFIG" | base64 -d >config.py
   run
@@ -69,7 +76,7 @@ if [[ $? -gt 128 ]] ; then
 else
   # weird variable name thing for prompt
   PS3='What would you like to do? '
-  choices=("Run MediaForge" "Edit Config" "Update/Rebuild All And Run" "Update MediaForge Code" "Rebuild FFmpeg" "Rebuild libvips" "Update ImageMagick" "Update APT Packages" "Update PIP Packages" "Debug Shell" "Quit")
+  choices=("Run MediaForge" "Edit Config" "Update/Rebuild All And Run" "Update MediaForge Code" "Rebuild FFmpeg" "Rebuild libvips" "Update bgutil-pot" "Update ImageMagick" "Update APT Packages" "Update PIP Packages" "Debug Shell" "Quit")
   select fav in "${choices[@]}"; do
     case $fav in
     "Run MediaForge")
@@ -85,6 +92,7 @@ else
       updateffmpeg
       updatevips
       updateimagemagick
+      updatebgpot
       run
       ;;
     "Update MediaForge Code")
@@ -98,6 +106,9 @@ else
     ;;
     "Update ImageMagick")
       updateimagemagick
+    ;;
+    "Update bgutil-pot")
+      updatebgpot
     ;;
     "Update APT Packages")
       updateapt

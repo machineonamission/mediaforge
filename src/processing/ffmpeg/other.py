@@ -493,3 +493,11 @@ async def handle_jpeg(media: TempFile, strength: int, stretch: int, quality: int
     # simulates being reposted many times
     stretch_list = [stretch_tuple(stretch) for _ in range(strength)] if stretch > 0 else None
     return await animatedmultiplexer(media, processing.vips.other.jpeg, strength, stretch_list, quality)
+
+
+@gif_output
+async def boomerang(file):
+    outfile = reserve_tempfile("mkv")
+    await run_command("ffmpeg", "-i", file, "-filter_complex", "[0]reverse[r];[0][r]concat=n=2", "-c:v", "ffv1",
+                      "-c:a", "copy", outfile)
+    return outfile
