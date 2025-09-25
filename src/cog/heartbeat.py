@@ -11,10 +11,11 @@ from utils.common import fetch
 class Heartbeat(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        # all exceptions should be handled
-        self.heartbeat.clear_exception_types()
-        self.heartbeat.add_exception_type(Exception)
-        self.heartbeat.start()
+        if config.heartbeaturl is not None:
+            # all exceptions should be handled
+            self.heartbeat.clear_exception_types()
+            self.heartbeat.add_exception_type(Exception)
+            self.heartbeat.start()
 
     def cog_unload(self):
         self.heartbeat.cancel()
