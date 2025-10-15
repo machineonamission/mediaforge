@@ -4,13 +4,8 @@ import sys
 import apng
 
 from processing.run_command import run_command
+from utils import trymagic
 from utils.tempfiles import reserve_tempfile
-
-if sys.platform == "win32":  # this hopefully wont cause any problems :>
-    from winmagic import magic
-else:
-    import magic
-
 from processing.common import *
 from core.clogs import logger
 
@@ -150,8 +145,8 @@ async def va_codecs(filename):
 
 
 async def ffprobe(file):
-    return [await run_command("ffprobe", "-hide_banner", file), magic.from_file(file, mime=False),
-            magic.from_file(file, mime=True)]
+    return [await run_command("ffprobe", "-hide_banner", file), trymagic.from_file(file, mime=False),
+            trymagic.from_file(file, mime=True)]
 
 
 async def count_frames(video):

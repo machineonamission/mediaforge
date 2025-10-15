@@ -2,14 +2,13 @@ import enum
 import json
 import sys
 
-if sys.platform == "win32":  # this hopefully wont cause any problems :>
-    from winmagic import magic
-else:
-    import magic
+
+
 from PIL import Image, UnidentifiedImageError
 
 from core.clogs import logger
 from processing.run_command import run_command
+from utils import trymagic
 
 
 class InvalidMediaType(Exception):
@@ -36,7 +35,7 @@ async def mediatype(image) -> MediaType:
     :return: can be VIDEO, AUDIO, GIF, IMAGE or None (invalid or other).
     """
     # ffmpeg doesn't work well with detecting images so let PIL do that
-    mime = magic.from_file(image, mime=True)
+    mime = trymagic.from_file(image, mime=True)
     try:
         with Image.open(image) as im:
             anim = getattr(im, "is_animated", False)
