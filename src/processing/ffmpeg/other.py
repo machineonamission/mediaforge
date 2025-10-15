@@ -225,29 +225,23 @@ async def concatv(file0, file1):
     :param files: [video, video]
     :return: combined video
     """
-    video0 = file0  # await forceaudio(file0)
-    fixedvideo0 = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-i", video0, "-c:v", "ffv1", "-c:a", "flac", "-ar",
-                      "48000",
-                      "-max_muxing_queue_size", "4096", "-fps_mode", "vfr", fixedvideo0)
-    video1 = file1  # await forceaudio(file1)
+    video0 = await forceaudio(file0)
+    video1 = await forceaudio(file1)
     w, h = await get_resolution(video0)
-    fps = await get_frame_rate(video0)
-    fixedvideo1 = reserve_tempfile("mkv")
-
+    paddedvideo1 = reserve_tempfile("mkv")
     # https://superuser.com/a/1136305/1001487
+    # resize and pad 2nd video to match resolution of first, concat filter does no resizing so we have to
     await run_command("ffmpeg", "-hide_banner", "-i", video1, "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp", "-vf",
-                      f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:-2:-2:color=black", "-c:v",
-                      "ffv1", "-c:a", "flac", "-ar", "48000", "-fps_mode", "vfr", fixedvideo1)
-    fixedfixedvideo1 = await changefps(fixedvideo1, fps)
-
-    concatdemuxer = await concat_demuxer([fixedvideo0, fixedfixedvideo1])
+                      f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:-2:-2:color=black",
+                      "-c:v", "ffv1", "-c:a", "flac", "-fps_mode", "vfr", paddedvideo1)
     outname = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-hide_banner", "-safe", "0", "-f", "concat", "-i", concatdemuxer, "-c:v", "ffv1",
-                      "-c:a", "flac", outname)
-    # for file in [video0, video1, fixedvideo1, fixedvideo0, fixedfixedvideo1, concatdemuxer]:
-    #     os.remove(file)
+    await run_command("ffmpeg", "-hide_banner",
+                      "-i", video0, "-i", paddedvideo1,
+                      "-filter_complex", "concat=n=2:v=1:a=1",
+                      "-c:v", "ffv1",
+                      "-c:a", "flac",
+                      "-fps_mode", "vfr", outname)
     return outname
 
 
