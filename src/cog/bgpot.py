@@ -10,7 +10,7 @@ from processing.run_command import run_command, CMDError
 class BgPot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        if os.path.exists("/bgutil-ytdlp-pot-provider/server/build/main.js"):
+        if os.path.exists("/bgutil-ytdlp-pot-provider/server/src/main.ts"):
             self.bgpot.clear_exception_types()
             self.bgpot.add_exception_type(CMDError)
             self.bgpot.start()
@@ -22,5 +22,5 @@ class BgPot(commands.Cog):
 
     @tasks.loop()
     async def bgpot(self):
-        await run_command("node", "/bgutil-ytdlp-pot-provider/server/build/main.js")
+        await run_command("deno", "run", "--unstable-bare-node-builtins", "--allow-all", "/bgutil-ytdlp-pot-provider/server/src/main.ts")
         logger.warning("bgpot closed.")

@@ -1,4 +1,5 @@
-FROM python:3.13-bookworm AS builder
+FROM ghcr.io/astral-sh/uv:python3.14-bookworm AS builder
+COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
 
 # automode
 ARG AUTOMODE="OFF"
@@ -19,7 +20,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
 
 RUN apt-get --no-install-recommends install -y  \
 # most packages
-    nano nodejs npm libgif-dev lsb-release \
+    nano libgif-dev lsb-release \
 # ffmpeg
 # https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu#FFmpeg
     # build deps
@@ -42,11 +43,6 @@ RUN apt-get --no-install-recommends install -y  \
     fonts-noto
 
 RUN apt-get remove fonts-noto-color-emoji
-# python packages
-RUN python -m pip install --user --upgrade --no-warn-script-location --root-user-action=ignore  \
-    pip poetry \
-# libvips
-    meson
 
 RUN apt-get -y autoremove
 
@@ -60,7 +56,7 @@ RUN bash -c /mediaforge/docker/buildvips.sh
 RUN bash -c /mediaforge/docker/installimagemagick.sh
 
 WORKDIR mediaforge
-RUN python -m poetry install
+RUN uv sync
 
 RUN cp config.example.py config.py
 # so mediaforge knows to prompt with nano

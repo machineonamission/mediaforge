@@ -143,8 +143,10 @@ and the [non-python libraries](#non-python-libraries), set up the [config](#conf
 
 ### supported OSes
 
-built and tested on windows 10/11 and debian 10/buster (inside docker). these 2 OSes (and their successors) will
+built and tested on windows 11 and debian bookworm (inside docker). these 2 OSes (and their successors) will
 continue to be officially supported.
+
+MediaForge only has official support for x86_64, but ARM64 seems to work fine
 
 will _probably_ work on macos and other linux/unix distros if the below libraries are available but theyre untested and
 unsupported. just replace `apt-get` with your system's preferred package manager ([`brew`](https://brew.sh/) for macos)
@@ -152,9 +154,9 @@ unsupported. just replace `apt-get` with your system's preferred package manager
 on Windows, color emojis won't work. no idea why, just is a windows pango bug.
 
 ### python libraries
-
-- This project uses [`poetry`](https://python-poetry.org/), run `poetry install` to install the required dependencies.
-    - install poetry with `pip install poetry`
+- MediaForge depends on Python ≥3.11. `uv` will install it automatically.
+- This project uses [`uv`](https://github.com/astral-sh/uv), which will automatically install python and dependencies on run.
+    - install `uv` with [these instructions](https://docs.astral.sh/uv/getting-started/installation/) (varies per system)
     - part of [`pyvips`](https://pypi.org/project/pyvips/) is built from source on installation.
         - on Windows this will require the MSVC compiler, which is an optional component
           of [Visual Studio](https://visualstudio.microsoft.com/downloads/)
@@ -178,7 +180,7 @@ the bot uses many external CLI programs for media processing.
       access [Windows's native TTS](https://docs.microsoft.com/en-us/uwp/api/windows.media.speechsynthesis.speechsynthesizer)
       . Both are included in modern versions of Windows, but ensure powershell is in the system path.
   - the "retro" voice uses [sam-cli](https://github.com/machineonamission/sam-cli). it is included, but it
-      requires [node.js](https://nodejs.org/) to be installed and added to the system path
+      requires [deno](https://deno.com/) to be installed and added to the system path
         - pretty sure both the windows & linux installers add it to path on installation but cant hurt to check
 
 ### config

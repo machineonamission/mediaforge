@@ -491,7 +491,10 @@ async def handle_jpeg(media: TempFile, strength: int, stretch: int, quality: int
 
 @gif_output
 async def boomerang(file):
+    audfile = await forceaudio(file)
     outfile = reserve_tempfile("mkv")
-    await run_command("ffmpeg", "-i", file, "-filter_complex", "[0]reverse[r];[0][r]concat=n=2", "-c:v", "ffv1",
-                      "-c:a", "copy", outfile)
+    await run_command("ffmpeg", "-i", audfile,
+                      "-filter_complex", "split=2[v0][v1];[v1:v]reverse[rv];[v1:a]areverse[ra];[v0][rv][ra]concat=n=2:v=1:a=1",
+                      "-c:v", "ffv1",
+                      "-c:a", "flac", outfile)
     return outfile

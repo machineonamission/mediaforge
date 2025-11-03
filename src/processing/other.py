@@ -80,7 +80,7 @@ async def magickone(media, strength):
 async def tts(text: str, model: typing.Literal["male", "female", "retro"] = "male"):
     ttswav = reserve_tempfile("wav")
     if model == "retro":
-        await run_command("node", "tts/sam.js", "--moderncmu", "--wav", ttswav, text)
+        await run_command("deno", "--allow-write", "tts/sam.cjs", "--moderncmu", "--wav", ttswav, text)
     else:
         # espeak is a fucking nightmare on windows and windows has good native tts anyways sooooo
         if sys.platform == "win32":
