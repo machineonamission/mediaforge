@@ -179,9 +179,8 @@ the bot uses many external CLI programs for media processing.
     - on windows, [`powershell`](https://aka.ms/powershell) is used to
       access [Windows's native TTS](https://docs.microsoft.com/en-us/uwp/api/windows.media.speechsynthesis.speechsynthesizer)
       . Both are included in modern versions of Windows, but ensure powershell is in the system path.
-  - the "retro" voice uses [sam-cli](https://github.com/machineonamission/sam-cli). it is included, but it
-      requires [deno](https://deno.com/) to be installed and added to the system path
-        - pretty sure both the windows & linux installers add it to path on installation but cant hurt to check
+- deno - [deno](https://deno.com/)
+  - if you're curious, it's used for the retro TTS and yt-dlp's bgpot plugin
 
 ### config
 
@@ -195,12 +194,8 @@ the bot uses many external CLI programs for media processing.
 
 ### to run
 
-- once you've set up all of the libraries, just run the program with `poetry run python src/main.py` (
-  or `poetry run python3.11 src/main.py` or whatever your python is named). make sure it can read and write to the
-  directory
-  it lives in and also access/execute all the aforementioned libraries
-    - if poetry isn't installing on the right python version, run `<yourpython> -m pip` instead of pip
-      and `<yourpython> -m poetry` instead of `poetry`
+- once you've set up all of the libraries, just run the program with `uv run python src/main.py` make sure it can read and write to the
+  directory it lives in and also access/execute all the aforementioned libraries
 - terminate the bot by running the `shutdown` command, this will _probably_ close better than a termination
 
 ## legal stuff

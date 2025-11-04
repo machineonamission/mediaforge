@@ -2,12 +2,9 @@
 name = "mediaforge"
 version = "2.0.0"
 description = "A Discord bot for editing and creating videos, images, GIFs, and more!"
-authors = [
-    {name = "machineonamission"}
-]
-license = "AGPL-3.0-or-later + Commons Clause"
-package-mode = false
-requires-python = ">=3.11,<4.0"
+authors = [{ name = "machineonamission" }]
+license = { text = "AGPL-3.0-or-later + Commons Clause" }
+requires-python = ">=3.11"
 
 dependencies = [
     "discord.py>=2.4.0",
@@ -22,7 +19,7 @@ dependencies = [
     "psutil>=7.0.0",
     "apng>=0.3.4",
     "docstring-parser>=0.17",
-    "yt-dlp>=2025.1.26",
+    "yt-dlp[default]@git+https://github.com/yt-dlp/yt-dlp",
     "emojis>=0.7.0",
     "requests>=2.31.0",
     "discordlists.py>=1.1.1",
