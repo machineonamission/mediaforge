@@ -19,7 +19,7 @@ dependencies = [
     "psutil>=7.0.0",
     "apng>=0.3.4",
     "docstring-parser>=0.17",
-    "yt-dlp[default]@git+https://github.com/yt-dlp/yt-dlp",
+    "yt-dlp[default,curl-cffi]@git+https://github.com/yt-dlp/yt-dlp",
     "emojis>=0.7.0",
     "requests>=2.31.0",
     "discordlists.py>=1.1.1",
