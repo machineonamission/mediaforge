@@ -38,6 +38,11 @@ updatebgpot(){
   /mediaforge/docker/installbgpot.sh
 }
 
+forceuv() {
+  uv self update
+  uv sync
+}
+
 run() {
   # remote isnt set up by default when container is set up
   echo "Running..."
@@ -69,7 +74,7 @@ if [[ $? -gt 128 ]] ; then
 else
   # weird variable name thing for prompt
   PS3='What would you like to do? '
-  choices=("Run MediaForge" "Edit Config" "Update/Rebuild All And Run" "Update MediaForge Code" "Rebuild FFmpeg" "Rebuild libvips" "Update bgutil-pot" "Update ImageMagick" "Update APT Packages" "Update PIP Packages" "Debug Shell" "Quit")
+  choices=("Run MediaForge" "Edit Config" "Update/Rebuild All And Run" "Update MediaForge Code" "Rebuild FFmpeg" "Rebuild libvips" "Update bgutil-pot" "Update ImageMagick" "Update APT Packages" "Force Update PIP/uv Packages" "Debug Shell" "Quit")
   select fav in "${choices[@]}"; do
     case $fav in
     "Run MediaForge")
@@ -101,6 +106,9 @@ else
     ;;
     "Update bgutil-pot")
       updatebgpot
+    ;;
+    "Force Update PIP/uv Packages")
+      forceuv
     ;;
     "Update APT Packages")
       updateapt
