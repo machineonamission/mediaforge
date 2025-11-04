@@ -39,7 +39,6 @@ updatebgpot(){
 }
 
 forceuv() {
-  uv self update
   uv sync
 }
 
