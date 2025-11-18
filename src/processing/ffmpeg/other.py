@@ -494,7 +494,11 @@ async def boomerang(file):
     audfile = await forceaudio(file)
     outfile = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-i", audfile,
-                      "-filter_complex", "split=2[v0][v1];[v1:v]reverse[rv];[v1:a]areverse[ra];[v0][rv][ra]concat=n=2:v=1:a=1",
+                      "-filter_complex", "[0:v]split=outputs=2[v1][v2];"
+                                         "[0:a]asplit=outputs=2[a1][a2];"
+                                         "[v2]reverse[r];"
+                                         "[a2]areverse[ar];"
+                                         "[v1][a1][r][ar]concat=n=2:v=1:a=1",
                       "-c:v", "ffv1",
                       "-c:a", "flac", outfile)
     return outfile
