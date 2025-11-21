@@ -5,7 +5,7 @@ import humanize
 
 import config
 from core.clogs import logger
-from processing.ffmpeg.conversion import mediatopng, toapng
+from processing.ffmpeg.conversion import mediatopng, toapng, allreencode
 from processing.ffmpeg.ensuresize import intelligentdownsize
 from processing.mediatype import GIF, MediaType
 
@@ -29,7 +29,9 @@ async def add_emoji(file, guild: discord.Guild, name):
     :param name: emoji name
     :return: result text
     """
-    file_r = await intelligentdownsize(file, config.emoji_upload_limit)
+    # force to png/gif
+    file_f = await allreencode(file)
+    file_r = await intelligentdownsize(file_f, config.emoji_upload_limit)
     with open(file_r, "rb") as f:
         data = f.read()
     try:

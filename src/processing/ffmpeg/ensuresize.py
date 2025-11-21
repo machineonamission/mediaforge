@@ -136,10 +136,13 @@ async def intelligentdownsize(media, maxsize: int):
     w, h = await get_resolution(media)
     for tolerance in TOLERANCES:
         reduction_ratio = (maxsize / size) * tolerance
-        # this took me longer to figure out than i am willing to admit
-        new_w = math.floor(math.sqrt(reduction_ratio * (w ** 2)))
-        new_h = math.floor(math.sqrt(reduction_ratio * (h ** 2)))
-        logger.info(f"trying to resize from {w}x{h} to {new_w}x{new_h} (~{reduction_ratio} reduction)")
+        # redoing this
+        scale_factor = math.sqrt(reduction_ratio)
+        new_w = int(w * scale_factor)
+        new_h = int(h * scale_factor)
+
+        logger.info(f"trying to resize from {w}x{h} to {new_w}x{new_h} "
+                    f"(tolerance {tolerance}: ~{reduction_ratio} reduction)")
         resized = await resize(media, new_w, new_h, lock_codec=True)
         if (newsize := os.path.getsize(resized)) < maxsize:
             logger.info(f"successfully created {humanize.naturalsize(newsize)} media!")

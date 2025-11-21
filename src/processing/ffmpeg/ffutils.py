@@ -10,8 +10,8 @@ import processing.mediatype
 import processing.vips as vips
 from core.clogs import logger
 from processing.common import NonBugError
-from processing.ffmpeg.conversion import videotogif, mediatotempimage
-from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
+from processing.ffmpeg.conversion import videotogif, mediatotempimage, toapng, allreencode
+from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution, is_apng
 from processing.mediatype import VIDEO, IMAGE, GIF
 from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile, TempFile
@@ -225,16 +225,17 @@ async def resize(image, width, height, lock_codec=False):
     :param lock_codec: attempt to keep the input codec
     :return: processed media
     """
-    gif = await image.mediatype() == GIF
-    ext = image.split(".")[-1]
-    out = reserve_tempfile(ext if lock_codec and not gif else "mkv")
+    out = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v",
-                      "copy" if lock_codec and not gif else "ffv1",
-                      "-pix_fmt", "rgba", "-c:a", "copy", "-fps_mode", "vfr", out)
-    if gif and lock_codec:
-        return await videotogif(out)
+                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "ffv1",
+                      "-c:a", "copy", "-fps_mode", "vfr", out)
+    if lock_codec:
+        if await is_apng(image):
+            return await toapng(out)
+        else:
+            out.mt = await image.mediatype()
+            return await allreencode(out)
     else:
         return out
 

@@ -201,6 +201,16 @@ class Conversion(commands.Cog, name="Conversion"):
         """
         await process(ctx, processing.ffmpeg.conversion.mediatopng, [[VIDEO, GIF, IMAGE]], slashfiles=media)
 
+    @commands.hybrid_command(aliases=["apng", "mediatoapng"])
+    async def toapng(self, ctx, media: discord.Attachment | None = None):
+        """
+        Converts media to APNG (animated PNG)
+
+        :param ctx: discord context
+        :param media: A video, gif, or image.
+        """
+        await process(ctx, processing.ffmpeg.conversion.toapng, [[VIDEO, GIF, IMAGE]], slashfiles=media)
+
     @commands.command(aliases=["emoji", "emojiimage", "emote", "emoteurl"])  # TODO: hybrid
     async def emojiurl(self, ctx, *custom_emojis: discord.PartialEmoji):
         """
