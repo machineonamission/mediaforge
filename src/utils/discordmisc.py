@@ -5,7 +5,9 @@ import humanize
 
 import config
 from core.clogs import logger
-from processing.mediatype import GIF
+from processing.ffmpeg.conversion import mediatopng, toapng
+from processing.ffmpeg.ensuresize import intelligentdownsize
+from processing.mediatype import GIF, MediaType
 
 
 async def count_emoji(guild: discord.Guild):
@@ -27,7 +29,8 @@ async def add_emoji(file, guild: discord.Guild, name):
     :param name: emoji name
     :return: result text
     """
-    with open(file, "rb") as f:
+    file_r = await intelligentdownsize(file, config.emoji_upload_limit)
+    with open(file_r, "rb") as f:
         data = f.read()
     try:
         emoji = await guild.create_custom_emoji(name=name, image=data, reason="$addemoji command")
@@ -56,10 +59,13 @@ async def add_sticker(file, guild: discord.Guild, sticker_emoji, name):
     :param name: sticker name
     :return: result text
     """
-    size = os.path.getsize(file)
-    file = discord.File(file)
+    if (await file.mediatype()) == MediaType.GIF:
+        ffile = await toapng(file)
+    else:
+        ffile = await mediatopng(file)
+    rfile = await intelligentdownsize(ffile, config.sticker_upload_limit)
     try:
-        await guild.create_sticker(name=name, emoji=sticker_emoji, file=file, reason="$addsticker command",
+        await guild.create_sticker(name=name, emoji=sticker_emoji, file=discord.File(rfile), reason="$addsticker command",
                                    description=" ")
         # description MUST NOT be empty. see https://github.com/nextcord/nextcord/issues/165
     except discord.Forbidden:
@@ -71,8 +77,6 @@ async def add_sticker(file, guild: discord.Guild, sticker_emoji, name):
         if "Invalid Asset" in str(e):
             toreturn += "\nNote: `Invalid Asset` means Discord does not accept this file format. Stickers are only " \
                         "allowed to be png or apng."
-        if "Asset exceeds maximum size" in str(e):
-            toreturn += f"\nNote: Stickers must be under ~500kb. Your sticker is {humanize.naturalsize(size)}"
         return toreturn
     else:
         return f"{config.emojis['check']} Sticker successfully added.\n" \
