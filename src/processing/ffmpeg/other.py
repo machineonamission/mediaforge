@@ -233,7 +233,7 @@ async def concatv(file0, file1):
     # resize and pad 2nd video to match resolution of first, concat filter does no resizing so we have to
     await run_command("ffmpeg", "-hide_banner", "-i", video1, "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp", "-vf",
-                      f"scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:-2:-2:color=black",
+                      f"scale={w}:{h}:force_original_aspect_ratio=decrease,setsar=1:1,pad={w}:{h}:-2:-2:color=black",
                       "-c:v", "ffv1", "-c:a", "flac", "-fps_mode", "vfr", paddedvideo1)
     outname = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-hide_banner",
