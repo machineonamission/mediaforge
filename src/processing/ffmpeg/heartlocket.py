@@ -1,6 +1,7 @@
 import asyncio
 from enum import Enum
 
+import config
 import processing.mediatype
 import processing.vips.creation
 from processing.common import run_parallel
@@ -45,9 +46,13 @@ async def heart_locket(arg1, arg2, type: ArgType):
     mt1, mt2 = await asyncio.gather(media1.mediatype(), media2.mediatype())
     for media, out, mt in ((media1, ffv1m1, mt1), (media2, ffv1m2, mt2)):
         if mt == IMAGE:
-            await run_command("ffmpeg", "-r", str(fps), "-i", media, "-c:v", "ffv1", "-c:a", "flac", out)
+            await run_command("ffmpeg", "-r", str(fps), "-i", media, "-c:v", config.temp_vcodec,
+                              "-pix_fmt", config.temp_vpixfmt, "-c:a",
+                              config.temp_acodec, out)
         else:
-            await run_command("ffmpeg", "-i", media, "-filter:v", f"fps={fps}", "-c:v", "ffv1", "-c:a", "flac", out)
+            await run_command("ffmpeg", "-i", media, "-filter:v", f"fps={fps}", "-c:v", config.temp_vcodec,
+                              "-pix_fmt", config.temp_vpixfmt, "-c:a",
+                              config.temp_acodec, out)
     media1, media2 = ffv1m1, ffv1m2
 
     out = reserve_tempfile("mkv")
@@ -126,7 +131,8 @@ async def heart_locket(arg1, arg2, type: ArgType):
             "[combined1][trimmed2]overlay;"
             f"{mixer}"
         ),
-        "-c:v", "ffv1", "-c:a", "flac", "-t", str(length),
+        "-c:v", config.temp_vcodec, "-pix_fmt", config.temp_vpixfmt, "-c:a",
+        config.temp_acodec, "-t", str(length),
         out)
     if VIDEO not in [mt1, mt2]:
         out.mt = GIF

@@ -5,7 +5,8 @@ import pyvips
 
 import processing.ffmpeg.ffprobe
 import processing.vips.vipsutils
-from processing.common import run_parallel, NonBugError, image_format
+from processing.common import run_parallel, NonBugError
+from config import temp_vipscodec
 from processing.ffmpeg.conversion import mediatopng
 from processing.vips.vipsutils import normalize
 from utils.tempfiles import reserve_tempfile, TempFile
@@ -52,6 +53,6 @@ def jpeg(file: TempFile, strength: int, stretch: list[tuple[int, int]] | None, q
         # resize back to original size
         im = processing.vips.vipsutils.resize(im, orig_w, orig_h)
     # save
-    outfile = reserve_tempfile(image_format)
+    outfile = reserve_tempfile(temp_vipscodec)
     im.write_to_file(outfile)
     return outfile

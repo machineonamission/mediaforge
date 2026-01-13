@@ -202,8 +202,3 @@ class Debug(commands.Cog, name="Owner Only", command_attrs=dict(hidden=True)):
         msg = await ctx.reply("Command entering queue...")
         await core.queue.enqueue(wait())
         await msg.edit(content="Command out of queue.")
-
-    @commands.hybrid_command()
-    @commands.is_owner()
-    async def argtesting(self, ctx: commands.Context, media: discord.Attachment | None = None):
-        await ctx.reply(f"file: {file}")
