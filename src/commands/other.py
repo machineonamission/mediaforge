@@ -384,7 +384,7 @@ class Other(commands.Cog, name="Other"):
         """
         async with utils.tempfiles.TempFileSession():
             file = await imagesearch(ctx, 1)
-            if file:
+            if file and len(file) > 0:
                 file = await saveurls(file)
                 result = await processing.ffmpeg.ffprobe.ffprobe(file[0])
                 await ctx.reply(f"`{result[1]}` `{result[2]}`\n```{result[0]}```")

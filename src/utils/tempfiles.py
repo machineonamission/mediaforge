@@ -41,10 +41,7 @@ def init():
 if config.override_temp_dir is not None:
     temp_dir = config.override_temp_dir
 else:
-    if os.path.isdir("/dev/shm"):  # in-memory fs
-        temp_dir = "/dev/shm/mediaforge"
-    else:
-        temp_dir = os.path.join(tempfile.gettempdir(), "mediaforge")
+    temp_dir = os.path.join(tempfile.gettempdir(), "mediaforge")
 
 logger.debug(f"temp dir is {temp_dir}")
 
@@ -115,5 +112,5 @@ def handle_tfs_parallel(func: typing.Callable, *args, **kwargs):
         return False, e, session.get()
 
 
-class TenorUrl(str):
+class GifvUrl(str):
     pass

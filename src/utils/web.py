@@ -7,7 +7,9 @@ import processing.common
 import processing.ffmpeg.conversion
 from core.clogs import logger
 from processing.mediatype import GIF
-from utils.tempfiles import reserve_tempfile, TenorUrl
+from utils.tempfiles import reserve_tempfile, GifvUrl
+from urllib.parse import urlparse
+import mimetypes
 
 
 async def saveurl(url: str) -> str:
@@ -17,18 +19,7 @@ async def saveurl(url: str) -> str:
     :param url: web url of a file
     :return: path to file
     """
-    tenorgif = isinstance(url, TenorUrl)
-    extension = None
-    if tenorgif:
-        extension = "mp4"
-    if extension is None:
-        after_slash = url.split("/")[-1].split("?")[0]
-        if "." in after_slash:
-            extension = after_slash.split(".")[-1]
-        # extension will stay None if no extension detected.
-    name = reserve_tempfile(extension)
-    if tenorgif:
-        name.mt = GIF
+    gifv = isinstance(url, GifvUrl)
 
     # https://github.com/aio-libs/aiohttp/issues/3904#issuecomment-632661245
     async with aiohttp.ClientSession(headers={'Connection': 'keep-alive'},
@@ -45,6 +36,19 @@ async def saveurl(url: str) -> str:
                                                         f"I'm configured to only download files up to "
                                                         f"{humanize.naturalsize(config.max_file_size)}.")
                 logger.info(f"Saving url {url}")
+                # more intelligently get file extension (not that ffmpeg cares much anyways)
+                if "Content-Type" in resp.headers and resp.headers["Content-Type"] \
+                        and (guess_ext := mimetypes.guess_extension(resp.headers["Content-Type"])):
+                    extension = guess_ext[1:]  # remove dot
+                else:
+                    path = urlparse(url).path
+                    if "." in path:
+                        extension = path.split(".")[-1]
+                    else:
+                        extension = None
+                name = reserve_tempfile(extension)
+                if gifv:
+                    name.mt = GIF
                 async with aiofiles.open(name, mode='wb') as f:
                     await f.write(await resp.read())
             else:

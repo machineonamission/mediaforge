@@ -1,4 +1,5 @@
 # ![MediaForge](media/external/banner.png)
+
 # [Invite MediaForge!](https://discord.com/oauth2/authorize?client_id=780570413767983122)
 
 [![Discord Bots](https://top.gg/api/widget/780570413767983122.svg)](https://top.gg/bot/780570413767983122)
@@ -34,20 +35,15 @@ once that's installed, run these commands in your terminal of choice.
 
 ```shell
 docker build -t machineonamission/mediaforge https://github.com/machineonamission/mediaforge.git
-docker run -it --cap-add SYS_NICE --shm-size 8G --name mediaforge machineonamission/mediaforge
+docker run -it --cap-add SYS_NICE --name mediaforge machineonamission/mediaforge
 ```
 
 on linux, you may need to run docker with `sudo`
 
-replace `8G` with how much free RAM your system has that you would like to give MediaForge (in gigabytes). At least `1G`
-is suggested. Making this too small can make commands fail due to not enough space, as the `/dev/shm` in-memory
-filesystem is, by default, MediaForge's sole temporary directory. If you don't have enough memory to allocate, or expect
-high command volume, replace `--shm-size 8G` with `--ipc=none` in the `docker run` command to use your regular disk as
-temp storage.
-
 if the installation succeeded, you should be prompted with some options. you'll need to select "Edit Config". this will
-open a text editor within your terminal. the 2 required config settings to change for proper functionality are the
-discord and tenor tokens. be sure not to add or remove quotes. press `CTRL+S` to save and `CTRL+X` to exit.
+open a text editor within your terminal. the 1 required config setting to change for proper functionality is the
+[discord token](https://github.com/reactiflux/discord-irc/wiki/creating-a-discord-bot-&-getting-a-token). be sure not to
+add or remove quotes. press `CTRL+S` to save and `CTRL+X` to exit.
 
 if you don't want to use the built-in text editor, you can [get the example config from GitHub](config.example.py), hold
 down `CTRL+K` to clear the file and then use `CTRL+V` to paste in your config.
@@ -72,7 +68,7 @@ to stop the bot, run
 docker stop mediaforge
 ```
 
-if the bot refuses to stop for some reason, you can run 
+if the bot refuses to stop for some reason, you can run
 
 ```shell
 docker kill mediaforge
@@ -154,9 +150,12 @@ unsupported. just replace `apt-get` with your system's preferred package manager
 on Windows, color emojis won't work. no idea why, just is a windows pango bug.
 
 ### python libraries
+
 - MediaForge depends on Python ≥3.11. `uv` will install it automatically.
-- This project uses [`uv`](https://github.com/astral-sh/uv), which will automatically install python and dependencies on run.
-    - install `uv` with [these instructions](https://docs.astral.sh/uv/getting-started/installation/) (varies per system)
+- This project uses [`uv`](https://github.com/astral-sh/uv), which will automatically install python and dependencies on
+  run.
+    - install `uv` with [these instructions](https://docs.astral.sh/uv/getting-started/installation/) (varies per
+      system)
     - part of [`pyvips`](https://pypi.org/project/pyvips/) is built from source on installation.
         - on Windows this will require the MSVC compiler, which is an optional component
           of [Visual Studio](https://visualstudio.microsoft.com/downloads/)
@@ -180,7 +179,7 @@ the bot uses many external CLI programs for media processing.
       access [Windows's native TTS](https://docs.microsoft.com/en-us/uwp/api/windows.media.speechsynthesis.speechsynthesizer)
       . Both are included in modern versions of Windows, but ensure powershell is in the system path.
 - deno - [deno](https://deno.com/)
-  - if you're curious, it's used for the retro TTS and yt-dlp's bgpot plugin
+    - if you're curious, it's used for the retro TTS and yt-dlp's bgpot plugin
 
 ### config
 
@@ -194,7 +193,8 @@ the bot uses many external CLI programs for media processing.
 
 ### to run
 
-- once you've set up all of the libraries, just run the program with `uv run python src/main.py` make sure it can read and write to the
+- once you've set up all of the libraries, just run the program with `uv run python src/main.py` make sure it can read
+  and write to the
   directory it lives in and also access/execute all the aforementioned libraries
 - terminate the bot by running the `shutdown` command, this will _probably_ close better than a termination
 
