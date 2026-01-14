@@ -259,7 +259,7 @@ async def splitaudio(video):
     ifaudio = await run_command("ffprobe", "-i", video, "-show_streams", "-select_streams", "a", "-loglevel", "panic")
     if ifaudio:
         logger.info("Splitting audio...")
-        name = reserve_tempfile(config.temp_acodec)
+        name = reserve_tempfile("mkv")
         await run_command("ffmpeg", "-hide_banner", "-i", video, "-vn", "-acodec", config.temp_acodec,
                           name)
         return name
