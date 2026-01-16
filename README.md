@@ -8,7 +8,7 @@
 [![wakatime](https://wakatime.com/badge/user/ceaa3b2d-5469-499f-97ed-b23bda26c31a/project/7114917f-f795-4c9f-aadf-0e66528176be.svg)](https://wakatime.com/@machineonamission/projects/ttvriomkzo)
 [![stars](https://img.shields.io/github/stars/machineonamission/mediaforge?style=social)](https://github.com/machineonamission/mediaforge/stargazers)
 [![uptime](https://app.statuscake.com/button/index.php?Track=6022597&Design=6)](https://uptime.statuscake.com/?TestID=JyWrfGfIjT)
-[![MediaForge Discord](https://discordapp.com/api/guilds/803788965215338546/widget.png)](https://discord.gg/xwWjgyVqBz)
+[![MediaForge Discord](https://discordapp.com/api/guilds/803788965215338546/widget.png)](https://machineonamission.me/discord)
 [![built with immense swag](https://img.shields.io/static/v1?label=built+with&message=immense+swag&color=D262BA)](https://knowyourmeme.com/memes/trollface)
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/Q5Q75US4A)
