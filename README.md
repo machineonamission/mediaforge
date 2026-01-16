@@ -40,6 +40,9 @@ docker run -it --cap-add SYS_NICE --name mediaforge machineonamission/mediaforge
 
 on linux, you may need to run docker with `sudo`
 
+on linux, add `--device /dev/dri:/dev/dri` to the `docker run` command to enable hardware acceleration for ffmpeg.
+you'll need the appropriate drivers installed on the host OS for this to work.
+
 if the installation succeeded, you should be prompted with some options. you'll need to select "Edit Config". this will
 open a text editor within your terminal. the 1 required config setting to change for proper functionality is the
 [discord token](https://github.com/reactiflux/discord-irc/wiki/creating-a-discord-bot-&-getting-a-token). be sure not to

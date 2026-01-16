@@ -180,7 +180,7 @@ class Other(commands.Cog, name="Other"):
         :param ctx: discord context
         """
         embed = discord.Embed(color=discord.Color(0xD262BA), title="MediaForge")
-        embed.add_field(name="Official MediaForge Discord Server", value=f"https://discord.gg/xwWjgyVqBz")
+        embed.add_field(name="Official MediaForge Discord Server", value=f"https://machineonamission.me/discord")
         embed.add_field(name="top.gg link", value=f"https://top.gg/bot/780570413767983122")
         embed.add_field(name="Vote for MediaForge on top.gg", value=f"https://top.gg/bot/780570413767983122/vote")
         embed.add_field(name="Add MediaForge to your server",
@@ -206,7 +206,7 @@ class Other(commands.Cog, name="Other"):
         embed.add_field(name="Contact about data", value=f"There really isn't anything to contact me about since "
                                                          f"MediaForge doesn't have any form of long term data "
                                                          f"storage, but you can join the MediaForge discord "
-                                                         f"server (https://discord.gg/QhMyz3n4V7) or raise an "
+                                                         f"server (https://machineonamission.me/discord) or raise an "
                                                          f"issue on the GitHub ("
                                                          f"https://github.com/machineonamission/mediaforge).")
         await ctx.reply(embed=embed)
