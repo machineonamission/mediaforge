@@ -10,8 +10,8 @@ import processing.mediatype
 import processing.vips as vips
 from core.clogs import logger
 from processing.common import NonBugError
-from processing.ffmpeg.conversion import videotogif, mediatotempimage
-from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution
+from processing.ffmpeg.conversion import videotogif, mediatotempimage, toapng, allreencode
+from processing.ffmpeg.ffprobe import get_duration, hasaudio, get_resolution, is_apng
 from processing.mediatype import VIDEO, IMAGE, GIF
 from processing.run_command import run_command
 from utils.tempfiles import reserve_tempfile, TempFile
@@ -225,27 +225,27 @@ async def trim(file, length, start=0):
 
 
 @gif_output
-async def resize(image, width, height, lock_codec=False):
+async def resize(image, width, height, re_encode=False, input_is_apng=False):
     """
     resizes image
 
     :param image: file
     :param width: new width, thrown directly into ffmpeg so it can be things like -1 or iw/2
     :param height: new height, same as width
-    :param lock_codec: attempt to keep the input codec
+    :param re_encode: if False, use ffv1 codec. if True, use typical re-encoding
     :return: processed media
     """
-    gif = await image.mediatype() == GIF
-    ext = image.split(".")[-1]
-    out = reserve_tempfile(ext if lock_codec and not gif else "mkv")
+    out = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v",
-                      "copy" if lock_codec and not gif else config.temp_vcodec, "-pix_fmt",
-                      config.temp_vpixfmt,
+                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "ffv1",
                       "-c:a", "copy", "-fps_mode", "vfr", out)
-    if gif and lock_codec:
-        return await videotogif(out)
+    if re_encode:
+        if await is_apng(image) or input_is_apng:
+            return await toapng(out)
+        else:
+            out.mt = await image.mediatype()
+            return await allreencode(out)
     else:
         return out
 

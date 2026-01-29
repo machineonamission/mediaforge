@@ -80,6 +80,7 @@ max_temp_file_size = "1G"
 max_fps = 100
 # intermediate codecs that files are saved to between ffmpeg calls, i wouldn't touch these but depending on cpu/ssd
 # speed, you might get better results with different ones
-intermediate_video_codec = "utvideo"
-intermediate_video_pixel_format = "rgba"
-intermediate_audio_codec = "pcm_s16le"
+temp_vcodec = "utvideo"
+temp_vpixfmt = "rgba"
+temp_acodec = "pcm_s16le"
+temp_vipscodec = "tiff"
