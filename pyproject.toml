@@ -7,9 +7,7 @@ license = { text = "AGPL-3.0-or-later + Commons Clause" }
 requires-python = ">=3.11"
 
 dependencies = [
-    "discord.py>=2.4.0",
-    "Brotli",
-    "orjson>=3.5.4",
+    "discord-py[speed]>=2.4.0",
     "aiofiles>=24.1.0",
     "humanize>=4.8.0",
     "coloredlogs>=15.0.1",
@@ -19,7 +17,6 @@ dependencies = [
     "psutil>=7.0.0",
     "apng>=0.3.4",
     "docstring-parser>=0.17",
-    "yt-dlp[default,curl-cffi]@git+https://github.com/yt-dlp/yt-dlp",
     "emojis>=0.7.0",
     "requests>=2.31.0",
     "discordlists.py>=1.1.1",
@@ -29,4 +26,5 @@ dependencies = [
     "audioop-lts>=0.2.1; python_version >= '3.13'",
     "python-magic>=0.4.13; sys_platform != 'win32'",
     "python-magic-win64>=0.4.13; sys_platform == 'win32'",
+    "yt-dlp[curl-cffi,default]>=2025.12.8",
 ]
