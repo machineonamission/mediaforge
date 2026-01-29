@@ -238,7 +238,8 @@ async def resize(image, width, height, re_encode=False, input_is_apng=False):
     out = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-i", image, "-max_muxing_queue_size", "9999", "-sws_flags",
                       "spline+accurate_rnd+full_chroma_int+full_chroma_inp+bitexact",
-                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", "ffv1",
+                      "-vf", f"scale='{width}:{height}',setsar=1:1", "-c:v", config.temp_vcodec,
+                      "-pix_fmt", config.temp_vpixfmt,
                       "-c:a", "copy", "-fps_mode", "vfr", out)
     if re_encode:
         if await is_apng(image) or input_is_apng:
