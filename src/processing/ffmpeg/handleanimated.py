@@ -1,5 +1,6 @@
 import inspect
 
+import config
 from processing.common import run_parallel
 from processing.ffmpeg.conversion import mediatotempimage
 from processing.ffmpeg.ffprobe import get_frame_rate
@@ -34,9 +35,11 @@ async def handleanimated(media: TempFile, function: callable, *args, **kwargs):
     outfile = reserve_tempfile("mkv")
     if audio:
         await run_command("ffmpeg", "-r", str(fps), "-f", "concat", "-safe", "0", "-i", outdemuxer, "-i", audio,
-                          "-c:v", "ffv1", "-c:a", "copy", outfile)
+                          "-c:v", config.temp_vcodec, "-pix_fmt", config.temp_vpixfmt,
+                          "-c:a", "copy", outfile)
     else:
-        await run_command("ffmpeg", "-r", str(fps), "-f", "concat", "-safe", "0", "-i", outdemuxer, "-c:v", "ffv1",
+        await run_command("ffmpeg", "-r", str(fps), "-f", "concat", "-safe", "0", "-i", outdemuxer, "-c:v",
+                          config.temp_vcodec, "-pix_fmt", config.temp_vpixfmt,
                           outfile)
     if await media.mediatype() == GIF:
         outfile.mt = GIF

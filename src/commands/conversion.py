@@ -18,10 +18,10 @@ from core.process import process
 from processing.common import run_parallel
 from processing.mediatype import VIDEO, AUDIO, IMAGE, GIF
 from processing.other import ytdownload
+from utils import scandiscord
 from utils.common import prefix_function
 from utils.dpy import UnicodeEmojisConverter
-from utils.scandiscord import tenorsearch
-from utils.tempfiles import reserve_tempfile
+from utils.tempfiles import reserve_tempfile, GifvUrl
 
 
 class Conversion(commands.Cog, name="Conversion"):
@@ -165,21 +165,22 @@ class Conversion(commands.Cog, name="Conversion"):
         """
         await process(ctx, processing.ffmpeg.conversion.toaudio, [[VIDEO, AUDIO]], slashfiles=video)
 
-    @commands.hybrid_command(aliases=["tenorgif", "tenormp4", "rawtenor"])
-    async def tenorurl(self, ctx, gif: bool = True):
+    @commands.hybrid_command(aliases=["tenorgif", "tenormp4", "rawtenor", "tenorurl", "gifv"])
+    async def gifvurl(self, ctx):
         """
-        Sends the raw url for a tenor gif.
+        Sends the raw url for a "gifv" (a gif from a site like Tenor that is actually an mp4)
         mp4 compression is nearly invisible compared to GIF compression which is very visible
 
-        :param gif: if true, sends GIF url. if false, sends mp4 url.
         :param ctx: discord context
-        :param gif: any gif sent from tenor.
         """
-        file = await tenorsearch(ctx, gif)
+        file = await scandiscord.imagesearch(ctx)
         if file:
-            await ctx.send(file)
+            if isinstance(file[0], GifvUrl):
+                await ctx.send(file[0])
+            else:
+                await ctx.send(f"{config.emojis['x']} This media is not a gifv.")
         else:
-            await ctx.send(f"{config.emojis['x']} No tenor gif found.")
+            await ctx.send(f"{config.emojis['x']} No media found.")
 
     @commands.hybrid_command(aliases=["video", "giftovideo", "tomp4", "mp4"])
     async def tovideo(self, ctx, gif: discord.Attachment | None = None):

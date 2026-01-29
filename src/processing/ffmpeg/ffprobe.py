@@ -3,6 +3,7 @@ import sys
 
 import apng
 
+import config
 from processing.run_command import run_command
 from utils import trymagic
 from utils.tempfiles import reserve_tempfile
@@ -163,7 +164,8 @@ async def frame_n(video, n: int):
         n = framecount - 1
     frame = reserve_tempfile("mkv")
     await run_command("ffmpeg", "-hide_banner", "-i", video, "-vf", f"select='eq(n,{n})'", "-vframes", "1",
-                      "-c:v", "ffv1", frame)
+                      "-c:v", config.temp_vcodec, "-pix_fmt", config.temp_vpixfmt,
+                      frame)
     return frame
 
 

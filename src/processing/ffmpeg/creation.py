@@ -1,3 +1,4 @@
+import config
 import processing.common
 from processing import vips as vips
 from processing.ffmpeg.ffutils import gif_output
@@ -61,7 +62,8 @@ async def trollface(media):
                       # overlay bottom and top
                       "[1:v][media]overlay=format=auto[media];"
                       "[media][3:v]overlay=format=auto",
-                      "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr",
+                      "-c:v", config.temp_vcodec, "-pix_fmt", config.temp_vpixfmt,
+                      "-c:a", "copy", "-fps_mode", "vfr",
                       outfile)
     return outfile
 

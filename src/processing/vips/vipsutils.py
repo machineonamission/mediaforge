@@ -4,7 +4,8 @@ import typing
 import pyvips
 
 import processing.ffmpeg.ffprobe
-from processing.common import run_parallel, image_format
+from processing.common import run_parallel
+from config import temp_vipscodec
 from utils.tempfiles import reserve_tempfile
 
 
@@ -81,7 +82,7 @@ def naive_stack(file0, file1):
     # stack
     out = im0.join(im1, pyvips.Direction.VERTICAL, expand=True, align=pyvips.Align.CENTRE)
     # save
-    outfile = reserve_tempfile(image_format)
+    outfile = reserve_tempfile(temp_vipscodec)
     out.write_to_file(outfile)
 
     return outfile
@@ -100,7 +101,7 @@ def stack(file0, file1, style):
     out = im0.join(im1, pyvips.Direction.VERTICAL if style == "vstack" else pyvips.Direction.HORIZONTAL, expand=True,
                    align=pyvips.Align.CENTRE)
     # save
-    outfile = reserve_tempfile(image_format)
+    outfile = reserve_tempfile(temp_vipscodec)
     out.write_to_file(outfile)
 
     return outfile

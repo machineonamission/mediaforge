@@ -2,7 +2,7 @@ import typing
 
 import pyvips
 
-from processing.common import image_format
+from config import temp_vipscodec
 from processing.vips.vipsutils import escape
 from processing.vips.vipsutils import normalize, vips_text
 from utils.tempfiles import reserve_tempfile
@@ -59,7 +59,7 @@ def yskysn(captions: typing.Sequence[str]):
 
     out = im.composite2(text, pyvips.BlendMode.OVER)
     # save and return
-    outfile = reserve_tempfile(image_format)
+    outfile = reserve_tempfile(temp_vipscodec)
     out.write_to_file(outfile)
     return outfile
 
@@ -109,7 +109,7 @@ def f1984(captions: typing.Sequence[str]):
         im = im.composite2(normalize(pyvips.Image.new_from_file("rendering/images/1984/1984cover.png")),
                            pyvips.BlendMode.OVER)
 
-    outfile = reserve_tempfile(image_format)
+    outfile = reserve_tempfile(temp_vipscodec)
     im.write_to_file(outfile)
     return outfile
 
@@ -125,7 +125,7 @@ def epicbirthdaytext(caption: str):
         height=260,
         wrap=pyvips.TextWrap.WORD_CHAR
     )
-    outfile = reserve_tempfile(image_format)
+    outfile = reserve_tempfile(temp_vipscodec)
     text.write_to_file(outfile)
     return outfile
 
@@ -148,6 +148,6 @@ def heartlockettext(caption: str):
     out = out.composite((255, 255, 255, 255), mode=pyvips.BlendMode.DEST_OVER)
     # pad text to image width
     out = out.gravity(pyvips.CompassDirection.CENTRE, 384, 384, extend=pyvips.Extend.WHITE)
-    outfile = reserve_tempfile(image_format)
+    outfile = reserve_tempfile(temp_vipscodec)
     out.write_to_file(outfile)
     return outfile

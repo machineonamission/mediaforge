@@ -1,5 +1,6 @@
 import typing
 
+import config
 import processing.common
 from processing import vips as vips
 from processing.ffmpeg.ffprobe import get_resolution, frame_n
@@ -44,7 +45,8 @@ async def motivate(media, captions: typing.Sequence[str]):
                       f"pad=w={pad3_w}:h={pad3_h}:x=0:y=0[i];"
                       f"[i][1]vstack=inputs=2,"
                       f"pad=w={pad4_w}:h={pad4_h}:x={pad4_x}:y={pad4_y}:color=black",
-                      "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr",
+                      "-c:v", config.temp_vcodec, "-pix_fmt", config.temp_vpixfmt,
+                      "-c:a", "copy", "-fps_mode", "vfr",
                       outfile)
     return outfile
 
@@ -99,6 +101,7 @@ async def twitter_caption(media, captions, dark=True):
                       f"[stacked]split=2[bg][fg];"
                       f"[bg]drawbox=c={'#15202b' if dark else '#ffffff'}:replace=1:t=fill[bg];"
                       f"[bg][fg]overlay=format=auto",
-                      "-c:v", "ffv1", "-c:a", "copy", "-fps_mode", "vfr",
+                      "-c:v", config.temp_vcodec, "-pix_fmt", config.temp_vpixfmt,
+                      "-c:a", "copy", "-fps_mode", "vfr",
                       outfile)
     return outfile

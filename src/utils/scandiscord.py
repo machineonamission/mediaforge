@@ -11,10 +11,8 @@ from discord.ext import commands
 import config
 from core.clogs import logger
 from utils.common import fetch
-from utils.tempfiles import TenorUrl
+from utils.tempfiles import GifvUrl
 from utils.web import contentlength
-
-tenor_url_regex = re.compile(r"https?://tenor\.com/view/([^-]+-)*(\d+)/?")
 
 
 async def handlemessagesave(m: discord.Message, ignoreatts: list[discord.Attachment] | None = None):
@@ -30,14 +28,8 @@ async def handlemessagesave(m: discord.Message, ignoreatts: list[discord.Attachm
     detectedfiles = []
     if len(m.embeds):
         for embed in m.embeds:
-            if embed.type == "gifv":
-                # https://github.com/esmBot/esmBot/blob/master/utils/imagedetect.js#L34
-                if (match := tenor_url_regex.fullmatch(embed.url)) is not None:
-                    gif_id = match.group(2)
-                    tenor = await fetch(
-                        f"https://tenor.googleapis.com/v2/posts?ids={gif_id}&key={config.tenor_key}&limit=1")
-                    tenor = json.loads(tenor)
-                    detectedfiles.append(TenorUrl(tenor['results'][0]['media_formats']['mp4']['url']))
+            if embed.type == "gifv" and embed.video:
+                detectedfiles.append(GifvUrl(embed.video.url))
             elif embed.type in ["image", "video", "audio"]:
                 if await contentlength(embed.url):  # prevent adding youtube videos and such
                     detectedfiles.append(embed.url)
@@ -66,7 +58,7 @@ async def imagesearch(ctx, nargs=1, ignore: list[discord.Attachment] | None = No
     :param ctx: command context
     :param nargs: amount of media to return
     :param startfiles: start the search with these files, will be ignored from the current message
-    :return: False if none or not enough media found, list of file paths if found
+    :return: list of file paths if found or empty list
     """
     messageschecked = []
     outfiles = []
@@ -93,53 +85,4 @@ async def imagesearch(ctx, nargs=1, ignore: list[discord.Attachment] | None = No
             outfiles += hm
             if len(outfiles) >= nargs:
                 return outfiles[:nargs]
-    return False
-
-
-async def handletenor(m: discord.Message, ctx: commands.Context, gif=False):
-    """
-    like handlemessagesave() but only for tenor
-    :param m: discord message
-    :param ctx: command context
-    :param gif: return GIF url if true, mp4 url if false
-    :return: raw tenor media url
-    """
-    if len(m.embeds):
-        if m.embeds[0].type == "gifv":
-            # https://github.com/esmBot/esmBot/blob/master/utils/imagedetect.js#L34
-            tenor = await fetch(
-                f"https://tenor.googleapis.com/v2/posts?ids={m.embeds[0].url.split('-').pop()}&key={config.tenor_key}")
-            tenor = json.loads(tenor)
-            if 'error' in tenor:
-                logger.error(tenor['error'])
-                await ctx.send(f"{config.emojis['2exclamation']} Tenor Error! `{tenor['error']}`")
-                return False
-            else:
-                if gif:
-                    return TenorUrl(tenor['results'][0]['media_formats']['gif']['url'])
-                else:
-                    return TenorUrl(tenor['results'][0]['media_formats']['mp4']['url'])
-    return None
-
-
-async def tenorsearch(ctx, gif=False):
-    # currently only used for 1 command, might have future uses?
-    """
-    like imagesearch() but for tenor
-    :param ctx: discord context
-    :param gif: return GIF url if true, mp4 url if false
-    :return:
-    """
-    if ctx.message.reference:
-        m = ctx.message.reference.resolved
-        hm = await handletenor(m, ctx, gif)
-        if hm is None:
-            return False
-        else:
-            return hm
-    else:
-        async for m in ctx.channel.history(limit=50):
-            hm = await handletenor(m, ctx, gif)
-            if hm is not None:
-                return hm
-    return False
+    return []
