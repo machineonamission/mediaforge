@@ -50,10 +50,13 @@ tips = {
     "Self-Hosting": "MediaForge is completely open source and anyone can host a clone "
                     "themself!\nhttps://github.com/machineonamission/mediaforge "
 }
-# https://www.reddit.com/r/discordapp/comments/aflp3p/the_truth_about_discord_file_upload_limits/
 # configured upload limit, in bytes, for files.
-# dont change this unless you have a really good reason to. i dont have error handling for overly large files
-file_upload_limit = 8_388_119
+# MediaForge has no mechanism beyond this to check file upload limit, so ensure you know what you're doing before changing it.
+file_upload_limit = 10 * 1024**2  # 10 MiB, default upload limit
+# configured emoji size upload limit, in bytes
+emoji_upload_limit = 256 * 1024 #  256 KiB, seems to be the default emoji limit?
+# configured sticker size upload limit, in bytes
+sticker_upload_limit = 512 * 1024  # 512 KiB, sticker limit
 # this applies to every command. if any string arguments contain any of these words, the command will instantly
 # fail. this is intended to block hateful language like slurs. not case sensitive.
 # its in the config so i dont have to upload slurs to github...

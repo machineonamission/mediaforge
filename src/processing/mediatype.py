@@ -63,7 +63,7 @@ async def mediatype(image) -> MediaType:
             props["audio"] = True
         elif stream["codec_type"] == "video":  # could be video or image or gif sadly
             if "nb_read_packets" in stream and int(stream["nb_read_packets"]) != 1:  # if there are multiple frames
-                if stream["codec_name"] == "gif":  # if gif
+                if stream["codec_name"] in ["gif", "apng"]:  # if gif
                     # should have been detected in the previous step but cant hurt to be too sure
                     props["gif"] = True  # gif
                 else:  # multiple frames, not gif

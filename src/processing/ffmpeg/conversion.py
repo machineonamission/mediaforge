@@ -161,7 +161,7 @@ async def mediatotempimage(media):
 
 # this shit brokey, discord fucks apngs
 async def toapng(video):
-    outname = reserve_tempfile("apng")
+    outname = reserve_tempfile("animatedpng")
     outname.lock_codec = True
     await run_command("ffmpeg", "-i", video, "-f", "apng", "-plays", "0",
                       # "-filter_complex", "split[v],palettegen,[v]paletteuse",
