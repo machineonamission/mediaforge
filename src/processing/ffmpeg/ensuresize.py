@@ -107,10 +107,10 @@ async def twopasscapvideo(video, maxsize: int, audio_bitrate=128000):
                     f"trying {humanize.naturalsize(target_video_bitrate / 8)}/s")
         pass1log = utils.tempfiles.temp_file_name()
         outfile = reserve_tempfile("mp4")
-        await run_command('ffmpeg', '-y', '-i', video, '-c:v', 'h264', '-b:v', str(target_video_bitrate), '-pass', '1',
+        await run_command('ffmpeg', '-y', '-i', video, '-c:v', 'h264', "-pix_fmt", "yuv420p", '-b:v', str(target_video_bitrate), '-pass', '1',
                           '-f', 'mp4', '-passlogfile', pass1log,
                           'NUL' if sys.platform == "win32" else "/dev/null")
-        await run_command('ffmpeg', '-i', video, '-c:v', 'h264', '-b:v', str(target_video_bitrate), '-pass', '2',
+        await run_command('ffmpeg', '-i', video, '-c:v', 'h264', "-pix_fmt", "yuv420p", '-b:v', str(target_video_bitrate), '-pass', '2',
                           '-passlogfile', pass1log, '-c:a', 'aac', '-b:a', str(audio_bitrate), "-f", "mp4", "-movflags",
                           "+faststart", outfile)
         # log files are pass1log-N.log and pass1log-N.log.mbtree where N is an int, easiest to just glob them all
