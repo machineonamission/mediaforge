@@ -13,7 +13,8 @@ import config
 import utils
 from core.clogs import logger
 from processing.common import NonBugError, ReturnedNothing
-from processing.ffmpeg.ffprobe import get_frame_rate, get_duration, get_resolution
+from processing.ffmpeg.conversion import allreencode
+from processing.ffmpeg.ffprobe import get_frame_rate, get_duration, get_resolution, is_apng
 from processing.ffmpeg.ffutils import changefps, trim, resize
 from processing.mediatype import VIDEO, IMAGE, GIF
 from processing.run_command import run_command
@@ -123,7 +124,7 @@ async def twopasscapvideo(video, maxsize: int, audio_bitrate=128000):
     raise NonBugError(f"Unable to fit {video} within {humanize.naturalsize(maxsize)}")
 
 
-async def intelligentdownsize(media, maxsize: int):
+async def intelligentdownsize(media, original, maxsize: int):
     """
     tries to intelligently downsize media to fit within maxsize
 
@@ -131,7 +132,7 @@ async def intelligentdownsize(media, maxsize: int):
     :param maxsize: max size in bytes
     :return: new media file below maxsize
     """
-
+    apng = await is_apng(media)
     size = os.path.getsize(media)
     w, h = await get_resolution(media)
     for tolerance in TOLERANCES:
@@ -143,7 +144,7 @@ async def intelligentdownsize(media, maxsize: int):
 
         logger.info(f"trying to resize from {w}x{h} to {new_w}x{new_h} "
                     f"(tolerance {tolerance}: ~{reduction_ratio} reduction)")
-        resized = await resize(media, new_w, new_h, lock_codec=True)
+        resized = await resize(original, new_w, new_h, re_encode=True, input_is_apng=apng)
         if (newsize := os.path.getsize(resized)) < maxsize:
             logger.info(f"successfully created {humanize.naturalsize(newsize)} media!")
             return resized
@@ -152,7 +153,7 @@ async def intelligentdownsize(media, maxsize: int):
     raise NonBugError(f"Unable to fit {media} within {humanize.naturalsize(maxsize)}")
 
 
-async def assurefilesize(media):
+async def assurefilesize(media, original=None):
     """
     compresses files to fit within config set discord limit
 
@@ -162,6 +163,8 @@ async def assurefilesize(media):
     """
     if not media:
         raise ReturnedNothing(f"assurefilesize() was passed no media.")
+    if not original:
+        original = media
     mt = await media.mediatype()
     size = os.path.getsize(media)
     if size > config.way_too_big_size:
@@ -172,10 +175,10 @@ async def assurefilesize(media):
         return media
     if mt == VIDEO:
         # fancy ffmpeg based video thing
-        return await twopasscapvideo(media, config.file_upload_limit)
+        return await twopasscapvideo(original, config.file_upload_limit)
     elif mt in [IMAGE, GIF]:
         # file size should be roughly proportional to # of pixels so we can work with that :3
-        return await intelligentdownsize(media, config.file_upload_limit)
+        return await intelligentdownsize(media, original, config.file_upload_limit)
     else:
         raise NonBugError(f"File is too big to upload.")
 

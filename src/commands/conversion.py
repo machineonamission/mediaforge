@@ -206,10 +206,13 @@ class Conversion(commands.Cog, name="Conversion"):
         """
         Converts media to APNG (animated PNG)
 
+        Note: returns a stupid ".animatedpng" extension because if MediaForge upload .png or .apng, discord seems to
+        automatically trim off the animated part of the apng for no good reason.
+
         :param ctx: discord context
-        :param media: A video, gif, or image.
+        :param media: A video or gif.
         """
-        await process(ctx, processing.ffmpeg.conversion.toapng, [[VIDEO, GIF, IMAGE]], slashfiles=media)
+        await process(ctx, processing.ffmpeg.conversion.toapng, [[VIDEO, GIF]], slashfiles=media)
 
     @commands.command(aliases=["emoji", "emojiimage", "emote", "emoteurl"])  # TODO: hybrid
     async def emojiurl(self, ctx, *custom_emojis: discord.PartialEmoji):

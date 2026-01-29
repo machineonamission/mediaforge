@@ -7,6 +7,7 @@ import config
 from core.clogs import logger
 from processing.ffmpeg.conversion import mediatopng, toapng, allreencode
 from processing.ffmpeg.ensuresize import intelligentdownsize
+from processing.ffmpeg.ffprobe import is_apng
 from processing.mediatype import GIF, MediaType
 
 
@@ -31,7 +32,7 @@ async def add_emoji(file, guild: discord.Guild, name):
     """
     # force to png/gif
     file_f = await allreencode(file)
-    file_r = await intelligentdownsize(file_f, config.emoji_upload_limit)
+    file_r = await intelligentdownsize(file_f, file, config.emoji_upload_limit)
     with open(file_r, "rb") as f:
         data = f.read()
     try:
@@ -61,13 +62,11 @@ async def add_sticker(file, guild: discord.Guild, sticker_emoji, name):
     :param name: sticker name
     :return: result text
     """
-    if (await file.mediatype()) == MediaType.GIF:
-        ffile = await toapng(file)
-    else:
-        ffile = await mediatopng(file)
-    rfile = await intelligentdownsize(ffile, config.sticker_upload_limit)
+    file_f = await allreencode(file) if not await is_apng(file) else file
+    rfile = await intelligentdownsize(file_f, file, config.sticker_upload_limit)
     try:
-        await guild.create_sticker(name=name, emoji=sticker_emoji, file=discord.File(rfile), reason="$addsticker command",
+        await guild.create_sticker(name=name, emoji=sticker_emoji, file=discord.File(rfile),
+                                   reason="$addsticker command",
                                    description=" ")
         # description MUST NOT be empty. see https://github.com/nextcord/nextcord/issues/165
     except discord.Forbidden:
