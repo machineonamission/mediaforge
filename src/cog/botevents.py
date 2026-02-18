@@ -55,7 +55,7 @@ class BotEventsCog(commands.Cog):
                                 mention_author=False)
 
     @commands.Cog.listener()
-    async def on_command_completion(self, ctx):
+    async def on_command_completion(self, ctx:commands.Context):
         if ctx.interaction:
             command = f"/{ctx.command} {ctx.kwargs}"
         else:
