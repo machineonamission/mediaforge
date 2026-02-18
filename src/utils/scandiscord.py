@@ -28,13 +28,21 @@ async def handlemessagesave(m: discord.Message, ignoreatts: list[discord.Attachm
     detectedfiles = []
     if len(m.embeds):
         for embed in m.embeds:
-            if embed.type == "gifv" and embed.video:
-                detectedfiles.append(GifvUrl(embed.video.url))
-            elif embed.type in ["image", "video", "audio"]:
-                if await contentlength(embed.url):  # prevent adding youtube videos and such
-                    detectedfiles.append(embed.url)
-                elif embed.type == "image" and await contentlength(embed.thumbnail.url):  # fix for modern embeds
-                    detectedfiles.append(embed.thumbnail.url)
+            if embed.video and embed.video.proxy_url:
+                if embed.type == "gifv":
+                    detectedfiles.append(GifvUrl(embed.video.url))
+                else:
+                    detectedfiles.append(embed.video.url)
+            elif embed.image and embed.image.proxy_url:
+                detectedfiles.append(embed.image.url)
+            elif embed.thumbnail and embed.thumbnail.proxy_url:
+                detectedfiles.append(embed.thumbnail.url)
+
+            # elif embed.type in ["image", "video", "audio"]:
+            #     if await contentlength(embed.url):  # prevent adding youtube videos and such
+            #         detectedfiles.append(embed.url)
+            #     elif embed.type == "image" and await contentlength(embed.thumbnail.url):  # fix for modern embeds
+            #         detectedfiles.append(embed.thumbnail.url)
     if len(m.attachments):
         for att in m.attachments:
             if ignoreatts is None or att not in ignoreatts:  # ignore duplicate atts

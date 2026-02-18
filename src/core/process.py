@@ -139,8 +139,9 @@ async def process(ctx: commands.Context, func: callable, inputs: list, *args,
                                 logger.warning(f"{func} is not coroutine")
                                 command_result = func(*args, **kwargs)
                         if expectimage and command_result:
-                            command_result = await processing.ffmpeg.conversion.allreencode(command_result)
-                            command_result = await processing.ffmpeg.ensuresize.assurefilesize(command_result)
+                            re_encoded = await processing.ffmpeg.conversion.allreencode(command_result)
+                            ensured_size = await processing.ffmpeg.ensuresize.assurefilesize(re_encoded, command_result)
+                            command_result = ensured_size
                         return command_result
 
                     result = await queue.enqueue(run())
