@@ -53,7 +53,7 @@ run() {
 cat "media/active/braillebanner.txt"
 printf "\n\n"
 
-if [ "$AUTOMODE" == "ON" ] && [ "$CONFIG" != "" ]; then
+if [ "$AUTOMODE" == "ON" ]; then
   echo "We're in automode. Running MediaForge"
   if [ "$AUTOUPDATE" == "ON" ]; then
     updategit
@@ -62,7 +62,9 @@ if [ "$AUTOMODE" == "ON" ] && [ "$CONFIG" != "" ]; then
     updatevips
     updatebgpot
   fi
-  echo "$CONFIG" | base64 -d >config.py
+  if [ "$CONFIG" != "" ]; then
+    echo "$CONFIG" | base64 -d >config.py
+  fi
   run
   exit
 fi
